@@ -1233,7 +1233,7 @@ S.lastE=E;S.lastEhp=E?E.hp:null;
 try{audioScene()}catch(e){}
 const LN=S.logOpen?logs.length:4;$('#log').innerHTML=logs.slice(0,LN).map((l,i)=>`<div class="${l.c}" style="opacity:${Math.max(.15,1-i*(S.logOpen?.08:.18))}">${fxc(l.t)}</div>`).join('');{const t=$('#logtog');if(t)t.textContent=logs.length>4?(S.logOpen?'▴ weniger':`▾ alle ${logs.length}`):''}
 {const m=$('#mini');if(m){m.innerHTML=P&&!['hub','end','story','chronik'].includes(S.screen)?`<span class="c-hp">LP</span> ${Math.max(0,P.hp)}/${maxHp()}${bar(P.hp,maxHp(),'var(--red)')}${E&&S.screen==='combat'?`<span class="mE">${E.name.split(' ·')[0]}</span> ${Math.max(0,Math.ceil(E.hp))}${bar(E.hp,E.maxHp,'var(--orange)')}`:''}`:'';miniCheck()}}}
-function miniCheck(){const m=$('#mini'),st=$('#stats');if(!m||!st||!st.getBoundingClientRect)return;const hide=!m.innerHTML||st.getBoundingClientRect().bottom>0;m.classList.toggle('on',!hide)}
+function miniCheck(){const m=$('#mini'),st=$('#stats');if(!m||!st||!st.getBoundingClientRect)return;const hb=st.querySelector('.bar2')||st;const hide=!m.innerHTML||hb.getBoundingClientRect().bottom>4;m.classList.toggle('on',!hide)}
 try{window.addEventListener('scroll',()=>{try{miniCheck()}catch(e){}},{passive:true})}catch(e){}
 
 /* ---------- Start ---------- */
