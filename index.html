@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>RISS – Der Abstieg</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0c0c0e">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="RISS">
+<style>
+:root{--bg:#0c0c0e;--fg:#d9d6cf;--dim:#77746d;--line:#2b2b30;--accent:#6fb3ff;--red:#d65a5a;--gold:#d9b45a;--green:#80c784;--purple:#b98bff;--orange:#ff9d4d}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--fg);font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:1.45}
+#app{max-width:620px;margin:0 auto;padding:20px 16px 60px}
+h1{font-weight:normal;letter-spacing:.45em;font-size:1rem;margin:0;color:var(--dim);text-align:center}
+.top{position:relative;margin:0 0 14px}
+#snd{position:absolute;right:0;top:-3px;background:transparent;border:1px solid #3a3a42;color:var(--dim);font:inherit;font-size:.72rem;padding:3px 8px;border-radius:12px;cursor:pointer}
+#stats{padding-bottom:4px;margin-bottom:12px;font-size:.92rem}
+.srow{display:flex;align-items:center;gap:10px;margin:3px 0;flex-wrap:wrap}
+.srow>span:first-child{min-width:96px}
+.srow.small>span:first-child{min-width:0}
+#stats .srow.small{gap:6px}
+.r{margin-left:auto;color:var(--dim)}
+.small{font-size:.85rem}.dim{color:var(--dim)}.gold{color:var(--gold)}
+.bar2{flex:1;height:6px;background:#1c1c20;border:1px solid var(--line);min-width:80px}
+.bar2>div{height:100%;transition:width .35s}
+#stage{background:#16161b;border:1px solid #34343d;border-radius:8px;padding:16px 14px 4px;margin:0 0 22px;box-shadow:0 6px 24px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.03)}
+#scene{min-height:40px;margin-bottom:14px}
+#stage .btn{background:#1c1c22}
+#stage .btn:hover:not(:disabled){background:#22222a}
+#scene p{margin:0 0 8px}
+.enemy{border:1px solid var(--line);padding:10px 12px;margin:6px 0 4px}
+.enemy .nm{font-size:1.05rem;margin-bottom:5px}
+.intent{font-size:.85rem;color:var(--dim);margin-top:6px;font-style:italic}
+.intent.warn{color:var(--orange)}
+.grp{margin:0 0 16px}
+.gt{font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin-bottom:7px}
+.row{display:flex;flex-wrap:wrap;gap:8px}
+.btn{position:relative;overflow:hidden;background:transparent;color:var(--fg);border:1px solid #55534e;font:inherit;padding:9px 14px;cursor:pointer;text-align:left;flex:1 1 150px;min-height:44px}
+.btn:hover:not(:disabled){border-color:var(--fg)}
+.btn:disabled{color:#8f8b83;border-color:#34343a;background:#18181c !important;cursor:default}
+.btn small{display:block;font-size:.75rem;color:var(--dim);margin-top:2px}
+.btn:disabled small{color:#7a766f}
+.btn.info,.btn.info:disabled{color:var(--fg);background:transparent;border:1px dashed #4a4a52}
+.btn.info small,.btn.info:disabled small{color:#a29e96}
+.btn .bar{position:absolute;left:0;bottom:0;height:2px;width:0;background:var(--fg);transition-property:width;transition-timing-function:linear}
+.btn.big{flex-basis:100%}
+.btn.danger{border-color:#6b3434}
+.loghead{font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:#55535a;margin:0 0 8px;padding-left:2px}
+#log{padding:0 2px;font-size:.88rem}
+#loghead{cursor:pointer;user-select:none}#logtog{letter-spacing:.05em;text-transform:none;color:#77747c;margin-left:6px}
+#mini{position:fixed;top:0;left:50%;transform:translate(-50%,-110%);width:min(620px,100%);box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:8px 16px;background:rgba(14,14,17,.96);border-bottom:1px solid #26262c;z-index:50;font-size:.85rem;transition:transform .2s;white-space:nowrap}
+#mini.on{transform:translate(-50%,0)}#mini .bar2{flex:1;min-width:40px}#mini .mE{overflow:hidden;text-overflow:ellipsis;max-width:30%;margin-left:6px;color:var(--orange)}
+#log div{margin-bottom:5px}
+.sys{color:var(--accent)}.good{color:var(--green)}.bad{color:var(--red)}.goldt{color:var(--gold)}.crit{color:var(--orange)}
+.item{border-left:3px solid;padding:4px 10px;margin:8px 0}
+.hint{border:1px solid #2d4a66;background:#0f1822;padding:9px 12px;margin-bottom:12px;font-size:.9rem;color:#bcd6f0}
+.hint b{color:var(--accent);font-weight:normal}
+.story p{margin:0 0 10px;font-size:1.05rem}
+.story p.sys{font-size:.95rem}
+.lore{border-left:2px solid var(--line);padding:2px 0 2px 12px;margin:0 0 14px}
+.lore p{margin:4px 0 0;font-size:.92rem}
+.ck{cursor:pointer;border-bottom:1px dotted #55535a}.ck.on{border-bottom:1px solid var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 2px}
+.chip{border:1px solid #444;padding:3px 9px;cursor:pointer;color:var(--dim)}
+.chip.on{border-color:var(--accent);color:var(--accent)}
+.pinfo{border-left:2px solid var(--accent);padding:4px 10px;margin:6px 0 2px}
+.fx-crit{color:#ff6b3d;font-weight:bold}.fx-bleed{color:#e5484d;font-weight:bold}.fx-poison{color:#6fdc6f}.fx-burn{color:#ffa04d}.fx-stun{color:#e8d36a}.fx-ls{color:#ee7ab5}.fx-dodge{color:#8fd3ff}.fx-regen{color:#4fd1b0}.fx-rage{color:#ff3b3b;font-weight:bold}.fx-thorn{color:#c9a46b}
+.c-gold{color:#e6c34a}.c-hp,.c-dmg{color:#e5484d}.c-heal{color:#7cd67c}.c-xp{color:#6fb3ff}.c-ess{color:#c49bff}.c-atk{color:#ff8c5a}.c-def{color:#9fb4c8}.c-key{color:#d9a25a}.c-fire{color:#ff9d4d}.c-pot{color:#f07a9a}
+.c-dmg{color:inherit}
+.t2{font-weight:bold}.t3{font-weight:bold;font-size:1.12em}.t4{font-weight:bold;font-size:1.28em;text-shadow:0 0 8px currentColor}
+.btn.rar1{border-color:#3d5f80}.btn.rar2{border-color:#6a4f99}.btn.rar3{border-color:#a8652a;box-shadow:0 0 10px rgba(255,157,77,.25)}
+.mat{color:#7fd1c7}.fx-curse{color:#c07cff;font-weight:bold}
+.art{margin:-16px -14px 12px;line-height:0;border-radius:8px 8px 0 0;overflow:hidden;border-bottom:1px solid #26262c}.art svg{width:100%;height:auto;max-height:150px;display:block;background:#0c0c0e}
+.art .pt{animation-iteration-count:infinite;animation-timing-function:linear}
+.art .dust{animation-name:dust;opacity:.35}@keyframes dust{0%{transform:translate(0,0);opacity:0}20%{opacity:.4}100%{transform:translate(14px,-10px);opacity:0}}
+.art .mote{animation-name:mote;opacity:.5}@keyframes mote{0%{transform:translate(0,4px);opacity:0}30%{opacity:.7}100%{transform:translate(-6px,-18px);opacity:0}}
+.art .ember{animation-name:ember}@keyframes ember{0%{transform:translate(0,0);opacity:0}10%{opacity:1}100%{transform:translate(8px,-70px);opacity:0}}
+.art .snow{animation-name:snow;opacity:.6}@keyframes snow{0%{transform:translate(0,-30px);opacity:0}15%{opacity:.7}100%{transform:translate(-10px,60px);opacity:0}}
+.art .flick{animation:flick .18s ease-in-out infinite alternate}@keyframes flick{from{opacity:.75}to{opacity:1}}
+.art .breathe-l{animation:bl 3.2s ease-in-out infinite alternate}@keyframes bl{from{opacity:.6}to{opacity:1}}
+.art .breathe-e{animation:be 3.2s ease-in-out infinite}@keyframes be{0%,100%{transform:translateY(0)}50%{transform:translateY(1.5px)}}
+.art .hover{animation:hv 1.4s ease-in-out infinite}@keyframes hv{0%,100%{transform:translateY(-2px)}50%{transform:translateY(3px)}}
+.art .blink{animation:blink 5s infinite}@keyframes blink{0%,93%,100%{opacity:1}95%,97%{opacity:0}}
+.art .vein{animation:vein 2.6s ease-in-out infinite alternate}@keyframes vein{from{opacity:.25}to{opacity:.9}}
+.art .tw{animation:tw 3s ease-in-out infinite}.art .d2{animation-delay:1s}.art .d3{animation-delay:2s}@keyframes tw{0%,100%{opacity:.15}50%{opacity:.8}}
+.art .sway2{transform-origin:180px 30px;animation:sw2 2.8s ease-in-out infinite alternate}@keyframes sw2{from{transform:rotate(-7deg)}to{transform:rotate(7deg)}}
+.art .spin{animation:spin 24s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+.art.hitfx .foe-eyes{animation:hitfx .3s}@keyframes hitfx{0%{transform:translateX(0);opacity:1}25%{transform:translateX(-6px);opacity:.3}50%{transform:translateX(5px)}100%{transform:translateX(0);opacity:1}}
+#stage.hurtfx{animation:hurtfx .4s}@keyframes hurtfx{0%{box-shadow:0 0 0 2px rgba(214,90,90,.7),0 6px 24px rgba(0,0,0,.45)}100%{box-shadow:0 6px 24px rgba(0,0,0,.45)}}
+@media (prefers-reduced-motion:reduce){.art *{animation:none !important}}
+.art.img{position:relative;aspect-ratio:16/9;overflow:hidden;background:#0c0c0e;line-height:0}
+.art.img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.art.img .base{animation:kb 30s ease-in-out infinite alternate;transform-origin:50% 45%}
+@keyframes kb{from{transform:scale(1)}to{transform:scale(1.045)}}
+.art.img .hl{mix-blend-mode:screen;transform-origin:50% 45%;pointer-events:none}
+.art.img .hl.c-o{filter:grayscale(1) contrast(3) brightness(.9) sepia(1) saturate(7) hue-rotate(-12deg)}
+.art.img .hl.c-r{filter:grayscale(1) contrast(3.5) brightness(.9) sepia(1) saturate(9) hue-rotate(-38deg)}
+.art.img .hl.c-y{filter:grayscale(1) contrast(3.5) brightness(.9) sepia(1) saturate(5) hue-rotate(8deg)}
+.art.img .hl.c-b{filter:grayscale(1) contrast(3.5) brightness(.9) sepia(1) saturate(4) hue-rotate(175deg)}
+.art.img .hl.c-v{filter:grayscale(1) contrast(3.5) brightness(.9) sepia(1) saturate(5) hue-rotate(225deg)}
+.art.img .hl.c-g{filter:grayscale(1) contrast(3.5) brightness(.9) sepia(1) saturate(6) hue-rotate(55deg)}
+.art.img .hl.c-p{filter:grayscale(1) contrast(2.5) brightness(.85) sepia(.4)}
+.art.img .a-fl{animation:kb 30s ease-in-out infinite alternate,fl 2.3s ease-in-out infinite}
+.art.img .pool{position:absolute;inset:0;mix-blend-mode:screen;pointer-events:none;animation:kb 30s ease-in-out infinite alternate,fl2b 1.7s ease-in-out infinite}
+.art.img .a-fl2{animation:kb 30s ease-in-out infinite alternate,fl2 3.2s ease-in-out infinite alternate}
+.art.img .a-pulse{animation:kb 30s ease-in-out infinite alternate,pl 4.5s ease-in-out infinite alternate}
+.art.img .a-slow{animation:kb 30s ease-in-out infinite alternate,pl 9s ease-in-out infinite alternate}
+.art.img .a-eye{animation:kb 30s ease-in-out infinite alternate,eye 5.5s ease-in-out infinite}
+@keyframes fl{0%{opacity:.8}11%{opacity:.92}23%{opacity:.7}37%{opacity:.97}52%{opacity:.78}64%{opacity:.88}79%{opacity:.66}90%{opacity:.95}100%{opacity:.8}}
+@keyframes fl2b{0%{opacity:.75}30%{opacity:1}45%{opacity:.6}70%{opacity:.95}100%{opacity:.75}}
+@keyframes fl2{from{opacity:.45}to{opacity:.95}}
+@keyframes pl{from{opacity:.1}to{opacity:.8}}
+@keyframes eye{0%,100%{opacity:.75}45%{opacity:1}48%{opacity:.05}52%{opacity:1}75%{opacity:.6}}
+.art.img.elite{box-shadow:inset 0 0 0 1px rgba(214,70,70,.5)}
+.art.img.elite .edge{box-shadow:inset 0 0 40px 4px rgba(150,20,20,.35),inset 0 0 30px 10px #16161b;animation:el 2.4s ease-in-out infinite alternate}
+@keyframes el{from{opacity:.6}to{opacity:1}}
+.art.img.boss .edge{box-shadow:inset 0 0 60px 14px rgba(0,0,0,.85)}
+.art.img .pt{position:absolute;pointer-events:none;border-radius:50%;opacity:0}
+.art.img .pt.embers{width:3px;height:3px;background:#ffb25a;box-shadow:0 0 5px #ff7a20;animation:emb 2.8s linear infinite}
+@keyframes emb{0%{transform:translate(0,0);opacity:0}10%{opacity:1}100%{transform:translate(18px,-120px);opacity:0}}
+.art.img .pt.snow{width:3px;height:3px;background:#e8f0ff;animation:snw 7s linear infinite}
+@keyframes snw{0%{transform:translate(0,0);opacity:0}10%{opacity:.85}100%{transform:translate(-30px,260px);opacity:0}}
+.art.img .pt.dust{width:2px;height:2px;background:#d8d2c4;animation:dst 9s ease-in-out infinite}
+@keyframes dst{0%{transform:translate(0,0);opacity:0}30%{opacity:.5}100%{transform:translate(26px,-22px);opacity:0}}
+.art.img .fog{position:absolute;left:10%;bottom:-10%;width:90%;height:45%;background:radial-gradient(ellipse,rgba(200,205,225,.22),transparent 70%);mix-blend-mode:screen;animation:fog 24s ease-in-out infinite alternate;pointer-events:none}
+.art.img .fog.f2{left:-20%;animation-duration:33s;animation-direction:alternate-reverse;opacity:.7}
+@keyframes fog{from{transform:translateX(-12%)}to{transform:translateX(14%)}}
+.noanim *,.noanim *::before,.noanim *::after{animation:none !important;transition:none !important}
+#cfgb{position:absolute;left:0;top:-3px;background:transparent;border:1px solid #3a3a42;color:var(--dim);font:inherit;font-size:.85rem;line-height:1;padding:4px 8px;border-radius:12px;cursor:pointer}
+.cfgrow{display:flex;align-items:center;gap:12px;margin:12px 0}.cfgrow span:first-child{width:70px}.cfgrow input{flex:1;accent-color:#b98bff}.cfgrow .small{width:44px;text-align:right}
+textarea.code{width:100%;box-sizing:border-box;height:84px;background:#111114;color:#cfcac0;border:1px solid #33333a;border-radius:6px;padding:8px;font:12px/1.35 monospace;word-break:break-all;resize:vertical}
+.filel{display:block;margin-top:8px;font-size:.85rem;color:#99958c}.filel input{display:block;margin-top:6px;color:#99958c;max-width:100%}
+.recap{border:1px solid #3a2a2a;border-radius:8px;padding:10px 12px;margin:12px 0;background:rgba(120,30,30,.08)}
+.rite{text-align:center}.rite p{text-align:left}
+.rbig{font-size:64px;line-height:1;margin:6px 0 2px;animation:rin 1.6s cubic-bezier(.2,.8,.2,1) both,rglow 3s ease-in-out 1.6s infinite alternate}
+.rname{font-size:22px;letter-spacing:.3em;text-transform:uppercase;margin-bottom:14px;animation:rfade 1.2s .6s both}
+@keyframes rin{0%{transform:scale(2.6);opacity:0;filter:blur(6px)}100%{transform:scale(1);opacity:1;filter:blur(0)}}
+@keyframes rglow{from{text-shadow:0 0 8px currentColor}to{text-shadow:0 0 26px currentColor,0 0 4px #fff}}
+@keyframes rfade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.oath{text-align:center !important;font-style:italic;font-size:18px;margin:16px 0}
+.runl{border:1px solid #3a3a44;border-radius:8px;padding:10px 12px;margin:12px 0;text-align:left}
+.rrow{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #26262c}.rrow .rs{font-size:26px;width:30px;text-align:center}.rrow.locked{opacity:.55}
+.rbadge{letter-spacing:.02em}
+.contract{margin-top:8px;opacity:.9}
+.art.img .eg{position:absolute;inset:0;mix-blend-mode:screen;pointer-events:none}
+.art.img .edge{position:absolute;inset:0;box-shadow:inset 0 0 36px 10px #16161b;pointer-events:none}
+.art.img.hitfx{animation:hitimg .32s}
+.art.img.hitfx .base{filter:brightness(1.8)}
+@keyframes hitimg{0%{transform:translateX(0)}25%{transform:translateX(-7px)}50%{transform:translateX(6px)}75%{transform:translateX(-3px)}100%{transform:translateX(0)}}
+.legend{font-size:.78rem;color:var(--dim);margin-top:6px}
+.foot{text-align:center;font-size:.72rem;color:#3d3b38;margin-top:30px}
+</style>
+</head>
+<body>
+<div id="app">
+<div class="top"><h1>R I S S</h1><button id="cfgb" onclick="openCfg()" aria-label="Einstellungen">⚙</button><button id="snd" onclick="sndToggle()">♪ Ton an</button></div>
+<div id="stats"></div>
+<div id="stage">
+<div id="scene"></div>
+<div id="actions"></div>
+</div>
+<div class="loghead" id="loghead" onclick="S.logOpen=!S.logOpen;render()">Verlauf <span id="logtog"></span></div><div id="mini"></div>
+<div id="log"></div>
+<div class="foot">Fortschritt wird in diesem Browser gespeichert.</div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+const R=Math.random, ri=(a,b)=>Math.floor(R()*(b-a+1))+a, pick=a=>a[Math.floor(R()*a.length)];
+const BAL={xpB:16,xpE:1.4,lh:3,laEvery:1,ia:.55,id:.25,ih:1.6,eh:1.042,ea:1.031,ed:.4,bb:3.6,bs:2.8};
+const SAVE='riss_meta_v1', RUNSAVE='riss_run_v1';
+
+/* ---------- Meta-Fortschritt ---------- */
+function defMeta(){return {essence:0,up:{},classes:['krieger'],best:0,runs:0,kills:0,bosses:0,intro:false,tut:false,lore:[],elites:0,vaults:0,maxLvl:0,legend:0,bounty:[],quests:[],gold:0,pack:{},cbest:{},uniq:[],vq:0,vqPend:null,weekDone:null,mats:{},troph:{},armory:[],take:[],uqLvl:{},beast:{},deaths:0,scars:[],scarOffer:null,_ts:0}}
+function loadMeta(){try{const s=localStorage.getItem(SAVE);if(s)return Object.assign(defMeta(),JSON.parse(s))}catch(e){}return defMeta()}
+function saveMeta(){meta._ts=Date.now();try{localStorage.setItem(SAVE,JSON.stringify(meta))}catch(e){}cloudSave()}
+let meta=loadMeta();
+const ul=id=>meta.up[id]||0;
+
+const UPG=[
+{id:'vit',name:'Vitalität',desc:'+10 max. LP',cost:l=>Math.round(15*Math.pow(1.22,l)),max:20},
+{id:'str',name:'Stärke',desc:'+3 Angriff',cost:l=>Math.round(18*Math.pow(1.24,l)),max:20},
+{id:'def',name:'Zähigkeit',desc:'+1 Verteidigung',cost:l=>Math.round(20*Math.pow(1.27,l)),max:15},
+{id:'crit',name:'Präzision',desc:'+2 % Krit-Chance',cost:l=>Math.round(35*Math.pow(1.35,l)),max:10},
+{id:'trank',name:'Alchemie',desc:'+1 Heiltrank zum Start',cost:l=>Math.round(40*Math.pow(2.2,l)),max:3},
+{id:'gier',name:'Gier',desc:'+15 % Gold',cost:l=>Math.round(15*Math.pow(1.25,l)),max:10},
+{id:'seele',name:'Seelenband',desc:'+10 % Seelensplitter',cost:l=>Math.round(35*Math.pow(1.3,l)),max:10},
+{id:'glueck',name:'Glück',desc:l=>`Beute bei Gegnern ${22+(l+1)*2} % · Selten oder besser ${Math.round(20+(l+1)*1.8)} %`,cost:l=>Math.round(25*Math.pow(1.28,l)),max:10},
+{id:'wahl',name:'Weitblick',desc:'+1 Auswahl beim Aufstieg',cost:l=>250,max:1},
+];
+const CLS={
+krieger:{name:'Krieger',hp:60,atk:6,def:2,crit:5,cost:0,desc:'Robust und standhaft',skill:{name:'Schildschlag',cd:3,desc:'150 % Schaden, betäubt 1 Runde'}},
+klinge:{name:'Klingentänzer',hp:48,atk:7,def:1,crit:25,cost:60,desc:'Schnell, tödliche Krits',skill:{name:'Wirbelklinge',cd:3,desc:'3 Hiebe à 85 %, jeder mit +25 % Krit-Chance'}},
+magier:{name:'Runenmagier',hp:40,atk:5,def:0,crit:5,cost:150,desc:'Zerbrechlich, aber verheerend',skill:{name:'Runenfeuer',cd:3,desc:'260 %, ignoriert Rüstung, verbrennt'}},
+blut:{name:'Blutritter',hp:55,atk:6,def:1,crit:8,cost:300,desc:'Lebt vom Blut seiner Feinde',skill:{name:'Blutpakt',cd:4,desc:'200 % Schaden, heilt um 50 % davon'}},
+};
+const RANKS=[[45,'Grundläufer'],[30,'Ankermeister'],[20,'Tiefengänger'],[12,'Pfadgänger'],[5,'Geselle'],[0,'Novize']];
+const RANG=[
+{n:'Novize',s:'◇',c:'#9a968c'},
+{n:'Geselle',s:'◈',c:'#c98f5c',f:5,un:'Ordensaufträge: Varga gibt dir vor jedem Abstieg einen Auftrag. Erfüllst du ihn, gibt es Seelensplitter.',
+ t:'Brakk liegt im Staub, und du stehst noch. Varga nimmt deine Hand und drückt sie auf den Ankerstein. Es zischt. Als du sie wegziehst, ist ein kleines Zeichen in deine Narbe gebrannt.',v:'„Ab heute bist du Geselle. Ab jetzt kriegst du Aufträge von mir. Und ich erwarte, dass du sie erledigst.“',o:'Ich steige hinab, und ich komme zurück.',l:'Die ersten Gesellen des Ordens waren Bergleute aus Aschwald. Sie haben den Riss nicht gesucht. Er hat sich unter ihren Füßen aufgetan.'},
+{n:'Pfadgänger',s:'◆',c:'#d4dde6',f:10,un:'Hilds Meisterarbeit: Hild schmiedet dir jetzt auch legendäre Ausrüstung.',
+ t:'Varga ruft Hild aus der Schmiede. Die Schmiedin legt dir einen Eisenring um das Handgelenk, noch warm vom Amboss.',v:'„Krag. Den haben schon ganz andere nicht geschafft“, sagt Varga. Hild grinst: „Pfadgänger kriegen von mir die gute Arbeit. Bring mir Kerne, dann mach ich dir was, wovon sie unten noch lange reden.“',o:'Ich finde den Weg, den andere nach mir gehen.',l:'Pfadgänger haben früher Seile gespannt und Zeichen in den Fels gekratzt. Viele davon sind noch da. Manche zeigen absichtlich in die falsche Richtung.'},
+{n:'Tiefengänger',s:'✦',c:'#6fb3ff',f:20,un:'Ordensschreine: Ab Etage 12 stößt du manchmal auf einen alten Schrein, der dich für den Rest des Abstiegs segnet.',
+ t:'Varga wartet allein am Stein auf dich. Sie hängt dir einen Anhänger aus Grabsilber um den Hals.',v:'„Der Knochenkönig war mal einer von uns“, sagt sie leise. „Er ist zu lange unten geblieben. Tiefer im Riss gibt es Schreine. Der Orden hat sie gebaut, als wir noch mehr waren. Sie erkennen das Zeichen auf deiner Hand.“',o:'Ich gehe tiefer, als es klug ist, und ich vergesse nicht, wer ich bin.',l:'Die Schreine stammen aus der zweiten Expedition. Jeder gehört einem Gefallenen. Wer an einem betet, hört manchmal einen Namen.'},
+{n:'Ankermeister',s:'✶',c:'#b98bff',f:30,un:'Ankersprung: Du kannst direkt auf Etage 11 einsteigen, mit Stufe 7 und Ausrüstung aus der Tiefe.',
+ t:'Das halbe Lager steht um den Stein, als du zurückkommst. Ignaroths Asche klebt noch an deiner Rüstung. Varga sagt kein Wort. Sie zieht ihr Messer und ritzt deinen Namen in den Ankerstein, direkt unter die Namen der ersten Expedition.',v:'„Ankermeister. Du darfst springen. An den Seilen vorbei, direkt bis zur Krypta. Die wenigsten überleben ihren ersten Sprung.“',o:'Ich bin der Anker. Wer fällt, fällt nicht tiefer als bis zu mir.',l:'Ankermeister durften früher Verschollene zurückholen. Man sagt, der Stein hört auf sie.'},
+{n:'Grundläufer',s:'✷',c:'#ff9d4d',f:50,un:'Vargas Klinge: Varga gibt dir ihr eigenes Schwert. Es liegt in der Waffenkammer.',
+ t:'Im Lager redet niemand. Varga sitzt am Feuer und hält etwas Langes auf den Knien, eingewickelt in altes Leder.',v:'„Ich war am Grund. Vor dreißig Jahren, mit Kaelen und den anderen. Ich bin als Einzige zurückgekommen, und dieses Schwert hab ich danach nie wieder angefasst.“ Sie reicht es dir. „Jetzt bist du dran.“',o:'Ich habe den Grund gesehen, und ich trage ihn mit mir.',l:'Vor dir gab es nur sieben Grundläufer. Ihre Namen stehen nicht auf dem Stein. Sie stehen in ihm.'}];
+const TRIALB=['Brakk, der Grubenoger','Goblinhäuptling Krag','Der Knochenkönig','Ignaroth, Herr der Glut','Das Namenlose'];
+const rankOf=b=>{let n=RANG[0].n;for(const x of RANG)if(x.f&&b>=x.f)n=x.n;return n};
+const myRank=()=>RANG[meta.rank||0];
+const rankBadge=(i=meta.rank||0)=>`<b class="rbadge" style="color:${RANG[i].c}">${RANG[i].s} ${RANG[i].n}</b>`;
+function rankInit(){if(meta.rank==null){const o=[[45,5],[30,4],[20,3],[12,2],[5,1],[0,0]].find(x=>(meta.best||0)>=x[0]);meta.rank=o[1];saveMeta()}}
+const VRANK=['','„Na, Geselle. Hast du deinen Auftrag gelesen?“','„Hild redet nur noch von dir. Bring ihr endlich Kerne, sonst hört sie nicht auf.“','„Wenn du einen Schrein findest, sag einen Namen. Egal welchen.“','„Die Neuen gucken dich an, als wärst du schon tot. Nimm es als Kompliment.“','„Grundläufer. Ich hätte nicht gedacht, dass ich das noch mal zu jemandem sage.“'];
+const CON={
+tief:{t:n=>`Erreiche Etage ${n}`,n:()=>Math.max(4,Math.round(meta.best*.75)),r:n=>10+n*2,ok:c=>P.floor>=c.n},
+kills:{t:n=>`Besiege ${n} Gegner`,n:()=>10+Math.round(meta.best/2),r:n=>8+n,ok:c=>P.kills>=c.n},
+elite:{t:n=>`Besiege ${n} Elites`,n:()=>2+Math.floor(meta.best/15),r:n=>14*n,ok:c=>(P.eliteK||0)>=c.n},
+still:{t:n=>`Erreiche Etage ${n}, ohne am Feuer zu rasten`,n:()=>Math.max(4,Math.round(meta.best*.5)),r:n=>12+n*2,ok:c=>P.floor>=c.n&&!P.rests},
+gold:{t:n=>`Trag ${n} Gold auf einmal bei dir`,n:()=>60+meta.best*6,r:n=>15+Math.round(n/12),ok:c=>P.gold>=c.n}};
+function contractTick(){const c=P&&P.contract;if(!c||c.done||P.tut)return;if(CON[c.id].ok(c)){c.done=true;meta.essence+=c.r;saveMeta();sys(`Ordensauftrag erfüllt: ${CON[c.id].t(c.n)}. +${c.r} ✧`)}}
+function roomBquest(){room('Eine Wand, von oben bis unten voller Striche. Immer fünf, quer durchgestrichen. Neben jeder Reihe ist ein Name in den Stein gekratzt. Einige kennst du. Aus Brenns Buch.',()=>[{l:'Die Namen abschreiben',fn:()=>{P.bqFound=true;log('Ganz unten steht noch ein Name. Deiner. Daneben ist noch kein Strich.','sys');next()}}],'bquest')}
+function roomSchrein(){room('Ein Schrein aus schwarzem Stein, halb unter Geröll begraben. Auf dem Sockel das Zeichen des Ordens. Als du näher kommst, glimmt das Zeichen auf deiner Hand.',()=>[
+{l:'Segen der Klinge',sub:`+${trainV()*3} Angriff für diesen Abstieg`,fn:()=>{P.bonus.atk+=trainV()*3;log('Der Stein wird warm unter deiner Hand. Deine Waffe fühlt sich plötzlich leichter an.','good');next()}},
+{l:'Segen des Ankers',sub:'Volle LP und +2 Heiltränke',fn:()=>{heal(maxHp());P.potions+=2;log('Eine Ruhe kommt über dich, wie oben am Stein.','good');next()}},
+{l:'Segen der Gefallenen',sub:'+1 Schlüssel und ein Beutel Gold',fn:()=>{P.keys++;const g=goldAmt(4);P.gold+=g;log(`Unter dem Sockel liegt ein Beutel. Jemand hat ihn für dich dagelassen. +${g} Gold, +1 Schlüssel`,'goldt');next()}}],'schrein')}
+
+/* ---------- Welt ---------- */
+const AREAS=[
+{name:'Feuchte Höhlen',mobs:['Goblin','Riesenratte','Schleim','Kobold','Höhlenfledermaus'],boss:'Goblinhäuptling Krag',intro:'Wasser tropft von der Decke. Irgendwo kichert etwas.'},
+{name:'Vergessene Krypta',mobs:['Ghul','Skelettkrieger','Grabwächter','Banshee','Knochenhund'],boss:'Der Knochenkönig',intro:'Steinsärge säumen die Wände. Einige sind offen.'},
+{name:'Glutschlund',mobs:['Feuerimp','Lavagolem','Salamander','Höllenhund','Aschenkultist'],boss:'Ignaroth, Herr der Glut',intro:'Die Luft flimmert. Der Boden ist warm wie Haut.'},
+{name:'Frostgruft',mobs:['Eiswolf','Frostriese','Gletscherwyrm','Eishexe','Reifgeist'],boss:'Hrimfang der Ewige',intro:'Dein Atem gefriert. In den Eiswänden starren Gesichter.'},
+{name:'Der Abgrund',mobs:['Leerenwandler','Abgrundritter','Seelenfresser','Gesichtsloser','Sternenfresser'],boss:'Das Namenlose',intro:'Es gibt keine Wände mehr. Nur Dunkelheit, die zurückblickt.'},
+];
+const GEAR={Goblin:{w:['dolch','saebel'],a:['leder']},Riesenratte:{w:['dolch'],a:['leder']},Schleim:{w:['schwert','speer'],a:['kette']},Kobold:{w:['dolch','axt'],a:['leder','mantel']},Höhlenfledermaus:{w:['dolch'],a:['mantel']},
+Ghul:{w:['sense','axt'],a:['leder']},Skelettkrieger:{w:['schwert','speer'],a:['kette','platte']},Grabwächter:{w:['hammer','schwert'],a:['platte']},Banshee:{w:['sense'],a:['robe','mantel']},Knochenhund:{w:['dolch'],a:['leder']},
+Feuerimp:{w:['dolch'],a:['robe']},Lavagolem:{w:['hammer'],a:['platte']},Salamander:{w:['speer'],a:['leder']},Höllenhund:{w:['axt'],a:['leder']},Aschenkultist:{w:['dolch','sense'],a:['robe']},
+Eiswolf:{w:['dolch','saebel'],a:['leder']},Frostriese:{w:['hammer','axt'],a:['platte']},Gletscherwyrm:{w:['speer'],a:['kette']},Eishexe:{w:['sense'],a:['robe']},Reifgeist:{w:['saebel'],a:['mantel']},
+Leerenwandler:{w:['saebel','dolch'],a:['mantel']},Abgrundritter:{w:['schwert','hammer'],a:['platte']},Seelenfresser:{w:['sense'],a:['robe']},Gesichtsloser:{w:['dolch'],a:['mantel']},Sternenfresser:{w:['speer'],a:['kette']},
+'Goblinhäuptling Krag':{w:['axt'],a:['leder','kette']},'Der Knochenkönig':{w:['schwert'],a:['platte']},'Ignaroth, Herr der Glut':{w:['hammer'],a:['robe']},'Hrimfang der Ewige':{w:['speer'],a:['platte']},'Das Namenlose':{w:['sense'],a:['mantel']},
+'Rachsüchtiger Geist':{w:['schwert','sense'],a:['mantel']}};
+const BGEAR={grimmzahn:{w:['dolch'],a:['leder']},mutter:{w:['schwert','speer'],a:['kette']},aldric:{w:['schwert'],a:['platte']},weinende:{w:['sense'],a:['robe','mantel']},ossa:{w:['dolch','sense'],a:['robe']},schlacke:{w:['hammer'],a:['platte']},weissfell:{w:['saebel','dolch'],a:['leder']},ylva:{w:['sense'],a:['robe']},zaehlende:{w:['dolch','saebel'],a:['mantel']},kaelen:{w:['schwert','axt'],a:['kette','platte']}};
+const TW=[{n:'Brakk, der Grubenoger',mechs:['heavy'],g:{w:['hammer'],a:['leder']}},{n:'Morvane, die Grabhüterin',mechs:['shield','heavy'],g:{w:['schwert'],a:['platte']}},{n:'Die Aschenbrut',mechs:['breath','heavy'],g:{w:['axt'],a:['robe']}},{n:'Skadi, die Eiswächterin',mechs:['freeze','heavy'],g:{w:['speer'],a:['kette']}},{n:'Der Leerenhüter',mechs:['drain','shield'],g:{w:['sense'],a:['mantel']}}];
+TW.forEach(t=>GEAR[t.n]=t.g);
+const BOSSM=[{mechs:['warcry','heavy']},{mechs:['heavy','shield'],traits:{regen:.03}},{mechs:['breath','heavy'],traits:{enrage:1}},{mechs:['freeze','heavy','freeze']},{mechs:['mirror','drain','heavy']}];
+const TELE={heavy:'Holt zu einem gewaltigen Schlag aus!',shield:'Hebt langsam einen Schild.',breath:'Es glüht in der Kehle. Gleich kommt Feuer.',freeze:'Die Luft wird eisig.',drain:'Die Dunkelheit zieht an dir.',warcry:'Holt Luft für einen Schrei.',mirror:'Die Haut wird glatt wie ein Spiegel.'};
+const UNIQ={
+grimmzahn:{n:'Grimmzahns Kiefer',slot:'w',type:'dolch',d:'Jeder Krit lässt den Gegner bluten'},
+mutter:{n:'Schleimhaut-Kettenhemd',slot:'a',type:'kette',d:'Heilt dich im Kampf jede Runde um 4 % LP'},
+aldric:{n:'Aldrics Wachpanzer',slot:'a',type:'platte',d:'Der erste Treffer in jedem Kampf prallt ab'},
+weinende:{n:'Robe der Weinenden',slot:'a',type:'robe',d:'Deine Fähigkeit vergiftet den Gegner'},
+ossa:{n:'Ossas Aschensense',slot:'w',type:'sense',d:'25 % Chance, dass der Gegner brennt'},
+schlacke:{n:'Schlackenherz',slot:'w',type:'hammer',d:'+20 % Chance auf Betäubung'},
+weissfell:{n:'Weißfellmantel',slot:'a',type:'mantel',d:'+10 % Ausweichen, nach jedem Ausweichen schlägst du zurück'},
+ylva:{n:'Ylvas Eisdorn',slot:'w',type:'speer',d:'25 % Chance, den Gegner zu unterkühlen: Er trifft schwächer'},
+zaehlende:{n:'Der fünfte Schnitt',slot:'w',type:'dolch',d:'Jeder fünfte Treffer macht dreifachen Schaden'},
+kaelen:{n:'Kaelens Klinge',slot:'w',type:'schwert',d:'Je weniger LP du hast, desto härter schlägst du'}};
+const hasU=id=>(P.weapon&&P.weapon.uq===id)||(P.armor&&P.armor.uq===id);
+function makeUnique(id,ff){const U=UNIQ[id],f=ff||Math.max(5,P.floor),m=2.7*(1+.15*((meta.uqLvl||{})[id]||0));
+if(U.slot==='w'){const T=WT[U.type];return{slot:'w',type:U.type,r:3,uq:id,name:U.n,atk:Math.round((2+f*BAL.ia)*m*T.m),crit:6,ls:4}}
+const T=AT[U.type];return{slot:'a',type:U.type,r:3,uq:id,name:U.n,def:Math.round((1+f*BAL.id)*m*T.dm),hp:Math.round((5+f*BAL.ih)*m*T.hm)+12,dodge:id==='weissfell'?10:0}}
+const gearOf=e=>(e.bounty&&BGEAR[e.bounty])||GEAR[e.base]||null;
+const RMODS={ruhig:{n:'Ruhige Tiefe',d:'Keine Besonderheiten'},blutmond:{n:'Blutmond',d:'Gegner treffen 20 % härter · +40 % Splitter',dmg:1.2,ess:1.4},goldader:{n:'Goldader',d:'+50 % Gold · Händler 20 % teurer',gold:1.5,price:1.2},unruhe:{n:'Unruhige Tiefe',d:'Doppelt so viele Elites · mehr Schlüssel',elite:2,key:1.5},nebel:{n:'Dichter Nebel',d:'Gegner weichen öfter aus · +30 % EP',evade:.1,xp:1.3},ergiebig:{n:'Ergiebige Gänge',d:'Mehr Beute · Gegner haben 15 % mehr LP',luck:3,hp:1.15}};
+const rm=(k,d)=>{const m=P&&RMODS[P.mod];return m&&m[k]!=null?m[k]:d};
+const VQ=[
+{t:'Vargas Bitte',goal:'Finde Kaelens Abzeichen in der Vergessenen Krypta (Etage 11–19)',lo:11,hi:19,find:'Unter einem eingestürzten Sarg liegt ein Ordensabzeichen. Eingeritzt: ein K und eine Zahl. Die Nummer 7.',item:'Kaelens Abzeichen'},
+{t:'Das Tagebuch',goal:'Finde Kaelens Tagebuch im Glutschlund (Etage 21–29)',lo:21,hi:29,find:'Zwischen verkohlten Knochen liegt ein Lederbuch. Die Seiten sind angesengt, aber lesbar. Auf der ersten steht: „Für V.“',item:'Kaelens Tagebuch'},
+{t:'Der Siebte',goal:'Finde Kaelen im Abgrund und bring es zu Ende',bounty:'kaelen'}];
+const QSTORY={
+bq0:['Brenn winkt dich in sein Zelt. Das hat er noch nie gemacht. Auf dem Tisch liegt sein dickes Buch, aufgeschlagen.\n„Setz dich. Und fass nichts an.“','„Da drin steht jeder, der runtergegangen ist. Seit der ersten Expedition. Wer zurückkommt, kriegt einen Haken. Wer nicht, einen Strich.“\nEr blättert. Neben vielen Namen stehen Striche. Nicht einer. Ganze Reihen.','„Die Striche mach ich nicht.“ Er sieht dich nicht an. „Die sind morgens einfach da. Seit dreißig Jahren. Jeden Morgen ein paar mehr.“','„Die Alten erzählen, in der Krypta gibt es eine Wand voller Striche. Ich hab das immer für Geschwätz gehalten. Wenn du da unten bist, schau sie dir an. Schreib ab, was da steht. Und sag Varga nichts.“\n+Neuer Auftrag: Brenns Buch'],
+bq1:['Brenn legt deine Abschrift neben sein Buch. Er fährt mit dem Finger die Namen entlang, Zeile für Zeile. Dann sitzt er lange still da.','„Gleich. Jeder Name, jeder Strich. Bis auf den letzten.“ Er tippt auf deinen Namen. „Den hab ich noch nicht.“','„Ich muss dir was sagen. Bei der ersten Expedition waren sie nicht zu siebt. Ich war der Achte. Am Morgen stand ich am Seil und konnte nicht. Die Beine haben einfach nicht mitgemacht.“','„In der Nacht danach hab ich am Stein eine Stimme gehört. Ganz ruhig. Sie hat gesagt: Einer muss ja zählen. Seitdem zähle ich. Und der da unten zählt mit.“','„Varga nennt ihn den Zählenden. Wenn du ihm je begegnest, mach dem ein Ende. Dann hab ich vielleicht endlich Ruhe.“\n+20 Seelensplitter · Neuer Auftrag: Der Zählende'],
+bq2:['Als du ins Lager kommst, steht Brenn schon vor seinem Zelt. Er hat das Buch dabei.\n„Heute Morgen waren keine neuen Striche da. Zum ersten Mal seit dreißig Jahren.“','Er schlägt die letzte Seite auf. Dein Name steht noch da, aber der Platz daneben ist leer. Die alten Striche sind blass geworden, als hätte jemand mit dem Daumen drübergewischt.','„Ich zähl trotzdem weiter. Aber nur noch die, die zurückkommen.“ Er klappt das Buch zu. „Und wer mir den Schlaf zurückgibt, zahlt bei mir weniger.“\n+80 Seelensplitter · Brenns Vorräte kosten dich ab jetzt 20 % weniger'],
+narbe:['Varga sieht dir auf die Hand, als du am Stein aufwachst. Die Narbe ist größer geworden. Dunkle Adern ziehen sich bis zum Handgelenk.\n„Komm mit. Zeit, dass du die ganze Geschichte hörst.“','„Wir waren sieben. Keiner von uns wusste, was wir da unten eigentlich suchen. Auf der zwölften Etage ist der Gang über mir eingestürzt. Mein Arm war Brei. Ich hab mich in eine Halle geschleppt und mich an einen schwarzen Stein gelehnt. Da bin ich verblutet.“','„Am nächsten Morgen bin ich aufgewacht. Neben dem Stein. Die Wunde war zu, der Arm weg. Und auf meiner Handfläche war das hier.“\nSie hält dir ihre Hand hin. Die Narbe darauf ist so schwarz, dass sie fast glänzt.','„Die anderen haben nicht lange überlegt. Wir hatten kein Essen mehr und keinen sicheren Weg nach oben. Also haben sich alle sechs die Hand aufgeschnitten und auf den Stein gedrückt. Lieber an einen Stein gebunden als tot.“','„Wer danach starb, wachte wieder beim Stein auf – unten. Also mussten wir ihn mitnehmen. Drei Wochen haben wir ihn hochgezogen. Am Ende kam ich als Einzige mit ihm oben an. Die anderen … der Stein zieht. Nach unten. Du merkst es auch, oder?“','„Die Narbe wächst mit jedem Tod. Irgendwann nimmt sie dir was und gibt dir was anderes dafür. Mir hat sie den Schlaf genommen.“\nSie lacht kurz. „Wähl gut.“'],
+vq0:['Varga setzt sich zu dir ans Feuer. Das macht sie sonst nie.\n„Ich muss dich um was bitten.“','„Bei der ersten Expedition waren wir zu siebt. Ich bin zurückgekommen. Kaelen nicht. Er war die Nummer sieben.“','„Er ist irgendwo in der Krypta verschwunden. Wenn du da unten sein Abzeichen findest … bring es mir. Bitte.“\n+Neuer Auftrag: Vargas Bitte'],
+vq1:['Du legst Varga das Abzeichen in die Hand. Sie dreht es lange hin und her.\n„Das ist seins.“','„Aber da ist kein Blut dran. Keine Kratzer. Als hätte er es einfach … abgelegt.“\nSie schluckt. „Er hat immer Tagebuch geschrieben. Wenn er weitergegangen ist, dann Richtung Glutschlund.“\n+30 Seelensplitter · Neuer Auftrag: Das Tagebuch'],
+vq2:['Varga liest im Tagebuch. Sehr lange. Irgendwann klappt sie es zu.','„Er schreibt, dass der Stein ihn ruft. Nicht nach oben. Nach unten. Dass er nicht mehr zurückwill.“\nSie sieht dich an. „Wenn er noch da unten ist, dann ist er nicht mehr er selbst. Und dann musst du ihn erlösen.“\n+50 Seelensplitter · Kaelen steht jetzt auf der Kopfgeldliste'],
+kaelen:['Du erzählst Varga von Kaelen. Von seiner Klinge, von seinem Blick am Ende.','Sie sagt lange nichts. Dann steht sie auf, geht zum Stein und legt das Abzeichen daneben.\n„Danke“, sagt sie. „Jetzt kann ich ihn von meiner Liste streichen.“','„Hier. Das hat er mir mal geschenkt, für Notfälle. Ich glaub, du brauchst es mehr als ich.“\n+Vargas Talisman: dauerhaft +10 % max. LP · +100 Seelensplitter']};
+function weekKey(){const d=new Date(),o=new Date(d.getFullYear(),0,1),w=Math.ceil(((d-o)/864e5+o.getDay()+1)/7);return d.getFullYear()+'-'+w}
+function weekly(){const k=weekKey(),h=[...k].reduce((a,c)=>a*31+c.charCodeAt(0)>>>0,7),mods=Object.keys(RMODS).filter(x=>x!=='ruhig');return{k,mod:mods[h%mods.length],goal:12+(h%3)*4,reward:80}}
+const MATS={m0:{n:'Rosteisen',area:0},m1:{n:'Grabsilber',area:1},m2:{n:'Glutstein',area:2},m3:{n:'Ewiges Eis',area:3,soul:1},m4:{n:'Leerenkristall',area:4,soul:1},kern:{n:'Wächterkern',soul:1}};
+const TROPH={grimmzahn:'Grimmzahns Zahn',mutter:'Schleimkern',aldric:'Aldrics Wappen',weinende:'Tränenperle',ossa:'Ossas Aschekrug',schlacke:'Schlackensplitter',weissfell:'Weißes Fell',ylva:'Eishexenauge',zaehlende:'Zählstein',kaelen:'Kaelens Ring'};
+const CURSES={blutzoll:{n:'Blutzoll',d:'Im Kampf verlierst du jede Runde 2 % LP'},armut:{n:'Fluch der Armut',d:'15 % weniger Gold'},zorn:{n:'Zorn der Tiefe',d:'Gegner treffen 15 % härter'},bruch:{n:'Brüchiges Glas',d:'Heiltränke heilen 30 % weniger'},unrast:{n:'Unrast',d:'Deine Fähigkeit lädt 1 Runde langsamer'}};
+const SCARS={kalt:{n:'Kalte Hand',pro:'+10 % Krit',con:'−10 max. LP'},schwer:{n:'Schwerer Atem',pro:'+15 % max. LP',con:'Heiltränke heilen 20 % weniger'},tief:{n:'Ruf der Tiefe',pro:'+25 % Seelensplitter',con:'Gegner treffen 8 % härter'},stumm:{n:'Stumme Narbe',pro:'Gegner können dir nicht mehr ausweichen',con:'−2 Verteidigung'},gier:{n:'Goldhunger',pro:'+30 % Gold',con:'Händler verlangen 15 % mehr'},blut:{n:'Blutnarbe',pro:'+6 % Lebensraub',con:'Lagerfeuer heilen nur halb so viel'},schatten:{n:'Schattennarbe',pro:'+8 % Ausweichen',con:'−10 % Angriff'},wach:{n:'Wachsamkeit',pro:'Der erste Treffer jedes Kampfes macht nur halben Schaden',con:'Deine Fähigkeit lädt 1 Runde langsamer'}};
+const SCART=[5,12,25,45,70];
+const COMPN=['Tamsin','Orrik','Lio','Mareike','Jorn','Edda','Bastian','Runa'];
+const BDESC={Goblin:'Feige und gierig. Allein harmlos, im Rudel lästig.',Riesenratte:'Frisst alles, auch Ankerträger, die zu lange liegen bleiben.',Schleim:'Verdaut langsam, was er verschluckt. Manchmal auch Waffen.',Kobold:'Stiehlt Glänzendes und baut Fallen daraus.',Höhlenfledermaus:'Blind, aber sie hört deinen Herzschlag.',
+Ghul:'War mal ein Ankerträger. Jetzt nur noch Hunger.',Skelettkrieger:'Steht noch Wache, für wen auch immer.',Grabwächter:'Bewacht Gräber, deren Namen keiner mehr kennt.',Banshee:'Ihr Schrei lässt die Hände zittern.',Knochenhund:'Hält sich an die Spur von Blut.',
+Feuerimp:'Klein, schnell, und er lacht beim Brennen.',Lavagolem:'Glühendes Gestein, das sich bewegt.',Salamander:'Lebt in der Lava und sticht durch Rüstungen.',Höllenhund:'Sein Atem riecht nach Schwefel.',Aschenkultist:'Betet zu dem, was am Grund wartet.',
+Eiswolf:'Jagt im Rudel und wartet, bis du müde wirst.',Frostriese:'Langsam, aber jeder Schlag bricht Knochen.',Gletscherwyrm:'Schlängelt sich durch das Eis wie durch Wasser.',Eishexe:'Sammelt Gefrorene.',Reifgeist:'Ein kalter Hauch, der zurückblieb.',
+Leerenwandler:'Wo er war, fehlt danach etwas.',Abgrundritter:'Trägt Rüstungen von Rittern, die es nie gab.',Seelenfresser:'Riecht die Splitter an dir.',Gesichtsloser:'Hat dein Gesicht, wenn du nicht hinsiehst.',Sternenfresser:'Woher er den Namen hat, weiß keiner.',
+'Brakk, der Grubenoger':'Torwächter. Ein Schlag von ihm reicht, wenn du nicht in Deckung gehst.','Morvane, die Grabhüterin':'Torwächterin. Verschanzt sich hinter ihrem Schild.','Die Aschenbrut':'Torwächter. Speit Feuer, das an dir haftet.','Skadi, die Eiswächterin':'Torwächterin. Ihr Hauch lässt deine Hände steif werden.','Der Leerenhüter':'Torwächter. Saugt dir das Leben aus.',
+'Goblinhäuptling Krag':'Gebietsboss. Brüllt sich in Rage.','Der Knochenkönig':'Gebietsboss. Setzt sich immer wieder zusammen.','Ignaroth, Herr der Glut':'Gebietsboss. Feuer und Raserei.','Hrimfang der Ewige':'Gebietsboss. Eis und Gewalt.','Das Namenlose':'Der Grund. Oder das, was davor wartet.'};
+const hasS=id=>(meta.scars||[]).includes(id);
+const hasC=id=>P&&['weapon','armor','helm','gloves','jewel'].some(k=>P[k]&&P[k].curse===id);
+const bb=base=>{const k=(meta.beast||{})[base]||0;return k>=75?.15:k>=30?.1:k>=10?.05:0};
+const QM=[{id:'pot',n:'Heiltrank',c:40,max:3,d:'+1 Trank zum Start'},{id:'fire',n:'Zunder',c:60,max:2,d:'+1 Zunder zum Start'},{id:'key',n:'Schlüssel',c:150,max:1,d:'+1 Schlüssel zum Start'},{id:'bell',n:'Händlerglocke',c:180,max:1,d:'Ruft unten einen Händler herbei'},{id:'weapon',n:'Gute Waffe',c:250,max:1,d:'Startet mit einer seltenen Waffe'}];
+const areaOf=f=>AREAS[Math.min(AREAS.length-1,Math.floor((Math.max(1,f)-1)/10))];
+const MODS=[{n:'Berserker',atk:1.3},{n:'Panzer',def:3},{n:'Riesen',hp:1.5},{n:'Blut',ls:.3},{n:'Gift',poison:1},{n:'Ur',hp:1.25,atk:1.15}];
+const RAR=[{n:'Gewöhnlich',c:'#bdb9ae',m:1},{n:'Selten',c:'#6fb3ff',m:1.35},{n:'Episch',c:'#b98bff',m:1.8},{n:'Legendär',c:'#ff9d4d',m:2.5}];
+const WT={
+schwert:{n:'Schwert',m:1,crit:5,d:'Ausgewogen, +5 % Krit'},
+dolch:{n:'Dolch',m:.75,crit:15,d:'Wenig Schaden, aber +15 % Krit'},
+axt:{n:'Axt',m:1.15,bleed:25,d:'25 % Chance auf Blutung (3 Runden)'},
+speer:{n:'Speer',m:.95,pierce:50,d:'Ignoriert die Hälfte der gegnerischen Rüstung'},
+hammer:{n:'Kriegshammer',m:1.3,stun:15,crit:-5,d:'Sehr wuchtig, 15 % Betäubung, −5 % Krit'},
+sense:{n:'Sense',m:1,ls:8,d:'8 % Lebensraub'},
+saebel:{n:'Säbel',m:.85,dbl:25,d:'25 % Chance auf einen zweiten Hieb'}};
+const AT={
+leder:{n:'Lederrüstung',dm:.8,hm:.9,dodge:8,d:'Leicht, 8 % Ausweichen'},
+kette:{n:'Kettenhemd',dm:1,hm:1,d:'Ausgewogen'},
+platte:{n:'Plattenpanzer',dm:1.45,hm:1.2,crit:-5,d:'Schwer, −5 % Krit'},
+robe:{n:'Runenrobe',dm:.5,hm:.8,skill:30,d:'Fähigkeit macht 30 % mehr Schaden'},
+mantel:{n:'Schattenmantel',dm:.6,hm:.7,dodge:15,d:'15 % Ausweichen'}};
+const HT={kappe:{n:'Lederkappe',def:.4,hp:.6,d:'Leicht'},helm:{n:'Eisenhelm',def:.8,hp:.3,d:'Solider Schutz'},hoerner:{n:'Hörnerhelm',def:.5,hp:.3,atk:1,d:'Macht dich angriffslustiger'},kapuze:{n:'Kapuze',def:.2,hp:.3,dodge:4,crit:3,d:'Unauffällig'}};
+const GT={leder:{n:'Lederhandschuhe',crit:4,d:'Sichere Griffe'},panzer:{n:'Panzerhandschuhe',def:.5,stun:5,d:'Schwer und wuchtig'},krallen:{n:'Krallenhandschuhe',bleed:12,d:'Reißen Wunden auf'},dieb:{n:'Diebeshandschuhe',gold:20,d:'Finden mehr Gold'}};
+const JT={blut:{n:'Blutamulett',ls:4,d:'Trinkt mit'},glueck:{n:'Glücksring',luck:2,d:'Mehr und bessere Beute'},kraft:{n:'Kraftring',atk:1.2,d:'Mehr Kraft'},leben:{n:'Lebensamulett',hp:1,d:'Mehr Leben'},fokus:{n:'Fokusring',skill:20,d:'Stärkt deine Fähigkeit'}};
+const SK={w:'weapon',a:'armor',h:'helm',g:'gloves',j:'jewel'},SN={w:'Waffe',a:'Rüstung',h:'Helm',g:'Handschuhe',j:'Schmuck'},XT={h:HT,g:GT,j:JT};
+const wt=it=>WT[it&&it.type]||WT.schwert, at_=it=>AT[it&&it.type]||AT.kette;
+const gs=k=>{let v=0;for(const sl of ['helm','gloves','jewel']){const it=P&&P[sl];if(it&&it[k])v+=it[k]}return v};
+const SUF=['der Asche','des Wolfes','der Tiefe','des Wanderers','der Stille','des Sturms','aus Mondstahl','aus Drachenbein','der Gefallenen','des Abgrunds','der Morgenröte','aus Schwarzeisen'];
+
+/* ---------- Geschichte ---------- */
+const LORE={
+riss:{t:'Der Riss',x:'Unter Aschwald liegt ein Spalt, der tiefer geht, als jedes Seil reicht. Jede Nacht verschieben sich seine Gänge. Die Karten von gestern taugen heute nichts mehr. Trotzdem steigen jeden Morgen Leute hinab, weil unten Erz, Relikte und Dinge liegen, für die Händler aus dem ganzen Land bezahlen.'},
+stein:{t:'Der Ankerstein',x:'Ein schwarzer Stein, so groß wie ein Ochsenkarren, halb im Boden versunken. Die erste Expedition hat ihn auf der zwölften Etage gefunden und in drei Wochen nach oben geschleppt. Wer sein Blut darauf gibt, ist an ihn gebunden: Stirbt er im Riss, wacht er neben dem Stein wieder auf – so, wie er war, als sein Blut den Stein zum ersten Mal berührt hat. Nur was er dabeihatte, bleibt unten.'},
+expedition:{t:'Die erste Expedition',x:'Vor vierzig Jahren stiegen sieben Leute aus Aschwald in den Riss, um zu sehen, wie tief er geht. Auf der zwölften Etage stürzte ein Gang ein und zerquetschte Vargas Arm. Sie schleppte sich in eine Halle, lehnte sich an einen schwarzen Stein und verblutete dort. Am nächsten Morgen wachte sie neben ihm auf. Lebendig. Die anderen sechs schnitten sich daraufhin die Hände auf und drückten sie auf den Stein. Lieber an einen Stein gebunden als tot.'},
+narbe:{t:'Das Ankermal',x:'Wo der Stein dein Blut getrunken hat, schließt sich die Haut nie ganz. Es bleibt eine Narbe, dunkel wie der Stein selbst, mit feinen Adern, die bei Kälte ziehen. Jedes Mal, wenn er dich zurückholt, wächst sie ein Stück. Varga sagt, so merkt sich der Stein, wem du gehörst. Und irgendwann nimmt er sich etwas von dir und gibt dir etwas anderes dafür.'},
+orden:{t:'Der Orden',x:'Die Ankerträger nennen sich selbst den Orden, auch wenn es eher ein Haufen von Leuten ist, die nichts mehr zu verlieren hatten. Sie teilen sich Zelte, Feuer und Gerüchte. Ihr Erkennungszeichen ist die Narbe auf der Handfläche, wo das Blut den Stein berührt hat.'},
+varga:{t:'Varga',x:'Varga war bei der ersten Expedition dabei. Sie war die Erste, deren Blut der Stein getrunken hat – und weil ihr Arm da schon fehlte, hat er ihn ihr nie zurückgegeben. Von den sieben kam nur sie mit dem Stein oben an. Heute bringt sie Neulingen bei, wie man unten überlebt, und führt eine Liste mit Namen von Leuten, die der Stein irgendwann nicht mehr zurückgeholt hat.'},
+hild:{t:'Hild, die Schmiedin',x:'Hild war nie unten. Sie sagt, sie mag kein Feuer, das sie nicht selbst angezündet hat. Aber alles, was die Ankerträger heraufbringen, landet früher oder später auf ihrem Amboss. Rosteisen, Grabsilber, Glutstein. Und manchmal Dinge, über die sie lieber nicht spricht.'},
+splitter:{t:'Seelensplitter',x:'Wenn unten etwas stirbt, bleibt ein bisschen Licht übrig. Es hängt sich an die Seele, nicht an den Körper. Deshalb kommt es mit zurück, wenn der Stein dich holt. Varga weiß, wie man damit Leute stärker macht. Woher das Licht eigentlich kommt, fragt man sie besser nicht.'},
+haendler:{t:'Die Händler',x:'Unten gibt es Händler, und keiner im Orden weiß so genau, warum. Varga sagt, es sind Ankerträger, die irgendwann beschlossen haben, nicht mehr hochzukommen. Sie kaufen den Toten ihre Sachen ab und verkaufen sie an die Lebenden. Wenn der Riss sich nachts verschiebt, stehen ihre Karren trotzdem immer an irgendeinem Gang, als würde er sie in Ruhe lassen. Gold nehmen sie, weil der Orden ihnen dafür Essen und Lampenöl am Seil runterlässt.'},
+seile:{t:'Die Seile',x:'Der Orden hat bis zur zwanzigsten Etage Schächte gesichert und Seile gespannt. Weiter unten war noch keiner lange genug am Leben, um eins anzubringen. Wer tiefer geht, kommt nur auf einem Weg zurück: über den Stein.'},
+brenn2:{t:'Der Achte',x:'Die erste Expedition war zu acht. Einer blieb oben am Seil stehen. Seitdem führt er Buch über alle, die hinabsteigen, und etwas tief unten führt das gleiche Buch.'},
+brenn:{t:'Brenn, der Quartiermeister',x:'Brenn verwaltet die Ordenskasse. Jedes Goldstück, das jemand lebend nach oben bringt, geht durch seine Finger. Er packt dafür Vorräte für den nächsten Abstieg. Er selbst war nie unten. „Einer muss ja zählen“, sagt er.'},
+kaelen:{t:'Kaelen, die Nummer sieben',x:'Kaelen war der Siebte der ersten Expedition. Er hat als Erster gemerkt, dass der Stein nicht nach oben ruft, sondern nach unten. In seinem Tagebuch steht, dass er keine Angst hatte. Nur Heimweh, und er wusste nicht mehr, wonach.'},
+foerder:{t:'Der Förderkorb',x:'Auf Etage 30 hängt ein Förderkorb an Ketten, die in der Dunkelheit nach oben verschwinden. Älter als der Orden, älter als Aschwald. Niemand weiß, wer ihn gebaut hat. Aber die Ketten halten noch.'},
+a0:{t:'Feuchte Höhlen',x:'Hier oben trainieren die Neuen. Die Goblins bauen ihre Nester aus der Ausrüstung von Ankerträgern. Manche Teile davon sind älter als der Orden selbst.'},
+b1:{t:'Krags Hand',x:'Auf Krags Handfläche war eine Narbe. Genau dieselbe, die du seit deinem ersten Tag am Stein trägst.'},
+a1:{t:'Vergessene Krypta',x:'Irgendwer hat diese Gräber angelegt, lange bevor es Aschwald gab. Die Inschriften kann niemand lesen. In manchen Särgen liegen Leute mit einer Narbe auf der Hand.'},
+b2:{t:'Letzte Worte',x:'Der Knochenkönig hat im Zerfallen noch etwas geflüstert: „Irgendwann ruft der Stein nicht mehr.“'},
+a2:{t:'Glutschlund',x:'Die Aschenkultisten hier unten waren mal Ankerträger. Sie beten zu etwas, das noch tiefer liegt, und am Ende jedes Gebets sagen sie ein Wort, das keiner nachsprechen kann.'},
+b3:{t:'Ein bekannter Name',x:'In Ignaroths Asche lag ein Ordensabzeichen. Der Name darauf steht auf Vargas Liste der Vermissten.'},
+a3:{t:'Frostgruft',x:'Im Eis stecken Ankerträger. Sie sehen nicht aus, als wären sie erfroren. Eher, als hätten sie auf etwas gewartet.'},
+b4:{t:'Eine Warnung',x:'„Jedes Mal, wenn du zurückkommst, bleibt ein Stück von dir hier unten“, hat Hrimfang gesagt. „Irgendwann ist mehr von dir hier als oben.“'},
+a4:{t:'Der Abgrund',x:'Hier unten zieht die Narbe an deiner Hand. Nicht nach oben. Nach unten.'},
+ende:{t:'Das Namenlose',x:'Der Ankerstein war nie nur ein Stein. Er ist ein Stück vom Namenlosen. Wer an ihn gebunden ist, gehört am Ende ihm, und die Wächter da unten sind Ankerträger, von denen irgendwann mehr unten als oben war. Du hast das Namenlose zerschlagen. Ob dich der Stein trotzdem noch hält, wird sich zeigen.'},
+};
+const BOUNTIES=[
+{id:'grimmzahn',area:0,name:'Grimmzahn',t:'Rattenkönig der Höhlen',reward:25,hp:2.3,atk:1,traits:{double:1},story:'Eine Ratte, groß wie ein Kalb. Sie hat drei Neulinge erwischt, bevor die überhaupt ihre Fackeln anhatten. Beißt zweimal, bevor du einmal blinzelst.',after:'In ihrem Nest lagen drei Ordensabzeichen. Varga hat sie neben den Stein genagelt.'},
+{id:'mutter',area:0,name:'Mutter Schleim',t:'Die, die nicht kleiner wird',reward:25,hp:3,atk:.9,traits:{regen:.07},story:'Ein Schleimberg, der die halbe Höhle ausfüllt. Wunden schließen sich bei ihr fast sofort. Wer sie erledigen will, muss schneller zuschlagen, als sie heilt.',after:'In ihrem Inneren schwamm ein Schwert, das noch glänzte wie neu.'},
+{id:'aldric',area:1,name:'Ser Aldric',t:'Der Wächter, den keiner abgelöst hat',reward:40,hp:2.4,atk:1.1,def:5,traits:{enrage:1},story:'Ein Skelett in voller Rüstung, das immer noch seine Runden dreht. Seine Rüstung schluckt fast jeden Schlag. Und wenn er erst mal blutet, wird er richtig wütend.',after:'Auf seinem Schild stand ein Datum. Fünfzig Jahre bevor es Aschwald gab.'},
+{id:'weinende',area:1,name:'Die Weinende',t:'Banshee der Krypta',reward:40,hp:2,atk:1.1,traits:{evade:.3,poison:true},story:'Man hört sie lange, bevor man sie sieht. Sie ist kaum zu treffen, und wenn sie dich berührt, wird dein Blut schwarz.',after:'Als sie verstummt ist, war es in der Krypta zum ersten Mal richtig still.'},
+{id:'ossa',area:2,name:'Brandmeisterin Ossa',t:'Hohepriesterin der Asche',reward:60,hp:2.3,atk:1.1,traits:{ls:.4,double:1},story:'Sie war mal Ankerträgerin, sagt Varga. Jetzt predigt sie da unten von dem, was am Grund wartet. Jeder Treffer, den sie landet, macht sie wieder heil.',after:'Ihr letzter Satz: „Er zählt jeden von euch.“'},
+{id:'schlacke',area:2,name:'Schlackenherz',t:'Der Golem, der nicht fällt',reward:60,hp:3.2,atk:1.2,def:4,traits:{regen:.06},story:'Ein Golem aus glühendem Gestein. Er heilt sich aus der Lava unter seinen Füßen und schlägt zu wie ein Steinschlag.',after:'Als das Glühen ausging, blieb ein Herz aus schwarzem Glas übrig. Es war noch warm.'},
+{id:'weissfell',area:3,name:'Weißfell',t:'Leitwolf der Frostgruft',reward:80,hp:2.2,atk:1.05,traits:{evade:.3,double:1},story:'Schneller als alles andere da unten. Er weicht aus, beißt zweimal zu und ist weg, bevor du die Waffe hebst.',after:'Das Rudel hat sich zurückgezogen. Es wird sich einen neuen Leitwolf suchen.'},
+{id:'ylva',area:3,name:'Ylva',t:'Die Eishexe',reward:80,hp:2.5,atk:1.2,traits:{enrage:1,ls:.25},story:'Sie friert ihre Opfer lebendig ein und stellt sie auf wie eine Sammlung. Je mehr sie blutet, desto gefährlicher wird sie.',after:'In ihrer Sammlung war noch ein Platz frei. Darunter stand dein Name im Eis.'},
+{id:'zaehlende',area:4,name:'Der Zählende',t:'Niemand weiß, was er ist',reward:120,hp:2.6,atk:1.25,traits:{evade:.25,regen:.05},story:'Keiner, der ihn gesehen hat, kann ihn beschreiben. Nur dass er beim Kämpfen leise zählt. Er heilt sich, er weicht aus, er wartet.',after:'Er hat bis zu deiner Zahl gezählt. Dann hat er aufgehört.'},
+{id:'kaelen',area:4,name:'Kaelen',t:'Vargas alter Gefährte',reward:150,hp:2.8,atk:1.2,traits:{enrage:1,double:1},story:'Kaelen war bei der ersten Expedition dabei, zusammen mit Varga. Sie dachte, er wäre tot. Ganz stimmt das nicht.',after:'Als du Varga davon erzählst, sagt sie lange nichts. Dann nur: „Danke.“'},
+];
+const QUESTS=[
+{id:'f5',t:'Erreiche Etage 5',c:()=>meta.best>=5,r:15},{id:'f10',t:'Erreiche Etage 10',c:()=>meta.best>=10,r:30},
+{id:'f20',t:'Erreiche Etage 20',c:()=>meta.best>=20,r:60},{id:'f30',t:'Erreiche Etage 30',c:()=>meta.best>=30,r:100},{id:'f50',t:'Erreiche Etage 50',c:()=>meta.best>=50,r:200},
+{id:'k25',t:'Besiege 25 Gegner',c:()=>meta.kills>=25,r:15},{id:'k100',t:'Besiege 100 Gegner',c:()=>meta.kills>=100,r:40},{id:'k300',t:'Besiege 300 Gegner',c:()=>meta.kills>=300,r:100},
+{id:'e1',t:'Besiege einen Elite',c:()=>meta.elites>=1,r:15},{id:'e10',t:'Besiege 10 Elites',c:()=>meta.elites>=10,r:50},
+{id:'b1',t:'Kassiere ein Kopfgeld',c:()=>meta.bounty.length>=1,r:20},{id:'b5',t:'Kassiere 5 Kopfgelder',c:()=>meta.bounty.length>=5,r:60},{id:'b10',t:'Leere die Kopfgeldliste',c:()=>meta.bounty.length>=10,r:200},
+{id:'v1',t:'Öffne eine versiegelte Tür',c:()=>meta.vaults>=1,r:15},{id:'v10',t:'Öffne 10 versiegelte Türen',c:()=>meta.vaults>=10,r:50},
+{id:'l10',t:'Erreiche Stufe 10 in einem Run',c:()=>meta.maxLvl>=10,r:40},{id:'leg',t:'Finde einen legendären Gegenstand',c:()=>meta.legend>=1,r:30},
+{id:'u1',t:'Finde ein Unikat',c:()=>meta.uniq.length>=1,r:40},{id:'u5',t:'Finde 5 Unikate',c:()=>meta.uniq.length>=5,r:120},
+{id:'w1',t:'Schaffe eine Tiefe der Woche',c:()=>(meta.weeks||0)>=1,r:50},{id:'vq',t:'Bring Vargas Liste zu Ende',c:()=>meta.vq>=4,r:100},
+{id:'lift',t:'Fahr mit dem Förderkorb hoch',c:()=>!!meta.lifted,r:80},
+];
+function checkQuests(){for(const q of QUESTS)if(!meta.quests.includes(q.id)&&q.c()){meta.quests.push(q.id);meta.essence+=q.r;saveMeta();sys(`Auftrag erfüllt: ${q.t} · +${q.r} ✧`)}}
+const INTRO=[
+'Unter der Stadt Aschwald liegt der Riss. Keiner weiß, wie tief er geht. Jede Nacht verschieben sich seine Gänge, als würde da unten jemand umräumen.',
+'Wer hinabsteigt, findet Erz, alte Waffen und Dinge, für die Händler viel Geld bezahlen. Früher kam fast niemand zurück.\nDann fand die erste Expedition den Ankerstein.',
+'Wer sein Blut auf den Stein gibt, ist an ihn gebunden. Stirbt er unten, wacht er oben neben dem Stein wieder auf. Ohne Waffen, ohne Gold, ohne alles, was er dabeihatte. Aber lebendig.\nSeitdem gehen jeden Tag Leute runter. Man nennt sie Ankerträger.',
+'Du bist seit einer Woche in Aschwald. Kein Geld, keine Familie, nichts, was dich irgendwo hält.\nGenau solche Leute nimmt der Orden.',
+'Eine Frau mit nur einem Arm ritzt dir mit einem Messer die Hand auf und drückt sie auf den Stein. Er ist eiskalt. Es zieht in der Brust, als würde dir jemand einen Faden durchs Herz fädeln.\n„Ich bin Varga“, sagt sie. „So. Jetzt gehörst du dazu. Komm mit, ich zeig dir, wie man da unten nicht gleich am ersten Tag draufgeht.“'];
+const TUT_END=[
+'Varga wartet oben am Rand der Grube und hält dir die Hand hin.\n„Na also. Geht doch.“',
+'„Eins musst du wissen: Unten wirst du sterben. Nicht vielleicht, ganz sicher. Dann wachst du hier am Stein auf, und alles, was du dabeihattest, ist weg. Gold, Waffen, alles.“',
+'„Was bleibt, sind die Splitter. Die hängen an dir, nicht an deinem Rucksack. Bring sie mir, dann bring ich dir was bei.“\nSie drückt dir ein kleines Säckchen in die Hand. „Für den Anfang.“\n+20 Seelensplitter',
+'„Und noch was. Nach jedem Wächter gibt es einen Schacht nach oben. Wer da hochklettert, bekommt mehr Splitter. Wer weitergeht … tja. Das musst du selbst wissen.“',
+'„Ach ja: Schau ab und zu auf die Kopfgeldliste am Stein. Da hängen die Biester, die uns am meisten Ärger machen. Wer eins erledigt, kriegt von mir eine ordentliche Ladung Splitter.“'];
+const ENDING=[
+'Das Namenlose zerfällt. Kein Schrei, nur Stille.\nDann brennt die Narbe auf deiner Hand, heißer als je zuvor.',
+'Du verstehst plötzlich, woher der Stein kommt. Er ist ein Splitter von diesem Ding. Jeder, der daran gebunden ist, wird Stück für Stück hier heruntergezogen. Krag. Der Knochenkönig. Ignaroth. Hrimfang. Alles Ankerträger, die irgendwann nicht mehr hochkamen.',
+'Das Ziehen in deiner Brust lässt nicht nach. Es ist nur leiser geworden.',
+'Unter dir geht es weiter. Noch eine Ebene, und noch eine. Der Riss hat keinen Boden – und die Schatten da unten tragen alle dieselbe Narbe wie du.'];
+const VARGA=['„Iss was, bevor du runtergehst. Mit leerem Magen stirbt man schneller.“','„Der Riss hat sich heute Nacht wieder bewegt. Die Karten von gestern kannst du vergessen.“','„Splitter sind kein Spielgeld. Gib sie für was Vernünftiges aus.“','„Wenn einer ausholt, gehst du in Deckung. Wie oft soll ich das noch sagen?“','„Die anderen nennen dich schon Stammgast am Stein.“','„Mein Arm? Ist unten geblieben. Lange Geschichte.“','„Du siehst müde aus. Geh trotzdem.“','„Wenn du unten einen Händler triffst, frag nicht, wie er da hingekommen ist.“'];
+const DEATHV=['Du wachst nackt und frierend am Stein auf. Varga wirft dir eine Decke über. „Wieder da. Zieh dir was an.“','„Wie tief warst du? … Hm. Nicht schlecht.“','Varga stellt dir wortlos einen Becher Tee hin.','„Tut’s noch weh? Gut. Dann merkst du’s dir.“','„Schon wieder?“ Varga seufzt. „Na komm, steh auf.“'];
+const TUT_EN={1:{name:'Alter Goblin',base:'Goblin',hp:24,maxHp:24,atk:4,def:0,heavyEvery:3,xp:10,ess:0},3:{name:'Grubenwächter',base:'Goblinhäuptling Krag',hp:60,maxHp:60,atk:6,def:1,heavyEvery:3,mechs:null,xp:30,ess:0}};
+function unlock(id){if(!meta.lore.includes(id)){meta.lore.push(id);saveMeta();sys(`Neuer Chronik-Eintrag: „${LORE[id].t}“`)}}
+const STORIES={
+bq0:{p:()=>QSTORY.bq0,end:()=>[{l:'„Ich schau mir die Wand an.“',fn:()=>{meta.bq=1;saveMeta();S.screen='hub'}}]},
+bq1:{p:()=>QSTORY.bq1,end:()=>[{l:'Zurück ins Lager',fn:()=>{meta.bq=2;meta.bqPend=0;meta.essence+=20;unlock('brenn2');saveMeta();S.screen='hub'}}]},
+bq2:{p:()=>QSTORY.bq2,end:()=>[{l:'Zurück ins Lager',fn:()=>{meta.bq=3;meta.essence+=80;saveMeta();S.screen='hub'}}]},
+narbe:{p:()=>QSTORY.narbe,end:()=>[{l:'Die Narbe ansehen',fn:()=>{unlock('narbe');unlock('expedition');S.screen='scar'}}]},
+vq0:{p:()=>QSTORY.vq0,end:()=>[{l:'„Ich halt die Augen offen.“',fn:()=>{meta.vq=1;saveMeta();S.screen='hub'}}]},
+vq1:{p:()=>QSTORY.vq1,end:()=>[{l:'Zurück ins Lager',fn:()=>{meta.vq=2;meta.vqPend=null;meta.essence+=30;saveMeta();S.screen='hub'}}]},
+vq2:{p:()=>QSTORY.vq2,end:()=>[{l:'Zurück ins Lager',fn:()=>{meta.vq=3;meta.vqPend=null;meta.essence+=50;saveMeta();S.screen='hub'}}]},
+kaelen:{p:()=>QSTORY.kaelen,end:()=>[{l:'Zurück ins Lager',fn:()=>{meta.vq=4;meta.vqPend=null;meta.essence+=100;unlock('kaelen');saveMeta();S.screen='hub'}}]},
+intro:{p:()=>INTRO,end:()=>[{l:'Mit Varga üben',sub:'Tutorial, empfohlen',fn:()=>{introDone();startTutorial()}},{l:'Tutorial überspringen',fn:()=>{introDone();meta.tut=true;meta.essence+=20;unlock('splitter');saveMeta();S.screen='hub'}}]},
+replay:{p:()=>INTRO,end:()=>[{l:'Zurück ins Lager',fn:()=>S.screen='hub'}]},
+tutEnd:{p:()=>meta.tut?TUT_END.map(x=>x.replace('\nSie drückt dir ein kleines Säckchen in die Hand. „Für den Anfang.“\n+20 Seelensplitter','')):TUT_END,end:()=>[{l:'Zurück ins Lager',fn:()=>{if(!meta.tut)meta.essence+=20;meta.tut=true;unlock('splitter');saveMeta();clearRun();P=null;E=null;S.queue=[];S.vline=null;S.screen='hub'}}]},
+ending:{p:()=>ENDING,end:()=>[{l:'Weiter',fn:()=>{unlock('ende');next()}}]}};
+function introDone(){meta.intro=true;['riss','stein','orden','varga','expedition'].forEach(unlock);saveMeta()}
+function clearRun(){try{localStorage.removeItem(RUNSAVE)}catch(e){}}
+function storyPages(id){S.screen='story';S.story={id,i:0}}
+function startTutorial(){newRun('krieger');P.tut=true;S.queue=[];logs=[];
+log('Varga bringt dich zu einer Grube hinter dem Lager. „Ein Seitenarm vom Riss. Nicht tief. Da üben die Neuen.“');goDoors()}
+function tutHint(){if(!P||!P.tut)return'';let h='';const f=P.floor;
+if(S.screen==='doors')h=f===0?'Unten weißt du nie, was hinter der nächsten Ecke wartet. Ein Biest, eine Truhe, ein Händler. Geh einfach los.':f===1?'Der Goblin hatte einen Schlüssel dabei, gut. Heb den auf. Irgendwann stehst du vor einer versiegelten Tür, und dahinter liegt meistens das beste Zeug.':P.kindling>0?'Du hast Zunder dabei. Zünd dir hier vor dem Wächter ein <b>Lagerfeuer</b> an, dafür musst du nirgendwo hingehen. Zunder ist selten, also nicht verschwenden.':'Der Letzte hier unten ist ein ganzes Stück größer. Wenn er ausholt, gehst du in Deckung.';
+else if(S.screen==='combat'){const e=E,warn=e.heavyEvery&&(e.turn+1)%e.heavyEvery===0&&!e.stun;
+h=warn?'Pass auf, er holt aus! Geh in <b>Deckung</b>, sonst tut das gleich richtig weh.':e.turn===0&&P.cd===0?(f===1?'Keine Sorge, der ist alt und halb blind. <b>Hau einfach drauf.</b>':'Fang ruhig mit dem <b>Schildschlag</b> an. Dann ist er erst mal benommen.'):P.cd===0?'Dein <b>Schildschlag</b> ist wieder bereit. Damit haust du ihn kurz aus den Latschen, und er kann einmal nicht zurückschlagen.':P.hp<maxHp()*.45?'Du blutest ganz schön. Trink deinen <b>Heiltrank</b>, dafür hast du ihn.':'Der Schildschlag braucht jetzt ein bisschen. Schlag normal weiter und behalt ihn im Auge.'}
+else if(S.screen==='room')h=S.roomKey==='tresorTuer'?'Na bitte, da ist so eine Tür. Schließ auf.':S.roomKey==='tresorDone'?'Siehst du? Deshalb schleppen alle ihre Schlüssel mit. Die kriegst du meistens von Wächtern oder von den richtig fiesen Biestern.':S.roomKey==='rast'?'Setz dich ruhig hin. Oder üb noch ein bisschen, aber übertreib’s nicht, unten wartet noch einer.':'Hab dir da was hingelegt. Nimm’s mit.';
+else if(S.screen==='loot')h='Schau’s dir an. Wenn’s besser ist als dein Zeug, zieh’s an. Das alte Teil kommt in den Rucksack, das kannst du später beim Händler loswerden.';
+else if(S.screen==='perks')h='Merkst du das? Du wirst stärker. Such dir was aus. Aber denk dran: Das hält nur, bis du wieder oben bist.';
+return h?`<div class="hint"><b>Varga:</b> ${h}</div>`:''}
+
+/* ---------- Zustand ---------- */
+let S={screen:'hub',queue:[]}, P=null, E=null, lock=false, logs=[], resetArm=false;
+function log(t,c=''){logs.unshift({t,c});if(logs.length>40)logs.pop();try{sfxLog(t,c)}catch(e){}}
+const sys=t=>log(t,'sys');
+
+/* ---------- Spieler ---------- */
+function newRun(cid){const c=CLS[cid];
+P={cls:cid,lvl:1,xp:0,xpNext:BAL.xpB,gold:0,potions:1+ul('trank'),floor:0,
+baseHp:Math.round((c.hp+ul('vit')*10)*(meta.vq>=4?1.1:1)),baseAtk:c.atk+ul('str')*3,baseDef:c.def+ul('def'),baseCrit:c.crit+ul('crit')*2,
+bonus:{hp:0,atk:0,def:0,crit:0,ls:0,thorns:0,gold:0,luck:0,cdr:0,potion:0,rage:0,regen:0,exec:0},
+perks:[],bag:[],keys:0,kindling:0,bells:0,burn:0,frozen:0,mod:'ruhig',startBest:meta.best,weapon:null,armor:null,cd:0,ess:0,kills:0,bosses:0,revive:false,rageStacks:0,poison:0,defending:false};
+P.hp=maxHp()}
+const maxHp=()=>{let v=P.baseHp+P.bonus.hp+(P.armor?P.armor.hp:0)+gs('hp');if(hasS('kalt'))v-=10;if(hasS('schwer'))v=Math.round(v*1.15);return Math.max(1,v)};
+const atk=()=>{const v=P.baseAtk+P.bonus.atk+(P.weapon?P.weapon.atk:0)+P.rageStacks+gs('atk');return hasS('schatten')?Math.round(v*.9):v};
+const def=()=>Math.max(0,P.baseDef+P.bonus.def+(P.armor?P.armor.def:0)+gs('def')-(hasS('stumm')?2:0));
+const crit=()=>Math.max(0,Math.min(75,P.baseCrit+P.bonus.crit+(P.weapon?(P.weapon.crit||0)+(wt(P.weapon).crit||0):0)+(P.armor?at_(P.armor).crit||0:0)+gs('crit')+(hasS('kalt')?10:0)));
+const lsP=()=>P.bonus.ls+(P.weapon?(P.weapon.ls||0)+(wt(P.weapon).ls||0):0)+gs('ls')+(hasS('blut')?6:0);
+const dodge=()=>Math.min(60,(P.armor?(at_(P.armor).dodge||0)+(P.armor.dodge||0):0)+(P.bonus.dodge||0)+gs('dodge')+(hasS('schatten')?8:0));
+const wp=k=>(P.weapon?wt(P.weapon)[k]||0:0)+(k==='bleed'||k==='stun'?gs(k):0);
+function heal(n){const b=P.hp;P.hp=Math.min(maxHp(),P.hp+n);return P.hp-b}
+const goldAmt=m=>Math.round((ri(3,7)+P.floor*1.5)*m*rm('gold',1)*(hasS('gier')?1.3:1)*(hasC('armut')?.85:1)*(1+(ul('gier')*15+P.bonus.gold+gs('gold'))/100));
+function gainXp(x){P.xp+=x;while(P.xp>=P.xpNext){P.xp-=P.xpNext;P.lvl++;P.xpNext=Math.round(BAL.xpB*Math.pow(P.lvl,BAL.xpE));if(!P.tut&&P.lvl>meta.maxLvl){meta.maxLvl=P.lvl;saveMeta()}P.baseHp+=BAL.lh;if(P.lvl%BAL.laEvery===0)P.baseAtk+=1;heal(Math.round(maxHp()*.25));sys(`Stufe ${P.lvl} erreicht. Wähle eine Fähigkeit.`);S.queue.push({k:'perks',t:'Aufstieg – Stufe '+P.lvl})}}
+
+const gBonus=()=>ul('gier')*15+P.bonus.gold+gs('gold');
+const luckV=(x=0)=>ul('glueck')+P.bonus.luck+rm('luck',0)+gs('luck')+x;
+const dropPct=(x=0)=>Math.min(100,Math.round((.22+luckV(x)*.02)*100));
+const rarePct=(x=0)=>Math.min(100,Math.round(20+luckV(x)*1.8));
+const potHeal=(x=0)=>Math.round(maxHp()*.4*(1+(P.bonus.potion+x)/100)*(hasS('schwer')?.8:1)*(hasC('bruch')?.7:1));
+const cdNow=(x=0)=>Math.max(1,CLS[P.cls].skill.cd-P.bonus.cdr-x+(hasS('wach')?1:0)+(hasC('unrast')?1:0));
+const PR=[{n:'Gewöhnlich',m:1},{n:'Selten',m:1.5},{n:'Episch',m:2},{n:'Legendär',m:3}];
+const rnd=v=>Math.max(1,Math.round(v));
+const PERKS=[
+{id:'hp',n:'Eiserne Haut',d:'Mehr max. LP',f:m=>{const v=rnd(15*m);P.bonus.hp+=v;P.hp+=v},pv:m=>`Max. LP ${maxHp()} → ${maxHp()+rnd(15*m)}`,cur:()=>`Max. LP jetzt ${maxHp()}`},
+{id:'atk',n:'Klingenkunst',d:'Mehr Angriff',f:m=>P.bonus.atk+=rnd(3*m),pv:m=>`Angriff ${atk()} → ${atk()+rnd(3*m)}`,cur:()=>`Angriff jetzt ${atk()}`},
+{id:'def',n:'Panzerung',d:'Mehr Verteidigung',f:m=>P.bonus.def+=rnd(2*m),pv:m=>`Verteidigung ${def()} → ${def()+rnd(2*m)}`,cur:()=>`Verteidigung jetzt ${def()}`},
+{id:'crit',n:'Tödliche Präzision',d:'Höhere Chance auf Krits (doppelter Schaden)',f:m=>P.bonus.crit+=rnd(6*m),pv:m=>`Krit-Chance ${crit()} % → ${Math.min(75,crit()+rnd(6*m))} %`,cur:()=>`Krit-Chance jetzt ${crit()} %`},
+{id:'ls',n:'Vampirismus',d:'Ein Teil deines Schadens heilt dich',f:m=>P.bonus.ls+=rnd(6*m),pv:m=>`Lebensraub ${lsP()} % → ${lsP()+rnd(6*m)} %`,cur:()=>`Lebensraub jetzt ${lsP()} %`},
+{id:'thorns',n:'Dornenrüstung',d:'Ein Teil des erlittenen Schadens geht an den Angreifer zurück',f:m=>P.bonus.thorns+=rnd(25*m),pv:m=>`Rückwurf ${P.bonus.thorns} % → ${P.bonus.thorns+rnd(25*m)} %`,cur:()=>`Rückwurf jetzt ${P.bonus.thorns} %`},
+{id:'gold',n:'Goldfinger',d:'Mehr Gold von Gegnern und Schätzen',f:m=>P.bonus.gold+=rnd(30*m),pv:m=>`Gold-Bonus +${gBonus()} % → +${gBonus()+rnd(30*m)} %`,cur:()=>`Gold-Bonus jetzt +${gBonus()} %`},
+{id:'luck',n:'Schatzsucher',d:'Gegner lassen öfter Ausrüstung fallen, und sie ist häufiger selten',f:m=>P.bonus.luck+=rnd(2*m),pv:m=>`Beute bei Gegnern ${dropPct(rnd(2*m))} % · Selten oder besser ${rarePct(rnd(2*m))} %`,cur:()=>`Beute bei Gegnern jetzt ${dropPct()} % · Selten oder besser ${rarePct()} %`},
+{id:'cdr',n:'Fokus',d:'Deine Fähigkeit lädt schneller',f:m=>P.bonus.cdr+=m>=2?2:1,max:2,pv:m=>`Abklingzeit ${cdNow()} → ${cdNow(m>=2?2:1)} Runden`,cur:()=>`Abklingzeit jetzt ${cdNow()} Runden`},
+{id:'potion',n:'Trankmeister',d:'Tränke heilen mehr, und du bekommst sofort welche dazu',f:m=>{P.bonus.potion+=rnd(50*m);P.potions+=rnd(m)},pv:m=>`Trank heilt ${potHeal()} → ${potHeal(rnd(50*m))} LP · +${rnd(m)} Heiltrank`,cur:()=>`Ein Trank heilt jetzt ${potHeal()} LP`},
+{id:'rage',n:'Blutrausch',d:'Jeder Sieg gibt Angriff bis zum Ende des Runs',f:m=>P.bonus.rage=rnd(m),max:1,pv:m=>`+${rnd(m)} Angriff pro Sieg`,cur:()=>`Bisher +${P.rageStacks} Angriff`},
+{id:'revive',n:'Zweiter Atem',d:'Einmal pro Run stehst du nach dem Tod wieder auf',f:m=>{P.revive=true;P.revivePct=Math.min(100,rnd(40*m))},max:1,pv:m=>`Wiederbelebung mit ${Math.min(100,rnd(40*m))} % LP`,cur:()=>P.revive?`Noch verfügbar (${P.revivePct||40} % LP)`:'Schon verbraucht'},
+{id:'regen',n:'Regeneration',d:'Heilt dich nach jedem Kampf',f:m=>P.bonus.regen+=rnd(6*m),pv:m=>`Heilung nach Kampf ${P.bonus.regen} % → ${P.bonus.regen+rnd(6*m)} % der max. LP`,cur:()=>`${P.bonus.regen} % der max. LP nach jedem Kampf`},
+{id:'exec',n:'Henker',d:'Mehr Schaden gegen angeschlagene Gegner (unter 30 % LP)',f:m=>P.bonus.exec+=rnd(50*m),pv:m=>`Bonus-Schaden ${P.bonus.exec} % → ${P.bonus.exec+rnd(50*m)} %`,cur:()=>`+${P.bonus.exec} % Schaden gegen angeschlagene Gegner`},
+{id:'berserk',n:'Berserkerblut',minR:2,max:1,d:'Viel mehr Schaden, solange du unter 50 % LP bist',f:m=>P.bonus.berserk=rnd(20*m),pv:m=>`+${rnd(20*m)} % Schaden unter halben LP`,cur:()=>`+${P.bonus.berserk||0} % Schaden unter halben LP`},
+{id:'reflex',n:'Reflexe',minR:2,d:'Du weichst öfter aus',f:m=>P.bonus.dodge=(P.bonus.dodge||0)+rnd(5*m),pv:m=>`Ausweichen ${dodge()} % → ${dodge()+rnd(5*m)} %`,cur:()=>`Ausweichen jetzt ${dodge()} %`},
+{id:'twin',n:'Zwillingsklinge',minR:3,max:1,d:'Jeder normale Angriff trifft ein zweites Mal',f:m=>P.bonus.twin=50,pv:()=>'Zweiter Treffer mit 50 % Schaden',cur:()=>'Zweiter Treffer mit 50 % Schaden'},
+{id:'harvest',n:'Seelenernte',minR:3,max:1,d:'Jeder Sieg bringt zusätzliche Seelensplitter',f:m=>P.bonus.harvest=2,pv:()=>'+2 Seelensplitter pro Sieg',cur:()=>`+2 Seelensplitter pro Sieg`},
+];
+const ROM=['','I','II','III','IV','V','VI','VII','VIII','IX','X'];
+const PK=id=>PERKS.find(p=>p.id===id);
+const pCount=id=>P.perks.filter(x=>x===id).length;
+const pName=(p,n)=>p.n+(n>1?' '+(ROM[n]||n):'');
+
+/* ---------- Gegenstände ---------- */
+function buildItem(slot,type,r,f,m){
+if(XT[slot]){const T=XT[slot][type],it={slot,type,r,name:T.n+' '+pick(SUF)};
+ if(T.def)it.def=Math.max(1,Math.round((1+f*BAL.id)*m*T.def));if(T.hp)it.hp=Math.max(1,Math.round((5+f*BAL.ih)*m*T.hp*.8));if(T.atk)it.atk=Math.max(1,Math.round((1+f*.3)*m*T.atk));
+ for(const k of ['crit','dodge','ls','luck','gold','skill','bleed','stun'])if(T[k])it[k]=Math.max(1,Math.round(T[k]*m));
+ if(r>=2&&!it.hp)it.hp=Math.round((3+f)*m*.5);return it}
+if(slot==='w'){const T=WT[type];return{slot:'w',type,r,name:T.n+' '+pick(SUF),atk:Math.max(1,Math.round((2+f*BAL.ia)*m*T.m)),crit:r>=2?ri(3,8):0,ls:r===3?ri(4,8):0}}
+const T=AT[type];return{slot:'a',type,r,name:T.n+' '+pick(SUF),def:Math.max(1,Math.round((1+f*BAL.id)*m*T.dm)),hp:Math.round((5+f*BAL.ih)*m*T.hm)+(r===3?ri(8,15):0)}}
+function curseItem(it){it.curse=pick(Object.keys(CURSES));for(const k of ['atk','def','hp','crit','dodge','ls','gold','skill','bleed','stun'])if(it[k])it[k]=Math.round(it[k]*1.5);it.name+=' (verflucht)';return it}
+function genItem(boost=0,minR=0,src=null,not=[]){const f=Math.max(1,P.floor),luck=luckV()+boost*3,x=R()*100;
+let r=0;if(x<.4+luck*.25)r=3;else if(x<3+luck*.8)r=2;else if(x<20+luck*1.8)r=1;r=Math.max(r,minR);
+const m=RAR[r].m*(.9+R()*.2);
+const sw=[['w',30],['a',22],['h',16],['g',16],['j',16]].filter(x=>!not.includes(x[0]));
+let slot=src&&R()<.7?pick(['w','a'].filter(x=>src[x]&&!not.includes(x)))||wpick(sw):wpick(sw);if(!slot)slot=wpick(sw);
+const type=slot==='w'?(src&&src.w?pick(src.w):pick(Object.keys(WT))):slot==='a'?(src&&src.a?pick(src.a):pick(Object.keys(AT))):pick(Object.keys(XT[slot]));
+const it=buildItem(slot,type,r,f,m);if(r>=1&&!P.tut&&R()<.07)curseItem(it);return it}
+function forgeItem(slot,type,t,r){const it=buildItem(slot,type,r,t*10+8,RAR[r].m);const T=slot==='w'?WT[type]:slot==='a'?AT[type]:XT[slot][type];it.name=T.n+' aus '+MATS['m'+t].n;it.forged=true;it.src='Hild';it.aid='a'+Date.now().toString(36)+ri(0,999);return it}
+const iName=it=>`<span style="color:${RAR[it.r].c}">${it.name}</span>`;
+const XL={atk:'Angriff',def:'Verteidigung',hp:'LP',crit:'% Krit',dodge:'% Ausweichen',ls:'% Lebensraub',luck:'Glück',gold:'% Gold',skill:'% Fähigkeitsschaden',bleed:'% Blutung',stun:'% Betäubung'};
+const xStats=it=>Object.keys(XL).filter(k=>it[k]).map(k=>`+${it[k]} ${XL[k]}`).join(' · ')+' · '+XT[it.slot][it.type].d;
+const iStats=it=>(it.curse?`<span class="fx-curse">Fluch: ${CURSES[it.curse].n} – ${CURSES[it.curse].d}</span> · `:'')+(XT[it.slot]?xStats(it):(it.uq?`<b>${UNIQ[it.uq].d}</b> · `:'')+(it.slot==='w'?`+${it.atk} Angriff · ${wt(it).d}`+(it.crit?` · Bonus: +${it.crit} % Krit`:'')+(it.ls?` · Bonus: ${it.ls} % Lebensraub`:''):`+${it.def} Verteidigung · +${it.hp} LP · ${at_(it).d}`));
+const iValue=it=>Math.round((8+P.floor*2)*(it.r+1));
+const BAG=6;
+function equip(it){const k0=SK[it.slot];if(P[k0]&&P[k0].curse&&P[k0]!==it){log(`Der Fluch lässt dich nicht los – ${P[k0].name} bleibt, wo es ist.`,'bad');return false}
+const k=SK[it.slot],old=P[k],b=maxHp();P[k]=it;const d=maxHp()-b;P.hp=Math.max(1,Math.min(maxHp(),P.hp+Math.max(0,d)));
+if(old){if(P.bag.length<BAG){P.bag.push(old);log(`${old.name} kommt in den Rucksack.`,'dim')}else log(`Rucksack voll – ${old.name} bleibt liegen.`,'dim')}
+if(it.curse)log(`Als du ${it.name} anlegst, schließt es sich kalt um dich. Ausziehen geht nicht mehr.`,'bad');return true}
+const trainV=()=>2+Math.floor(P.floor/10);
+const sgn=n=>n>0?`+${n}`:`${n}`;
+function iDiff(it){const cur=P[SK[it.slot]];if(!cur)return'';
+if(XT[it.slot]){const ks=Object.keys(XL).filter(k=>(it[k]||0)!==(cur[k]||0)).slice(0,3);return ks.length?` (${ks.map(k=>`${sgn((it[k]||0)-(cur[k]||0))} ${XL[k].replace('% ','%\u00a0')}`).join(', ')} ggü. jetzt)`:''}
+return it.slot==='w'?` (${sgn(it.atk-cur.atk)} Angriff ggü. jetzt)`:` (${sgn(it.def-cur.def)} Vert., ${sgn(it.hp-cur.hp)} LP ggü. jetzt)`}
+const slotN=it=>SN[it.slot]||'Ausrüstung';
+
+/* ---------- Gegner ---------- */
+function makeEnemy(type,ov={}){const f=P.floor,a=areaOf(f);
+let hp=(22+f*5.5)*Math.pow(BAL.eh,f),at=(4+f*1.05)*Math.pow(BAL.ea,f),df=Math.floor(f*BAL.ed),name=pick(a.mobs);
+const e={type,ls:0,poison:false,stun:0,burn:0,turn:0,heavyEvery:0,base:name};hp*=rm('hp',1);at*=rm('dmg',1)*(hasS('tief')?1.08:1);if(rm('evade',0))e.evade=rm('evade',0);
+const mc=type==='elite'?1:type==='kampf'?Math.min(.5,.1+f*.02):0;
+if(R()<mc){const m=pick(MODS);name=m.n+'-'+name;hp*=m.hp||1;at*=m.atk||1;df+=m.def||0;e.ls=m.ls||0;e.poison=!!m.poison}
+if(type==='elite'){hp*=1.7;at*=1.25;e.heavyEvery=4}
+if(type==='boss'){const big=f%10===0,ai=AREAS.indexOf(a);hp*=big?BAL.bb:BAL.bs;at*=big?1.45:1.3;df+=2;e.mechEvery=3;e.mi=0;
+ if(P.trial&&RANG[P.trial]&&RANG[P.trial].f===f){hp*=1.25;at*=1.12;e.trial=P.trial}
+ if(big){const B=BOSSM[ai];name=a.boss+(f>50?' (Echo '+Math.floor(f/10)+')':'');e.base=a.boss;e.mechs=B.mechs;Object.assign(e,B.traits||{})}
+ else{const T=TW[ai];name=T.n;e.base=T.n;e.mechs=T.mechs}if(e.trial)name+=' · Prüfer'}
+Object.assign(e,{name,hp:Math.round(hp),maxHp:Math.round(hp),atk:Math.round(at),def:df,
+ xp:Math.round((6+f*2)*(type==='elite'?2.2:type==='boss'?5:1)),gm:type==='boss'?4:type==='elite'?2:1,ess:type==='boss'?8:type==='elite'?3:1},ov);
+if(ov.name)e.maxHp=e.hp;return e}
+
+/* ---------- Kampf ---------- */
+function startCombat(type,ov){E=makeEnemy(type,ov);S.screen='combat';P.cd=0;P.defending=false;P.uBlock=hasU('aldric');P.hits=0;P.wach=hasS('wach');
+log(type==='boss'?`${E.name} versperrt das Tor!`:`${E.name} stellt sich dir in den Weg.`,type==='kampf'?'':'bad')}
+function dealDmg(mult,o={}){
+if(E.evade&&!hasS('stumm')&&R()<E.evade){log(`${E.name} weicht aus!`,'dim');return 0}
+if(P.bonus.exec&&E.hp/E.maxHp<.3)mult*=1+P.bonus.exec/100;
+if(o.skill)mult*=1+((P.armor?at_(P.armor).skill||0:0)+gs('skill'))/100;
+if(P.frozen)mult*=.5;
+if(hasU('kaelen'))mult*=1+(1-P.hp/maxHp())*.6;
+mult*=1+bb(E.base);
+if(P.bonus.berserk&&P.hp<maxHp()*.5)mult*=1+P.bonus.berserk/100;
+P.hits=(P.hits||0)+1;if(hasU('zaehlende')&&P.hits%5===0){mult*=3;log('Der fünfte Schnitt!','crit')}
+let b=atk()*mult*(.85+R()*.3);const c=R()*100<crit()+(o.cb||0);if(c)b*=2;
+const ed=o.pierce?0:E.def*(1-wp('pierce')/100);
+let d=Math.max(1,Math.round(b-ed));if(E.shield){d=Math.max(1,Math.round(d*.25));log('Der Schild fängt den Großteil ab.','dim')}E.hp-=d;
+if(E.mirror){const r=Math.max(1,Math.round(d*.6));P.hp-=r;log(`Der Spiegel wirft ${r} Schaden zurück. −${r} LP`,'bad')}
+log(c?`Kritischer Treffer! ${d} Schaden.`:`Du triffst ${E.name}: ${d} Schaden.`,c?'crit':'');
+if(E.hp>0&&wp('bleed')&&R()*100<wp('bleed')){E.bleed=3;log(`${E.name} blutet.`,'crit')}
+if(E.hp>0&&c&&hasU('grimmzahn')){E.bleed=3;log(`${E.name} blutet.`,'crit')}
+if(E.hp>0&&hasU('ossa')&&R()<.25){E.burn=3;log(`${E.name} brennt.`,'crit')}
+if(E.hp>0&&hasU('ylva')&&R()<.25){E.chill=1;log(`${E.name} ist unterkühlt.`,'dim')}
+if(E.hp>0&&(wp('stun')+(hasU('schlacke')?20:0))&&R()*100<wp('stun')+(hasU('schlacke')?20:0)&&!E.stun){E.stun=1;log(`Der Hieb haut ${E.name} aus den Latschen.`)}
+const l=lsP();if(l>0){const h=heal(Math.round(d*l/100));if(h>0)log(`+${h} LP (Lebensraub)`,'good')}
+return d}
+function useSkill(){const c=P.cls;log(`» ${CLS[c].skill.name}`,'sys');
+if(c==='krieger'){dealDmg(1.5,{skill:1});if(E.hp>0){E.stun=1;log(`${E.name} ist betäubt.`)}}
+else if(c==='klinge'){for(let i=0;i<3&&E.hp>0;i++)dealDmg(.85,{skill:1,cb:25})}
+else if(c==='magier'){dealDmg(2.6,{pierce:1,skill:1});if(E.hp>0){E.burn=3;log(`${E.name} brennt.`,'crit')}}
+else if(c==='blut'){const d=dealDmg(2,{skill:1});const h=heal(Math.round(d*.5));if(h)log(`+${h} LP`,'good')}
+if(hasU('weinende')&&E.hp>0){E.pdot=3;log(`${E.name} ist vergiftet.`,'dim')}
+P.cd=cdNow()+1}
+function drink(){P.potions--;const h=heal(Math.round(maxHp()*.4*(1+P.bonus.potion/100)));log(`Du trinkst einen Heiltrank. +${h} LP`,'good')}
+function enemyTurn(){
+if(E.burn>0){const d=Math.max(1,Math.round(atk()*.4));E.hp-=d;E.burn--;log(`${E.name} brennt: ${d} Schaden.`,'crit');if(E.hp<=0)return}
+if(E.pdot>0){const d=Math.max(1,Math.round(E.maxHp*.05));E.hp-=d;E.pdot--;log(`${E.name} leidet unter Gift: ${d} Schaden.`,'dim');if(E.hp<=0)return}
+if(E.bleed>0){const d=Math.max(1,Math.round(atk()*.3));E.hp-=d;E.bleed--;log(`${E.name} blutet: ${d} Schaden.`,'crit');if(E.hp<=0)return}
+if(E.regen&&E.hp<E.maxHp){const h=Math.round(E.maxHp*E.regen);E.hp=Math.min(E.maxHp,E.hp+h);log(`${E.name} regeneriert ${h} LP.`,'dim')}
+if(E.enrage&&!E.raged&&E.hp<E.maxHp*.5){E.raged=true;E.atk=Math.round(E.atk*1.5);log(`${E.name} gerät in Raserei!`,'bad')}
+E.shield=false;E.mirror=false;
+if(E.stun>0){E.stun--;log(`${E.name} taumelt benommen.`);return}
+E.turn++;let mech=null;if(E.mechs&&E.turn%E.mechEvery===0){mech=E.mechs[(E.mi||0)%E.mechs.length];E.mi=(E.mi||0)+1;if(doMech(mech))return}
+const heavy=E.mechs?mech==='heavy':E.heavyEvery&&E.turn%E.heavyEvery===0,hits=E.double&&!heavy?2:1;
+for(let i=0;i<hits;i++){
+if(P.comp&&R()<.3){const d=Math.max(1,Math.round(E.atk*(heavy?1.6:1)*(.85+R()*.3)-2));P.comp.hp-=d;log(`${E.name} trifft ${P.comp.n}. −${d} LP`,'dim');if(P.comp.hp<=0){log(`${P.comp.n} geht zu Boden und rührt sich nicht mehr.`,'bad');P.comp=null}continue}
+if(P.uBlock){P.uBlock=false;log('Aldrics Wachpanzer fängt den ersten Schlag ab.','good');continue}
+if(dodge()&&R()*100<dodge()){log('Du weichst aus!','good');if(hasU('weissfell')&&E.hp>0){const d=Math.max(1,Math.round(atk()*.5-E.def));E.hp-=d;log(`Gegenangriff: ${d} Schaden.`,'good')}continue}
+let d=E.atk*(heavy?2.2:hits>1?.65:1)*(E.chill?.6:1)*(hasC('zorn')?1.15:1)*(P.wach?.5:1)*(.85+R()*.3)-def();if(P.wach){P.wach=false}
+if(P.defending)d*=heavy?.25:.4;
+d=Math.max(1,Math.round(d));P.hp-=d;
+log(heavy?`${E.name} entfesselt einen gewaltigen Schlag! −${d} LP`:`${E.name} trifft dich${hits>1?(i?' noch mal':' blitzschnell'):''}. −${d} LP`,'bad');
+if(P.bonus.thorns){const t=Math.max(1,Math.round(d*P.bonus.thorns/100));E.hp-=t;log(`Dornen: ${t} Schaden zurück.`)}
+if(E.ls){E.hp=Math.min(E.maxHp,E.hp+Math.round(d*E.ls))}
+if(E.poison&&R()<.5){P.poison=3;log('Du bist vergiftet.','bad')}}E.chill=0}
+function doMech(m){const dm=P.defending?.4:1;
+if(m==='shield'){E.shield=true;log(`${E.name} verschanzt sich hinter einem Schild.`,'dim');return true}
+if(m==='mirror'){E.mirror=true;log(`${E.name}s Haut wird glatt wie ein Spiegel. Wer jetzt zuschlägt, trifft sich selbst.`,'bad');return true}
+if(m==='warcry'){E.atk=Math.round(E.atk*1.2);log(`${E.name} brüllt einen Kriegsschrei. Seine Schläge werden härter.`,'bad');return true}
+if(m==='breath'){const d=Math.max(1,Math.round((E.atk*1.3-def()*.5)*dm));P.hp-=d;P.burn=3;log(`Feueratem! −${d} LP – du brennst.`,'bad');return true}
+if(m==='drain'){const d=Math.max(1,Math.round(maxHp()*.15*dm));P.hp-=d;E.hp=Math.min(E.maxHp,E.hp+d*2);log(`${E.name} zieht dir das Leben aus dem Leib. −${d} LP`,'bad');return true}
+if(m==='freeze'){P.frozen=1;log('Eisiger Hauch! Deine Hände werden steif, dein nächster Angriff ist schwächer.','bad');return false}
+return false}
+function checkDeath(){if(P.hp>0)return false;
+if(P.tut){P.hp=maxHp();log('Varga packt dich am Kragen und zieht dich raus. „Nochmal. Langsamer diesmal.“','sys');return false}
+if(P.revive){P.revive=false;P.hp=Math.round(maxHp()*(P.revivePct||40)/100);sys('Zweiter Atem aktiviert. Du erhebst dich erneut.');return false}
+log('Alles wird schwarz. Dann zieht etwas an deiner Hand – der Stein holt dich zurück.','bad');endRun(false);return true}
+function act(kind){P.defending=false;
+if(kind==='atk'){dealDmg(1);if(E.hp>0&&P.bonus.twin){dealDmg(P.bonus.twin/100)}if(E.hp>0&&wp('dbl')&&R()*100<wp('dbl')){log('Zweiter Hieb!','crit');dealDmg(.7)}}
+else if(kind==='skill')useSkill();
+else if(kind==='def'){P.defending=true;log('Du gehst in Deckung.')}
+else if(kind==='potion')drink();
+else if(kind==='flee'){if(R()<.55){log('Du entkommst durch einen Seitengang.');E=null;goDoors();return}log('Flucht misslungen!','bad')}
+P.frozen=0;if(P.hp<=0&&checkDeath())return;
+if(P.comp&&E.hp>0&&kind!=='potion'){const d=Math.max(1,Math.round(P.comp.atk*(.85+R()*.3)-E.def*.5));E.hp-=d;log(`${P.comp.n} trifft: ${d} Schaden.`,'good')}
+if(hasU('mutter')&&E.hp>0){const h=heal(Math.round(maxHp()*.04));if(h)log(`+${h} LP (Schleimhaut)`,'good')}
+if(E.hp<=0)return win();
+enemyTurn();if(checkDeath())return;
+if(E.hp<=0)return win();
+if(P.poison>0){const d=Math.ceil(maxHp()*.04);P.hp-=d;P.poison--;log(`Gift: −${d} LP`,'bad');if(checkDeath())return}
+if(P.burn>0){const d=Math.ceil(maxHp()*.05);P.hp-=d;P.burn--;log(`Du brennst: −${d} LP`,'bad');if(checkDeath())return}
+if(hasC('blutzoll')){const d=Math.ceil(maxHp()*.02);P.hp-=d;log(`Blutzoll: −${d} LP`,'bad');if(checkDeath())return}
+if(P.cd>0)P.cd--}
+function win(){const e=E;E=null;log(`${e.name} ist besiegt.`,'good');P.kills++;P.poison=0;P.burn=0;P.frozen=0;
+if(!P.tut){meta.kills++;if(e.type==='elite'){meta.elites++;P.eliteK=(P.eliteK||0)+1}if(!e.bounty&&e.base){meta.beast[e.base]=(meta.beast[e.base]||0)+1;const k=meta.beast[e.base];if(k===10||k===30||k===75)sys(`Bestiarium: Du kennst ${e.base} jetzt besser. +${Math.round(bb(e.base)*100)} % Schaden gegen diese Art.`)}saveMeta();
+ const mk='m'+Math.min(4,AREAS.indexOf(areaOf(P.floor)));
+ if(e.type==='boss'){addMat(mk,ri(2,3));addMat('kern',1)}else if(e.bounty){addMat(mk,3);meta.troph[e.bounty]=(meta.troph[e.bounty]||0)+1;saveMeta();log(`Trophäe: ${TROPH[e.bounty]} – für Hild.`,'mat')}else if(e.type==='elite'){addMat(mk,ri(1,2));if(R()<.15)addMat('kern',1)}else if(R()<.3)addMat(mk,1);
+ if(e.shade){claimShade(e.shade);if(e.shadeItem&&e.shadeItem.slot){const it=Object.assign({},e.shadeItem);it.src=e.name;S.queue.push({k:'loot',it})}}}
+if(e.bounty&&UNIQ[e.bounty]&&(!meta.uniq.includes(e.bounty)||R()<.25+.1*((meta.uqLvl||{})[e.bounty]||0))){const it=makeUnique(e.bounty);it.src=e.name;S.queue.unshift({k:'loot',it});if(!meta.uniq.includes(e.bounty)){meta.uniq.push(e.bounty);saveMeta()}sys(`${e.name} hinterlässt etwas Besonderes: ${UNIQ[e.bounty].n}!`)}
+if(e.bounty==='kaelen'&&meta.vq===3){meta.vqPend='kaelen';saveMeta()}
+if(e.bounty){const b=BOUNTIES.find(x=>x.id===e.bounty);if(!meta.bounty.includes(b.id)){meta.bounty.push(b.id);meta.essence+=b.reward;saveMeta();sys(`Kopfgeld kassiert: ${b.name}! +${b.reward} ✧ (direkt gutgeschrieben)`)}else log(`${b.name} ist wieder da. Diesmal ohne Kopfgeld, aber mit Beute.`,'dim')}
+if(P.tut&&P.floor===1){P.keys++;log('Der Goblin hatte einen rostigen Schlüssel dabei.','goldt')}
+if(e.bounty&&R()<.5){P.bells++;log('Am Gürtel hängt eine kleine Händlerglocke.','goldt')}
+if(!P.tut&&(e.bounty||(e.type==='boss'&&R()<.6*rm('key',1))||(e.type==='elite'&&R()<.35*rm('key',1)))){P.keys++;log('Du findest einen alten Schlüssel.','goldt')}
+if(!P.tut&&e.type==='elite'&&R()<(e.bounty?.6:.25)){P.kindling++;log('Du findest ein Bündel Zunder.','goldt')}
+const g=goldAmt(e.gm);P.gold+=g;P.ess+=e.ess;log(`+${g} Gold · +${e.ess} Seelensplitter · +${e.xp} EP`,'goldt');
+if(P.bonus.rage){P.rageStacks+=P.bonus.rage}
+if(P.bonus.harvest&&!P.tut){P.ess+=P.bonus.harvest}
+if(P.bonus.regen)heal(Math.round(maxHp()*P.bonus.regen/100));
+gainXp(Math.round(e.xp*rm('xp',1)));
+const lc=e.type==='boss'||e.type==='elite'?1:.22+(ul('glueck')+P.bonus.luck)*.02;
+const src=gearOf(e),nm=e.name;
+const used=S.queue.filter(q=>q.k==='loot').map(q=>q.it.slot);
+if(R()<lc){const it=e.bounty?genItem(4,2,src,used):genItem(e.type==='boss'?2:e.type==='elite'?1.5:0,0,src,used);it.src=nm;used.push(it.slot);S.queue.push({k:'loot',it})}
+if(e.bounty){const it=genItem(3,1,src,used);it.src=nm;S.queue.push({k:'loot',it})}
+if(e.type==='boss'&&P.tut){sys('Prüfung bestanden.');S.queue.push({k:'story',id:'tutEnd'})}
+else if(e.type==='boss'){P.bosses++;sys(`Torwächter bezwungen. Etage ${P.floor} gesichert.`);if(e.trial){meta.rankPend=e.trial;P.trial=0;saveMeta();sfx('win');sys(`Prüfung bestanden! Kehr ins Lager zurück. Varga wartet am Stein, um dich als ${RANG[e.trial].n} aufzunehmen.`)}
+ const bi=P.floor/10;if(P.floor%10===0&&bi<=4)unlock('b'+bi);
+ if(P.floor===50&&!meta.lore.includes('ende'))S.queue.push({k:'story',id:'ending'});
+ S.queue.push({k:'gate'})}
+next()}
+
+/* ---------- Ablauf ---------- */
+function next(){const q=S.queue.shift();if(!q)return goDoors();if(q.k==='loot')showLoot(q.it);else if(q.k==='perks')showPerks(q.t);else if(q.k==='gate')showGate();else if(q.k==='story')storyPages(q.id)}
+const DOOR={tresor:{n:'Versiegelte Tür',i:'▣',s:'Kein Kampf · garantiert epische Beute, viel Gold · braucht einen Schlüssel'},kampf:{n:'Kampf',i:'⚔',s:'Ein Gegner · Gold, EP, Splitter, manchmal Ausrüstung'},elite:{n:'Elite',i:'☠',s:'Ein starker Gegner'},schatz:{n:'Schatzkammer',i:'◆',s:'Kein Kampf · Gold, oft Ausrüstung, manchmal eine Falle'},rast:{n:'Lagerfeuer',i:'♨',s:'Ausruhen oder trainieren'},haendler:{n:'Händler',i:'⚖',s:'Kein Kampf · kaufen und verkaufen'},ereignis:{n:'Ereignis',i:'❖',s:'Eine Entscheidung: Risiko gegen Belohnung · selten ein Kampf'},boss:{n:'Torwächter',i:'♛',s:'Pflichtkampf · große Beute, oft ein Schlüssel, danach ein Weg nach oben'}};
+function wpick(w){const t=w.reduce((s,x)=>s+x[1],0);let r=R()*t;for(const x of w){if((r-=x[1])<0)return x[0]}return w[0][0]}
+function genDoors(){const nf=P.floor+1;
+if(P.tut)return nf===1?[{t:'kampf'}]:nf===2?[{t:'tresor'},{t:'schatz'}]:[{t:'boss'}];
+if(nf%5===0)return[{t:'boss'}];
+const w=[['kampf',48],['schatz',10],['haendler',nf>=3?9:0],['ereignis',17]];
+const n=R()<.2?3:2,a=[],used=new Set();
+for(let i=0;i<n;i++){const t=wpick(w.filter(x=>x[1]>0&&!used.has(x[0])));used.add(t);a.push({t,s:pick(FLAV[t])})}
+if(nf>=2&&R()<.22)a.push({t:'tresor',s:pick(FLAV.tresor)});return a}
+const FLAV={kampf:['Knurren hinter der Tür','Frische Kratzspuren am Boden','Es riecht nach nassem Fell','Schritte, die plötzlich innehalten'],elite:['Ein tiefes, langsames Atmen','Abgenagte Knochen vor der Schwelle','Die Luft ist schwer und still','Etwas Großes bewegt sich'],schatz:['Ein Schimmer im Türspalt','Rostige Truhenbeschläge','Goldstaub auf den Steinen'],rast:['Wärme dringt heraus','Rauch und Holzgeruch','Leises Knistern'],haendler:['Klirrende Glöckchen','Eine Laterne flackert','Jemand summt eine Melodie'],ereignis:['Ein seltsames Flüstern','Blaues Licht unter der Tür','Das Holz ist warm','Runen glimmen im Rahmen','Ein Hauch von Weihrauch'],boss:['Die Erde bebt'],tresor:['Sieben Siegel aus Eisen','Ein Schloss, so groß wie eine Faust','Goldene Runen im Holz']};
+function goDoors(){S.screen='doors';S.doors=[]}
+function rollRoom(){const f=P.floor;if(P.tut)return f===1?'kampf':f===2?'tresorTuer':'boss';if(f%5===0)return'boss';
+const sh=pickShade(f);if(sh){P.shadeNow=sh;return'shade'}
+if(meta.bq===1&&!meta.bqPend&&!P.bqFound&&f>=13&&f<=19&&R()<(f>=17?.5:.15))return'bquest';
+const V=VQ[(meta.vq||0)-1];if(V&&V.lo&&!P.vqFound&&f>=V.lo&&f<=V.hi&&R()<(f>=V.hi-2?.6:.2))return'vquest';
+let t=wpick([['kampf',50],['schatz',10],['haendler',f<3?0:f<10?9:f<20?7:f<30?4:2],['ereignis',18],['tresorTuer',f>=2?9:0]].filter(x=>x[1]>0));
+if(t!=='kampf'&&t===P.lastT)t='kampf';P.lastT=t;return t}
+function advance(){sfx('step');enterDoor({t:null})}
+function enterDoor(d){S.fireOpen=false;const prev=areaOf(P.floor);P.floor++;const a=areaOf(P.floor);
+let t=d.t||rollRoom();
+if(P.tut){if(t==='kampf'||t==='boss')return startCombat(t,TUT_EN[P.floor]);if(t==='tresorTuer')return roomTresorTuer()}
+else{if(P.comp){P.comp.left--;if(P.comp.left<=0){const c=P.comp;P.comp=null;if(c.traitor){const g=Math.floor(P.gold*.4);P.gold-=g;log(`${c.n} ist weg – und mit ${c.n} ${g} Gold aus deinem Beutel. „Gefangen“ war wohl gelogen.`,'bad')}else{const g=goldAmt(1.5);P.gold+=g;log(`${c.n} bleibt an einer Abzweigung stehen. „Hier trennen sich unsere Wege. Danke.“ Zum Abschied: ${g} Gold.`,'goldt')}}}
+wallMsg(P.floor);
+if(a!==prev||P.floor===1){log(`— ${a.name} —`,'sys');log(a.intro,'dim');unlock('a'+AREAS.indexOf(a))}if(P.floor>meta.best){meta.best=P.floor;saveMeta()}
+if(P.weekly){const W=weekly();if(P.weekly===W.k&&meta.weekDone!==W.k&&P.floor>=W.goal){meta.weekDone=W.k;meta.essence+=W.reward;meta.weeks=(meta.weeks||0)+1;saveMeta();sys(`Tiefe der Woche geschafft! +${W.reward} ✧`)}}}
+({shade:()=>{const sh=P.shadeNow;P.shadeNow=null;room(`Eine Gestalt aus Schatten steht im Gang. Sie trägt ${esc(sh.cls)}-Kluft, und auf ihrer Hand glänzt eine schwarze Narbe. Der Schatten von ${esc(sh.nm)}, gefallen auf Etage ${sh.floor}.`,()=>[{l:'Kämpfen',sub:'Besiegst du ihn, birgst du seine Ausrüstung',fn:()=>{startCombat('elite',{name:'Schatten von '+esc(sh.nm),base:'Schatten',shade:sh.id,ess:6});E.shadeItem=sh.item}},{l:'Vorbeischleichen',fn:next}],'x')},bquest:roomBquest,vquest:()=>{const V=VQ[meta.vq-1];room(V.find,()=>[{l:`${V.item} mitnehmen`,fn:()=>{P.vqFound=true;log(`${V.item} hängt jetzt an dir wie die Splitter. Es kommt mit zurück, egal wie.`,'sys');next()}}],'vquest')},tresorTuer:roomTresorTuer,tresor:roomTresor,kampf:()=>{const ec=P.floor>=3?Math.min(.28,.12+P.floor*.005)*rm('elite',1):0;if(R()<ec){const ai=AREAS.indexOf(a),pool=BOUNTIES.filter(b=>b.area===ai),open=pool.filter(b=>!meta.bounty.includes(b.id));
+ const pool2=pool.filter(b=>b.id!=='kaelen'||meta.vq>=3);pool.length=0;pool.push(...pool2);const open2=open.filter(b=>b.id!=='kaelen'||meta.vq>=3);open.length=0;open.push(...open2);
+ const deep=P.floor-ai*10>=4&&meta.best>(ai+1)*10,b=!deep?null:open.length&&R()<.4?pick(open):pool.length&&R()<.12?pick(pool):null;
+ if(b){startCombat('elite');Object.assign(E,{name:b.name,bounty:b.id,hp:Math.round(E.maxHp*b.hp*.85),maxHp:Math.round(E.maxHp*b.hp*.85),atk:Math.round(E.atk*b.atk),def:E.def+(b.def||0),heavyEvery:3,gm:6,ess:10,xp:E.xp*2},b.traits);logs.shift();log('Die Luft wird kalt. Etwas tritt aus dem Schatten …','bad');log(`${b.name} – ${b.t}! Auf der Kopfgeldliste.`,'bad')}
+ else{startCombat('elite');logs.shift();log('Der Raum ist zu still. Dann bewegt sich etwas Großes …','bad');log(`${E.name} – ein Elite!`,'bad')}}else startCombat('kampf')},elite:()=>startCombat('elite'),boss:()=>startCombat('boss'),schatz:roomSchatz,rast:roomRast,haendler:roomHaendler,ereignis:()=>{if((meta.rank||0)>=3&&P.floor>=12&&!P.shrine&&R()<.22){P.shrine=1;roomSchrein();return}const all=EVENTS.map((_,i)=>i),rec=P.evRecent||[],pool=all.filter(i=>!rec.includes(i)),i=pick(pool.length?pool:all);P.evRecent=[...rec,i].slice(-4);EVENTS[i]();if(S.screen==='room')S.roomKey='ev'+i}})[t]()}
+function roomTresorTuer(){room('Eine schwere Tür mit Siegeln aus Eisen. Dahinter ist es still.',()=>[
+ {l:'Aufschließen',sub:P.keys>0?`1 Schlüssel (${P.keys} übrig)`:'Du hast keinen Schlüssel',dis:!(P.keys>0),fn:()=>{if(P.tut){P.kindling++;log('Gleich hinter der Tür liegt ein Bündel Zunder.','goldt')}roomTresor()}},
+ {l:'Weitergehen',fn:next}],'tresorTuer')}
+function lightFire(){P.kindling--;log('Du zündest den Zunder an. Die Flammen fressen sich ins trockene Holz.','good');roomRast()}
+function roomTresor(){P.keys--;if(!P.tut){meta.vaults++;saveMeta()}log('Der Schlüssel dreht sich schwer. Die Siegel brechen nacheinander.','goldt');
+const g=goldAmt(6);P.gold+=g;log(`+${g} Gold`,'goldt');if(R()<.5){P.kindling++;log('Ein Bündel Zunder liegt im Regal.','goldt')}if(R()<.4){P.potions++;log('Dazu ein Heiltrank.','good')}if(R()<.25){P.bells++;log('Auf einem Regal steht eine kleine Händlerglocke.','goldt')}
+addMat('m'+Math.min(4,AREAS.indexOf(areaOf(P.floor))),ri(2,3));
+const a=genItem(2,2);S.queue.push({k:'loot',it:a});if(R()<.5){const b=genItem(2,1,null,[a.slot]);S.queue.push({k:'loot',it:b})}
+room('Eine Kammer, die seit Jahren keiner betreten hat. Staub liegt auf Truhen, die noch verschlossen sind.',()=>[{l:'Plündern',fn:next}],'tresorDone')}
+function addMat(k,n){if(!n||!P||P.tut)return;P.mats=P.mats||{};P.mats[k]=(P.mats[k]||0)+n;log(`+${n} ${MATS[k].n}${MATS[k].soul?' (seelengebunden)':''}`,'mat')}
+function matsToMeta(onlySoul){const out=[];for(const k in (P.mats||{})){if(onlySoul&&!MATS[k].soul)continue;meta.mats[k]=(meta.mats[k]||0)+P.mats[k];out.push(P.mats[k]+'× '+MATS[k].n);delete P.mats[k]}saveMeta();return out}
+function room(text,opts,key){S.screen='room';S.room={text,opts};S.roomKey=key||null}
+
+function roomSchatz(){
+if(R()<.15){const d=Math.round(maxHp()*.12);P.hp-=d;log(`Eine Falle! Pfeile schnellen aus der Wand. −${d} LP`,'bad');if(checkDeath())return}
+const g=goldAmt(3);P.gold+=g;log(`Du findest ${g} Gold.`,'goldt');
+if(R()<.3){P.potions++;log('Du findest einen Heiltrank.','good')}
+if(R()<.5){const it=genItem(1);S.queue.push({k:'loot',it})}
+if(R()<.4)addMat('m'+Math.min(4,AREAS.indexOf(areaOf(P.floor))),ri(1,2));
+room('Eine verlassene Schatzkammer. Spinnweben überziehen geöffnete Truhen – doch nicht alle sind leer.',()=>[{l:'Weitergehen',fn:next}])}
+function roomRast(){const h=Math.round(maxHp()*.3);P.rests=(P.rests||0)+1;
+room('Das Feuer knistert. Für einen Moment ist der Riss ganz still.',()=>[
+{l:'Ausruhen',sub:`+${h} LP`,fn:()=>{const x=heal(h);log(`Du ruhst dich aus. +${x} LP`,'good');next()}},
+{l:'Trainieren',sub:`+${trainV()} Angriff`,fn:()=>{const v=trainV();P.bonus.atk+=v;log(`Du übst ein paar Schläge am Feuer. +${v} Angriff.`,'good');next()}}],'rast')}
+function roomHaendler(){const f=P.floor,it=genItem(1);unlock('haendler');
+const pm=rm('price',1)*(hasS('gier')?1.15:1),sh={pot:Math.round((15+f*2)*pm),item:Math.round((30+f*6)*(1+it.r*.6)*pm),bless:Math.round((25+f*4)*pm),full:Math.round((12+f*3)*pm),fire:Math.round((20+f*3)*pm),bell:Math.round((50+f*4)*pm),curse:Math.round((40+f*6)*pm),sold:false};
+room(pick(['Ein vermummter Händler hockt neben einem Karren voller Klirrkram. „Gold, Ankerträger. Nur Gold.“','Eine alte Frau mit Laterne und einem Karren voller Waffen von Toten. „Die brauchen sie nicht mehr. Du schon.“','Ein Mann mit grauer Narbe auf der Hand nickt dir zu. „Bin seit elf Jahren nicht mehr oben gewesen. Was brauchst du?“']),()=>{
+const cur=P[SK[it.slot]];return[
+{l:'Heiltrank',sub:`${sh.pot} Gold`,dis:P.gold<sh.pot,fn:()=>{P.gold-=sh.pot;P.potions++;log('Heiltrank gekauft.','good')}},
+{l:sh.sold?'Verkauft':it.name,html:true,sub:sh.sold?'':`${RAR[it.r].n} · ${iStats(it)}${iDiff(it)} · ${sh.item} Gold`,dis:sh.sold||P.gold<sh.item||!!(cur&&cur.curse),fn:()=>{P.gold-=sh.item;equip(it);sh.sold=true;log(`${it.name} angelegt.`,'good')}},
+{l:'Zunder',sub:`Für ein Lagerfeuer · ${sh.fire} Gold`,dis:P.gold<sh.fire,fn:()=>{P.gold-=sh.fire;P.kindling++;log('Zunder gekauft.','good')}},
+{l:'Händlerglocke',sub:`Ruft später einen Händler · ${sh.bell} Gold`,dis:P.gold<sh.bell,fn:()=>{P.gold-=sh.bell;P.bells++;log('Händlerglocke gekauft. „Läute, wenn du was brauchst. Einer von uns hört es immer.“','good')}},
+{l:'Segen',sub:`+8 max. LP · ${sh.bless} Gold`,dis:P.gold<sh.bless,fn:()=>{P.gold-=sh.bless;P.bonus.hp+=8;P.hp+=8;log('Ein warmes Licht umhüllt dich. +8 max. LP','good')}},
+{l:'Verarzten',sub:`Volle LP · ${sh.full} Gold`,dis:P.gold<sh.full||P.hp>=maxHp(),fn:()=>{P.gold-=sh.full;heal(maxHp());log('Deine Wunden schließen sich.','good')}},
+...P.bag.map((b,i)=>({l:'Verkaufen: '+b.name,sub:`${RAR[b.r].n} ${slotN(b)} · +${iValue(b)} Gold`,fn:()=>{P.bag.splice(i,1);P.gold+=iValue(b);log(`${b.name} verkauft. +${iValue(b)} Gold`,'goldt')}})),
+...(['weapon','armor','helm','gloves','jewel'].some(k=>P[k]&&P[k].curse)?[{l:'Fluch brechen',sub:`Löst alle Flüche auf deiner Ausrüstung · ${sh.curse} Gold`,dis:P.gold<sh.curse,fn:()=>{P.gold-=sh.curse;for(const k of ['weapon','armor','helm','gloves','jewel'])if(P[k]&&P[k].curse){P[k].curse=null;P[k].name=P[k].name.replace(' (verflucht)','')}log('Der Händler murmelt etwas und spuckt auf deine Ausrüstung. Der Fluch ist weg.','good')}}]:[]),
+{l:'Weitergehen',fn:next}]},'haendler')}
+
+const EVENTS=[
+
+()=>room('Ein Altar aus schwarzem Stein. Frisches Blut glänzt in seiner Schale. Etwas flüstert: „Gib mir von dir.“',()=>[
+ {l:'Blut opfern',sub:'−25 % LP, erhalte eine Gabe',fn:()=>{P.hp=Math.max(1,P.hp-Math.round(maxHp()*.25));log('Der Altar trinkt dein Blut.','bad');S.queue.unshift({k:'perks',t:'Gabe des Altars'});next()}},
+ {l:'Weitergehen',fn:next}]),
+()=>room('Eine schwere, beschlagene Truhe steht mitten im Raum. Zu sauber. Zu still.',()=>[
+ {l:'Öffnen',fn:()=>{if(R()<.35){log('Die Truhe hat Zähne! Ein Mimic!','bad');startCombat('elite',{name:'Mimic',base:'Mimic',ess:4})}else{const g=goldAmt(2);P.gold+=g;log(`Die Truhe ist voller Schätze. +${g} Gold`,'goldt');const it=genItem(2);S.queue.unshift({k:'loot',it});next()}}},
+ {l:'Ignorieren',fn:next}]),
+()=>room('Ein toter Ankerträger lehnt an der Wand. Die Narbe auf seiner Hand ist grau geworden. Der Stein hat ihn nicht mehr zurückgeholt.',()=>[
+ {l:'Durchsuchen',fn:()=>{if(R()<.3){log('Sein Schatten erhebt sich – voller Zorn!','bad');startCombat('elite',{name:'Rachsüchtiger Geist',base:'Rachsüchtiger Geist'})}else{const g=goldAmt(1.5);P.gold+=g;log(`Du nimmst ${g} Gold an dich.`,'goldt');const it=genItem(1);it.src='einem toten Ankerträger';S.queue.unshift({k:'loot',it});next()}}},
+ {l:'Begraben',fn:()=>{if(R()<.2){log('Als du den letzten Stein auflegst, schlägt er die Augen auf.','bad');startCombat('elite',{name:'Erwachter Toter',base:'Ghul'})}else{P.ess+=4;sys('Du deckst ihn mit Steinen zu. Etwas Warmes bleibt an dir hängen. +4 Seelensplitter');next()}}}]),
+()=>room('Eine Quelle schimmert in blassem Blau. Das Wasser summt leise.',()=>[
+ {l:'Trinken',fn:()=>{if(R()<.65){const h=heal(Math.round(maxHp()*.5));log(`Kraft durchströmt dich. +${h} LP`,'good')}else{const d=Math.round(maxHp()*.15);P.hp=Math.max(1,P.hp-d);log(`Das Wasser brennt in der Kehle. −${d} LP`,'bad')}next()}},
+ {l:'Flasche füllen',fn:()=>{if(R()<.25){const d=Math.round(maxHp()*.1);P.hp=Math.max(1,P.hp-d);log(`Das Wasser wird in der Flasche schwarz und stinkt nach Fäulnis. Dir wird übel. −${d} LP`,'bad')}else{P.potions++;log('Du füllst eine Flasche. Ein Heiltrank.','good')}next()}}]),
+()=>room('Ein verlassenes Lager. Schlafsäcke, eine kalte Feuerstelle, ein umgekippter Rucksack. Wer hier war, ist in Eile aufgebrochen.',()=>[
+ {l:'Durchsuchen',fn:()=>{P.kindling++;log('Im Rucksack steckt ein Bündel Zunder.','goldt');if(R()<.5){P.potions++;log('Und ein Heiltrank.','good')}if(R()<.25){const d=Math.round(maxHp()*.15);P.hp=Math.max(1,P.hp-d);log(`Eine Giftspinne krabbelt aus dem Schlafsack und beißt zu. −${d} LP`,'bad')}next()}},
+ {l:'Weitergehen',fn:next}]),
+()=>room('Ein Runenstein pulsiert im Takt deines Herzschlags.',()=>[
+ {l:'Berühren',fn:()=>{if(R()<.25){const o=pick([['−2 Angriff',()=>P.bonus.atk-=2],['−1 Verteidigung',()=>P.bonus.def-=1],['−10 max. LP',()=>{P.bonus.hp-=10;P.hp=Math.max(1,Math.min(P.hp,maxHp()))}]]);o[1]();log(`Die Rune frisst sich in deine Haut. Es fühlt sich falsch an: ${o[0]}.`,'bad')}else{const o=pick([['+2 Angriff',()=>P.bonus.atk+=2],['+1 Verteidigung',()=>P.bonus.def+=1],['+10 max. LP',()=>{P.bonus.hp+=10;P.hp+=10}],['+4 % Krit',()=>P.bonus.crit+=4]]);o[1]();sys(`Die Rune brennt sich in deine Haut: ${o[0]}.`)}next()}},
+ {l:'Weitergehen',fn:next}]),
+()=>room('In einer Zelle kauert ein gefesselter Händlerjunge. „Bitte … ich kann zahlen!“',()=>[
+ {l:'Befreien',fn:()=>{if(R()<.75){const g=goldAmt(2.5);P.gold+=g;P.potions++;log(`Dankbar gibt er dir ${g} Gold und einen Heiltrank.`,'goldt');next()}else{log('Der Junge grinst. Seine Zähne sind zu lang und zu spitz. Ein Ghul!','bad');startCombat('elite',{name:'Ghul in Kindergestalt',base:'Ghul'})}}},
+ {l:'Weitergehen',fn:next}]),
+()=>room('Eine Ankerträgerin sitzt an der Wand, das Bein voller Blut. „Hast du einen Trank übrig? Ich zahl’s dir zurück, versprochen.“',()=>[
+ {l:'Trank geben',sub:`Du hast ${P.potions}`,dis:P.potions<1,fn:()=>{P.potions--;if(R()<.75){const g=goldAmt(2);P.gold+=g;P.keys++;log(`„Danke. Hier, das hab ich weiter unten gefunden.“ +${g} Gold und 1 Schlüssel`,'goldt')}else{const g=Math.floor(P.gold*.5);P.gold-=g;log(`Kaum hat sie getrunken, springt sie auf und rennt los – mit ${g} Gold aus deinem Beutel.`,'bad')}next()}},
+ {l:'Weitergehen',fn:next}]),
+()=>room('Ein alter Mann zeichnet mit Kreide auf eine Karte, die er ständig neu anfängt. „Der Riss hat sich wieder bewegt. Aber ich kenn eine Abkürzung.“',()=>{const ok=(P.floor+1)%5!==0;return[
+ {l:'Abkürzung nehmen',sub:ok?'Überspringt eine Etage':'Nicht direkt vor einem Torwächter',dis:!ok,fn:()=>{if(R()<.7){P.floor++;if(P.floor>meta.best){meta.best=P.floor;saveMeta()}log(`Der Alte hatte recht. Du sparst dir eine Etage und bist jetzt auf Etage ${P.floor}.`,'good');next()}else{log('Die Abkürzung endet in einem Nest. Der Alte ist verschwunden.','bad');startCombat('elite')}}},
+ {l:'Ablehnen',fn:next}]}),
+()=>room('Ein Fremder sitzt an einem kleinen Feuer und hält dir einen dampfenden Becher hin. „Setz dich. Hier unten trinkt man nicht allein.“',()=>[
+ {l:'Mittrinken',fn:()=>{if(R()<.75){const h=heal(Math.round(maxHp()*.35));log(`Der Tee ist heiß und bitter, aber er tut gut. +${h} LP`,'good')}else{const g=Math.floor(P.gold*.3),d=Math.round(maxHp()*.1);P.gold-=g;P.hp=Math.max(1,P.hp-d);log(`Dir wird schwarz vor Augen. Als du aufwachst, ist der Fremde weg – und ${g} Gold auch. −${d} LP`,'bad')}next()}},
+ {l:'Ablehnen',fn:next}]),
+()=>room('Ein Ankerträger in schwarzer Rüstung versperrt den Gang. „Mal sehen, ob du was taugst. Gewinnst du, gehört dir mein Sold.“',()=>[
+ {l:'Duell annehmen',sub:'Starker Gegner, viel Gold',fn:()=>startCombat('elite',{name:'Der schwarze Duellant',base:'Abgrundritter',gm:6})},
+ {l:'Ablehnen',fn:()=>{log('Er spuckt vor dir aus und lässt dich vorbei.','dim');next()}}]),
+()=>room('Eine Pilgerin in grauer Kutte kniet am Weg. „Darf ich für dich beten? Es kostet dich nichts.“',()=>[
+ {l:'Segen annehmen',fn:()=>{if(R()<.7){P.bonus.hp+=12;P.hp+=12;log('Ihre Worte wärmen dich von innen. +12 max. LP','good')}else{P.bonus.atk-=2;log('Das ist kein Gebet. Etwas Kaltes kriecht dir in die Arme. −2 Angriff','bad')}next()}},
+ {l:'Ablehnen',fn:next}]),,
+()=>room('Hinter einem Gitter hockt ein Ankerträger in Ketten. „Die Kultisten haben mich hier vergessen. Hol mich raus, dann geh ich ein Stück mit dir.“',()=>[
+ {l:'Befreien',sub:P.comp?'Du hast schon jemanden dabei':'Kämpft ein paar Etagen mit dir',dis:!!P.comp,fn:()=>{const n=pick(COMPN),hp=Math.round(maxHp()*.6);P.comp={n,hp,max:hp,atk:Math.max(2,Math.round(atk()*.45)),left:ri(4,7),traitor:R()<.15};log(`${n} reibt sich die Handgelenke. „Danke. Ich halt dir den Rücken frei.“`,'good');next()}},
+ {l:'Weitergehen',fn:next}])
+];
+
+function rollPR(){const L=luckV()*.4,x=R()*100;return x<2+L*.3?3:x<9+L?2:x<28+L*1.5?1:0}
+function showPerks(title){const ch=[];for(let i=0;i<3+ul('wahl');i++){let r=rollPR();const pool=PERKS.filter(p=>(!p.max||pCount(p.id)<p.max)&&(!p.minR||p.minR<=r)&&!ch.some(c=>c.id===p.id));if(!pool.length)break;
+ const ex=pool.filter(p=>p.minR),p=ex.length&&R()<.5?pick(ex):pick(pool);ch.push({id:p.id,r:Math.max(r,p.minR||0)})}
+S.screen='perks';S.ptitle=title;S.choices=ch}
+function showLoot(it){S.screen='loot';S.item=it;sfx(it.src&&it.src!=='Hild'?'rustle':'creak');if(it.r===3&&!P.tut){meta.legend++;saveMeta()}}
+function showGate(){S.screen='gate'}
+
+function startRun(id){newRun(id);S.queue=[];logs=[];
+P.mod=R()<.35?'ruhig':pick(Object.keys(RMODS).filter(k=>k!=='ruhig'));if(S.weekly){const W=weekly();P.mod=W.mod;P.weekly=W.k;log(`Tiefe der Woche: ${RMODS[W.mod].n}. Ziel: Etage ${W.goal}.`,'sys')}
+const pk=meta.pack||{},got=[];if(pk.pot){P.potions+=pk.pot;got.push(pk.pot+' Heiltrank')}if(pk.fire){P.kindling+=pk.fire;got.push(pk.fire+' Zunder')}if(pk.key){P.keys+=pk.key;got.push('1 Schlüssel')}if(pk.bell){P.bells+=pk.bell;got.push('1 Händlerglocke')}
+if(pk.weapon){P.floor=2;const w=genItem(0,1,{w:Object.keys(WT)},['a','h','g','j']);P.floor=0;P.weapon=w;got.push(w.name)}
+const tk=(meta.take||[]).map(a=>meta.armory.find(i=>i.aid===a)).filter(Boolean);for(const it of tk){const k=SK[it.slot];if(P[k]&&P.bag.length<BAG)P.bag.push(P[k]);P[k]=it;got.push(it.name);meta.armory=meta.armory.filter(i=>i!==it)}if(tk.length){meta.take=[];P.hp=maxHp()}
+if(got.length){meta.pack={};saveMeta();log('Brenn hat dir ein Paket geschnürt: '+got.join(', ')+'.','goldt')}
+if(P.mod!=='ruhig')log(`Der Riss ist heute anders – ${RMODS[P.mod].n}: ${RMODS[P.mod].d}.`,'sys');
+if(S.trial&&RANG[(meta.rank||0)+1]){P.trial=(meta.rank||0)+1;log(`Rangprüfung zum ${RANG[P.trial].n}: Auf Etage ${RANG[P.trial].f} wartet ${TRIALB[P.trial-1]} als Prüfer des Ordens. Er ist stärker als sonst.`,'sys')}S.trial=false;
+if((meta.rank||0)>=1){const id=pick(Object.keys(CON)),n=CON[id].n();P.contract={id,n,r:CON[id].r(n)};log(`Ordensauftrag von Varga: ${CON[id].t(n)}. Belohnung ${P.contract.r} ✧.`,'sys')}
+if(S.jump&&(meta.rank||0)>=4){S.jump=false;P.jumped=1;P.floor=10;P.weapon=genItem(0,1,{w:Object.keys(WT)},['a','h','g','j']);P.armor=genItem(0,1,{a:Object.keys(AT)},['w','h','g','j']);while(P.lvl<7)gainXp(P.xpNext-P.xp);P.hp=maxHp();S.queue=S.queue.filter(q=>q.k!=='perks');for(let i=0;i<3;i++)S.queue.push({k:'perks',t:'Ankersprung – Fähigkeit '+(i+1)+' von 3'});log('Du springst. Die Seile fliegen an dir vorbei, dann schlägst du hart auf. Etage 10. Du lebst.','sys')}
+log(pick(['Du kletterst das Seil hinab. Oben wird das Licht kleiner, dann ist es weg.','Varga klopft dir auf die Schulter. „Bis später. So oder so.“ Dann geht es abwärts.','Der Riss riecht heute nach nassem Stein und Rauch. Du steigst hinab.']));if(S.queue.length)next();else goDoors()}
+function endRun(retreat){let recap=null;
+try{if(!retreat&&!P.tut){const lt=logs.slice(0,7).map(l=>l.t).join(' '),tips=[];
+ if(/gewaltigen Schlag/.test(lt))tips.push('„Wenn einer zum großen Schlag ausholt, geh in Deckung. Abwehren schluckt das meiste davon.“');
+ if(/Gift|brennst|Blutzoll/.test(lt))tips.push('„Gift und Feuer bringen dich langsam um. Trink deinen Trank früher, nicht erst, wenn es zu spät ist.“');
+ if(P.potions>0)tips.push(`„Du hattest noch ${P.potions} ${P.potions>1?'Heiltränke':'Heiltrank'} dabei. Hier oben nützen die dir nichts mehr.“`);
+ if(E&&E.type==='boss')tips.push('„Torwächter sagen dir, was sie vorhaben. Lies das, bevor du blind draufhaust.“');
+ if(E&&(E.type==='elite'||E.bounty))tips.push('„Gegen so einen ist Fliehen keine Schande. Tote kassieren keine Splitter.“');
+ if(P.lvl<P.floor*.45)tips.push('„Du warst zu schnell zu tief. Kämpf ein bisschen mehr, bevor du weitergehst.“');
+ if(!P.rests&&P.floor>=6)tips.push('„Kein einziges Mal am Feuer gerastet? Zunder ist zum Benutzen da.“');
+ tips.push('„Rückzug ist keine Schande. Wer lebend hochkommt, bringt mehr Splitter mit.“');
+ recap={killer:E?E.name:null,kt:E?E.type:null,perks:[...new Set(P.perks)].map(id=>{const p=PK(id);return p?pName(p,pCount(id)):''}).filter(Boolean),w:P.weapon?{n:P.weapon.name,r:P.weapon.r}:null,a:P.armor?{n:P.armor.name,r:P.armor.r}:null,tip:tips[0]}}}catch(e){recap=null}
+const raw=P.ess+P.floor+P.bosses*5,mult=(1+ul('seele')*.1)*(retreat?(P.lift?1.75:1.5):1)*rm('ess',1)*(hasS('tief')?1.25:1),tot=Math.round(raw*mult),goldHome=0,goldLost=P.gold;
+meta.gold=(meta.gold||0)+goldHome;const soulHome=matsToMeta(true),matsLost=Object.keys(P.mats||{}).map(k=>P.mats[k]+'× '+MATS[k].n);if(!retreat){meta.deaths=(meta.deaths||0)+1;if(!meta.scarOffer&&(meta.scars||[]).length<SCART.filter(t=>meta.deaths>=t).length){const pool=Object.keys(SCARS).filter(k=>!hasS(k));meta.scarOffer=pool.sort(()=>R()-.5).slice(0,2)}if(P.floor>=3)writeShade()}writeBoard(P.floor);if(P.vqFound){meta.vqPend='vq'+meta.vq}if(P.bqFound&&meta.bq===1)meta.bqPend=1;meta.cbest=meta.cbest||{};meta.cbest[P.cls]=Math.max(meta.cbest[P.cls]||0,P.floor);
+const oldR=rankOf(P.startBest||0);
+meta.essence+=tot;meta.best=Math.max(meta.best,P.floor);meta.runs++;meta.bosses+=P.bosses;saveMeta();
+clearRun();
+S.end={retreat,tot,goldHome,goldLost,soulHome,matsLost,floor:P.floor,lvl:P.lvl,kills:P.kills,cls:P.cls,newBest:P.floor>(P.startBest||0),rankUp:false,recap,line:retreat?'Varga nickt dir zu. „Lebend zurück. So mag ich das.“':pick(DEATHV)};S.vline=null;
+{const nr=RANG[(meta.rank||0)+1];if(nr&&!meta.rankPend&&P.floor>=nr.f&&(P.startBest||0)<nr.f)sys(`Varga will dich sprechen. Die Prüfung zum ${nr.n} wartet auf dich.`)}
+S.screen='end';S.queue=[];E=null}
+
+function nextGoal(){const o=UPG.filter(u=>ul(u.id)<u.max).map(u=>({n:u.name,c:u.cost(ul(u.id))})).concat(Object.keys(CLS).filter(id=>!meta.classes.includes(id)).map(id=>({n:'Kampfstil '+CLS[id].name,c:CLS[id].cost}))).sort((a,b)=>a.c-b.c);
+if(!o.length)return'';const a=o.filter(x=>x.c<=meta.essence);
+if(a.length)return `<p class="good small">Du hast ${meta.essence} ✧ – genug für ${a.length===1?a[0].n:a.length+' Verbesserungen'}!</p>`;
+return `<p class="small">Noch <b class="c-ess">${o[0].c-meta.essence} ✧</b> bis ${o[0].n}.</p>`}
+const FXRE=/(Kritische[rn]? Treffer!?|Krit-Chance|Krits?|Blutung|blutet|Gift|giftig|vergiftet|Lebensraub|saugt Leben|Betäubung|betäubt|benommen|aus den Latschen|Ausweichen|weichst aus|weicht aus|brennt|verbrennt|Raserei|rasend|regeneriert|Dornen|Rückwurf)/g;
+function fxClass(w){if(/^Krit/.test(w))return'crit';if(/lut/.test(w))return'bleed';if(/ift/.test(w))return'poison';if(/Lebensraub|saugt/.test(w))return'ls';if(/etäub|benommen|Latschen/.test(w))return'stun';if(/weich/.test(w))return'dodge';if(/brenn/.test(w))return'burn';if(/aserei|rasend/.test(w))return'rage';if(/regen/.test(w))return'regen';return'thorn'}
+const NUMRE=/([+−-]?\d+)(\s?%)?\s(max\.\s)?(Gold|LP|EP|Seelensplitter|✧|Angriff|Verteidigung|Vert\.|Schaden|Schlüssel|Zunder|Tränke|Heiltrank)/g;
+const NUMC={Gold:'gold',LP:'hp',EP:'xp',Seelensplitter:'ess','✧':'ess',Angriff:'atk',Verteidigung:'def','Vert.':'def',Schaden:'dmg',Schlüssel:'key',Zunder:'fire',Tränke:'pot',Heiltrank:'pot'};
+const NUMT={ess:[10,40,120],atk:[3,6,12],def:[3,6,12],key:[2,3,5],fire:[2,3,5],pot:[2,3,5],def0:[25,100,400]};
+function tier(c,v){const t=NUMT[c]||NUMT.def0;v=Math.abs(v);return v<t[0]?'':v<t[1]?' t2':v<t[2]?' t3':' t4'}
+function numc(t){return t.replace(NUMRE,(m,n,pc,mx,w)=>{let c=NUMC[w];const v=parseInt(n.replace('−','-'));if(c==='hp')c=/^[−-]/.test(n)?'hp':/^\+/.test(n)?'heal':'hp';return `<span class="c-${c}${pc?'':tier(c,v)}">${m}</span>`})}
+const fxc=t=>t==null?t:numc(String(t)).replace(FXRE,w=>`<span class="fx-${fxClass(w)}">${w}</span>`);
+/* ---------- Klang ---------- */
+const CFG=(()=>{const c={mus:70,fx:80,anim:1,size:1};try{Object.assign(c,JSON.parse(localStorage.getItem('riss_cfg')||'{}'))}catch(e){}return c})();
+function cfgSave(){try{localStorage.setItem('riss_cfg',JSON.stringify(CFG))}catch(e){}cfgApply()}
+function cfgApply(){try{const fs=[14,16,18.5][CFG.size]+'px';document.documentElement.style.fontSize=fs;document.body.style.fontSize=fs;document.body.classList.toggle('noanim',!CFG.anim)}catch(e){}
+ try{if(AU.ctx&&AU.mus){const t=AU.ctx.currentTime;AU.mus.gain.setTargetAtTime(Math.pow(CFG.mus/100,1.5)*1.2,t,.05);AU.fx.gain.setTargetAtTime(Math.pow(CFG.fx/100,1.5)*1.2,t,.05)}}catch(e){}}
+function openCfg(){if(S.screen!=='settings'&&S.screen!=='save'){S.prevScreen=S.screen;S.screen='settings'}else S.screen=S.prevScreen||'hub';render()}
+function saveCode(){return 'RISS1:'+btoa(unescape(encodeURIComponent(JSON.stringify(meta))))}
+function loadCode(t){t=String(t||'').trim();if(t.startsWith('{'))return JSON.parse(t);return JSON.parse(decodeURIComponent(escape(atob(t.replace(/^RISS1:/,'').replace(/\s+/g,'')))))}
+function importMeta(o){if(!o||typeof o!=='object'||typeof o.best!=='number'||typeof o.essence!=='number')throw new Error('bad');meta=Object.assign(defMeta(),o);saveMeta();try{clearRun()}catch(e){}P=null;E=null;S.queue=[];S.screen='hub';S.saveIn='';S.loadArm=false;S.vline=null;sys('Spielstand geladen. Willkommen zurück.')}
+function copyText(t){let ok=false;try{navigator.clipboard.writeText(t);ok=true}catch(e){}if(!ok){try{const a=document.createElement('textarea');a.value=t;a.style.position='fixed';a.style.opacity='0';document.body.appendChild(a);a.select();ok=document.execCommand('copy');a.remove()}catch(e){}}return ok}
+function saveFile(inp){const f=inp.files&&inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{S.saveIn=String(rd.result||'');S.loadArm=false;render()};rd.readAsText(f)}
+async function saveDownload(){let dl=null;try{if(typeof claude!=='undefined'&&claude.use)dl=await claude.use('downloads')}catch(e){}
+ if(dl){try{await dl.save({filename:'riss-spielstand.txt',data:saveCode()});S.saveMsg='Datei gespeichert.'}catch(e){S.saveMsg='Speichern abgebrochen.'}render();return}
+ try{const b=new Blob([saveCode()],{type:'text/plain'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='riss-spielstand.txt';document.body.appendChild(a);a.click();a.remove();S.saveMsg='Datei wurde heruntergeladen.'}catch(e){S.saveMsg='Herunterladen geht hier nicht. Nimm den Code.'}render()}
+const AU={ctx:null,on:true,master:null,amb:null,ambKey:null,drum:false,beat:0,last:{},timer:null};
+try{AU.on=localStorage.getItem('riss_snd')!=='0'}catch(e){}
+function auInit(){if(!AU.on)return;if(AU.ctx){if(AU.ctx.state==='suspended')AU.ctx.resume().catch(()=>{});return}const C=typeof window!=='undefined'&&(window.AudioContext||window.webkitAudioContext);if(!C)return;
+try{AU.ctx=new C();AU.master=AU.ctx.createGain();AU.master.gain.value=.9;AU.master.connect(AU.ctx.destination);AU.fx=AU.ctx.createGain();AU.fx.connect(AU.master);AU.mus=AU.ctx.createGain();AU.mus.connect(AU.master);cfgApply();const c=AU.ctx,b=c.createBuffer(1,c.sampleRate*2,c.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;AU.noise=b;
+AU.timer=setInterval(auTick,230)}catch(e){AU.ctx=null}}
+function auEnv(g,t,a,p,dc){g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(p,t+a);g.gain.exponentialRampToValueAtTime(.0001,t+a+dc)}
+function tone(f,dur,type='sine',vol=.2,when=0,slide=0,att=.008){const c=AU.ctx,t=c.currentTime+when,o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(20,f*slide),t+dur);auEnv(g,t,att,vol,dur);o.connect(g);g.connect(AU.fx);o.start(t);o.stop(t+dur+.05)}
+function nz(dur,freq,q=1,vol=.2,when=0,type='bandpass'){const c=AU.ctx,t=c.currentTime+when,s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();s.buffer=AU.noise;f.type=type;f.frequency.value=freq;f.Q.value=q;auEnv(g,t,.005,vol,dur);s.connect(f);f.connect(g);g.connect(AU.fx);s.start(t,Math.random());s.stop(t+dur+.05)}
+const SFX={
+hit:()=>{nz(.12,520,.7,.28,0,'lowpass');tone(85,.16,'sine',.26,0,.55)},
+crit:()=>{nz(.16,420,.7,.34,0,'lowpass');tone(70,.24,'sine',.34,0,.5);nz(.22,3400,9,.05,.01)},
+hurt:()=>{tone(68,.3,'sine',.3,0,.6);nz(.18,300,.6,.2,0,'lowpass')},
+heal:()=>{tone(392,1.1,'sine',.035,0,0,.25);tone(587,1.2,'sine',.025,.05,0,.3)},
+coin:()=>{nz(.05,5200,12,.035);nz(.06,6100,12,.025,.07)},
+rustle:()=>{for(let i=0;i<7;i++)nz(.07+Math.random()*.09,1600+Math.random()*2200,1.1,.13,i*.075+Math.random()*.04);nz(.5,500,.6,.05,0,'lowpass')},
+creak:()=>{nz(.025,3800,6,.12);nz(.02,2600,6,.08,.05);nz(.35,700,.8,.06,.12,'lowpass');nz(.12,260,.7,.22,.45,'lowpass');tone(95,.18,'sine',.16,.45,.7,.005);nz(.4,1800,.7,.025,.5)},
+level:()=>{tone(196,2.2,'sine',.05,0,0,.5);tone(294,2.2,'sine',.04,.1,0,.6);tone(392,2.4,'sine',.03,.2,0,.7)},
+win:()=>{nz(.6,700,.5,.08,0,'lowpass');tone(110,1,'sine',.08,0,.8,.05)},
+death:()=>{tone(110,2.2,'sine',.12,0,.4,.05);nz(1.6,240,.5,.12,0,'lowpass')},
+skill:()=>{const c=AU.ctx,t=c.currentTime,s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();s.buffer=AU.noise;f.type='bandpass';f.Q.value=1.5;f.frequency.setValueAtTime(300,t);f.frequency.exponentialRampToValueAtTime(1600,t+.28);auEnv(g,t,.03,.16,.32);s.connect(f);f.connect(g);g.connect(AU.fx);s.start(t);s.stop(t+.45)},
+step:()=>{nz(.06,220,.8,.12,0,'lowpass');nz(.06,200,.8,.09,.32,'lowpass')},
+door:()=>{tone(55,.8,'sine',.14,0,.8,.05);nz(.6,160,.6,.1,0,'lowpass')},
+block:()=>{nz(.07,900,4,.16);tone(160,.12,'sine',.12,0,.7)},
+fire:()=>{nz(.8,500,.5,.07,0,'lowpass');for(let i=0;i<5;i++)nz(.02,2200+Math.random()*1500,5,.03,Math.random()*.7)},
+boss:()=>{tone(41,1.8,'sine',.32,0,.7,.1);nz(1.4,140,.5,.1,0,'lowpass')}};
+function swish(dur,f0,f1,vol,when=0){const c=AU.ctx,t=c.currentTime+when,s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();s.buffer=AU.noise;f.type='bandpass';f.Q.value=1.3;f.frequency.setValueAtTime(f0,t);f.frequency.exponentialRampToValueAtTime(f1,t+dur);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+dur*.55);g.gain.exponentialRampToValueAtTime(.0001,t+dur);s.connect(f);f.connect(g);g.connect(AU.fx);s.start(t,Math.random());s.stop(t+dur+.05)}
+function ring(f,dur,vol,when=0){tone(f,dur,'sine',vol,when,0,.002);tone(f*2.76,dur*.6,'sine',vol*.5,when,0,.002);tone(f*5.4,dur*.35,'sine',vol*.25,when,0,.002)}
+function thud(f,dur,vol,when=0){tone(f,dur,'sine',vol,when,.55,.004);nz(dur*.7,420,.7,vol*.6,when,'lowpass')}
+const WSND={
+none:()=>{thud(90,.14,.26);nz(.06,500,.8,.12,0,'lowpass')},
+schwert:()=>{swish(.16,900,2600,.18);ring(2350,.28,.045,.11);thud(120,.12,.15,.12)},
+dolch:()=>{swish(.09,1600,3800,.14);nz(.02,4200,5,.08,.07);thud(170,.07,.1,.08)},
+axt:()=>{swish(.2,500,1500,.2);thud(85,.22,.3,.17);nz(.08,950,2,.16,.17)},
+speer:()=>{swish(.12,1200,3000,.16);nz(.03,2600,5,.1,.1);thud(135,.1,.14,.11)},
+hammer:()=>{swish(.25,280,850,.2);thud(55,.38,.42,.21);nz(.22,240,.6,.24,.21,'lowpass')},
+sense:()=>{swish(.3,700,2200,.2);ring(1750,.38,.035,.22);thud(110,.1,.12,.26)},
+saebel:()=>{swish(.12,1100,3200,.16);ring(2900,.22,.04,.09);thud(130,.1,.12,.1)}};
+function weaponSfx(crit){if(!AU.ctx||!AU.on)return;const n=Date.now();if(AU.last.w&&n-AU.last.w<70)return;AU.last.w=n;
+const ty=P&&P.weapon?(P.weapon.type||'schwert'):'none';try{(WSND[ty]||WSND.schwert)();if(crit){const d=ty==='hammer'||ty==='axt'?.24:.18;thud(62,.32,.34,d);nz(.14,650,.7,.2,d,'lowpass');if(['schwert','saebel','sense','dolch','speer'].includes(ty))ring(1900+Math.random()*600,.35,.05,d-.02)}}catch(e){}}
+const KSND={
+krieger:()=>{swish(.14,400,1000,.15);thud(70,.28,.4,.12);nz(.06,1300,3,.18,.12);ring(900,.4,.04,.12)},
+klinge:()=>{[0,.11,.22].forEach(w=>swish(.11,1300,3600,.15,w));ring(2700,.25,.03,.3)},
+magier:()=>{const c=AU.ctx,t=c.currentTime,s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();s.buffer=AU.noise;f.type='lowpass';f.frequency.setValueAtTime(300,t);f.frequency.exponentialRampToValueAtTime(2600,t+.35);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.3,t+.2);g.gain.exponentialRampToValueAtTime(.0001,t+.7);s.connect(f);f.connect(g);g.connect(AU.fx);s.start(t);s.stop(t+.75);for(let i=0;i<6;i++)nz(.02,2600+Math.random()*1800,5,.05,.2+Math.random()*.4);tone(80,.6,'sine',.12,.1,.8,.1)},
+blut:()=>{thud(58,.4,.34,0);nz(.3,380,.6,.22,.05,'lowpass');tone(45,.7,'sine',.18,.15,.9,.15);thud(58,.25,.2,.45)}};
+function skillSfx(){if(!AU.ctx||!AU.on||!P)return;try{(KSND[P.cls]||SFX.skill)()}catch(e){}}
+function sfx(k){if(!AU.ctx||!AU.on||!SFX[k])return;const n=Date.now();if(AU.last[k]&&n-AU.last[k]<70)return;AU.last[k]=n;try{SFX[k]()}catch(e){}}
+function sfxLog(t,c){if(!AU.ctx)return;if(/Kritischer Treffer|fünfte Schnitt/.test(t))weaponSfx(true);else if(/Zweiter Hieb/.test(t))weaponSfx(false);else if(/^Du triffst|Gegenangriff/.test(t))weaponSfx(false);else if(/ trifft: /.test(t))sfx('hit');else if(/trifft dich|Feueratem|zieht dir das Leben|gewaltigen Schlag|Blutzoll|^Gift: |Du brennst|Spiegel wirft/.test(t))sfx('hurt');else if(/Stufe \d+ erreicht/.test(t))sfx('level');else if(/Alles wird schwarz/.test(t))sfx('death');else if(/ ist besiegt/.test(t))sfx('win');else if(/Deckung|weichst aus|fängt den|Schild fängt/.test(t))sfx('block');else if(/^» /.test(t)){skillSfx();AU.last.w=Date.now()+250}else if(/versperrt das Tor|Schatten …|tritt aus dem Schatten/.test(t))sfx('boss');else if(/zündest den Zunder/.test(t))sfx('fire');else if(/Schlüssel dreht sich/.test(t))sfx('door');else if(c==='good'&&/\+\d+ LP/.test(t))sfx('heal');else if(c==='goldt'||/\+\d+ Gold/.test(t))sfx('coin')}
+const AMB={hub:{f:[110,164.8],cut:500,wind:.004,bp:900},a0:{f:[55,82.4],cut:300,wind:.012,bp:400},a1:{f:[49,73.4],cut:260,wind:.01,bp:350},a2:{f:[41.2,61.7],cut:380,wind:.014,bp:320},a3:{f:[61.7,92.5],cut:600,wind:.016,bp:600},a4:{f:[36.7,55],cut:220,wind:.012,bp:260}};
+function ambSet(key){if(!AU.ctx||AU.ambKey===key)return;AU.ambKey=key;const c=AU.ctx,t=c.currentTime;
+if(AU.amb){const old=AU.amb;old.g.gain.cancelScheduledValues(t);old.g.gain.setTargetAtTime(.0001,t,.8);setTimeout(()=>old.stop(),4000)}
+if(!key){AU.amb=null;return}const A=AMB[key],g=c.createGain();g.gain.value=.0001;g.connect(AU.mus);
+const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=A.cut;lp.connect(g);const lfo=c.createOscillator(),lg=c.createGain();lfo.frequency.value=.07;lg.gain.value=A.cut*.4;lfo.connect(lg);lg.connect(lp.frequency);lfo.start();
+const nodes=[lfo];A.f.forEach((f,i)=>{for(const d of [-4,4]){const o=c.createOscillator();o.type=i?'triangle':'sine';o.frequency.value=f;o.detune.value=d;const og=c.createGain();og.gain.value=i?.045:.085;o.connect(og);og.connect(lp);o.start();nodes.push(o)}});
+const ns=c.createBufferSource();ns.buffer=AU.noise;ns.loop=true;const nf=c.createBiquadFilter();nf.type='lowpass';nf.frequency.value=A.bp;nf.Q.value=.3;const ng=c.createGain();ng.gain.value=A.wind;ns.connect(nf);nf.connect(ng);ng.connect(g);ns.start();nodes.push(ns);
+g.gain.setTargetAtTime(.8,t,2);AU.amb={g,stop:()=>nodes.forEach(n=>{try{n.stop()}catch(e){}})}}
+const MUS={hub:{n:[110,130.8,146.8,164.8,196],w:'triangle',cut:900,v:.05,gap:[6,10],dur:5,iv:[1,1.5]},
+a0:{n:[55,65.4,73.4,82.4,98],w:'triangle',cut:520,v:.07,gap:[5,9],dur:6,iv:[1,1.5]},
+a1:{n:[73.4,87.3,98,110],w:'sawtooth',cut:480,v:.03,gap:[7,11],dur:8,iv:[1,1.189,1.498]},
+a2:{n:[41.2,46.2,55,61.7],w:'sawtooth',cut:320,v:.045,gap:[5,9],dur:4,iv:[1,1.5],pulse:1},
+a3:{n:[493.9,587.3,659.3,740,880],w:'sine',cut:3200,v:.016,gap:[3,7],dur:7,iv:[1,.5]},
+a4:{n:[36.7,38.9,51.9,55],w:'sawtooth',cut:240,v:.06,gap:[7,12],dur:10,iv:[1,1.06]}};
+function pad(fs,dur,w,cut,vol){const c=AU.ctx,t=c.currentTime,f=c.createBiquadFilter(),g=c.createGain();f.type='lowpass';f.frequency.value=cut;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(vol,t+dur*.4);g.gain.linearRampToValueAtTime(.0001,t+dur);f.connect(g);g.connect(AU.mus);for(const fr of fs)for(const d of [-6,6]){const o=c.createOscillator();o.type=w;o.frequency.value=fr;o.detune.value=d;o.connect(f);o.start(t);o.stop(t+dur+.1)}}
+function thud(when,v){const c=AU.ctx,t=c.currentTime+when,o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(68,t);o.frequency.exponentialRampToValueAtTime(38,t+.25);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+.38);o.connect(g);g.connect(AU.mus);o.start(t);o.stop(t+.45)}
+function musTick(){const k=AU.ambKey,M=MUS[k];if(!M||!AU.mus)return;const n=AU.ctx.currentTime;
+if(AU.mKey!==k){AU.mKey=k;AU.mNext=n+2.5;return}
+if(M.pulse&&!AU.drum&&n>=(AU.pNext||0)){AU.pNext=n+1.75;thud(0,.11);thud(.27,.07)}
+if(n<AU.mNext)return;AU.mNext=n+M.gap[0]+R()*(M.gap[1]-M.gap[0]);const a=pick(M.n);pad(M.iv.map(x=>a*x),M.dur,M.w,M.cut,M.v)}
+function auTick(){if(!AU.ctx||!AU.on||(typeof document!=='undefined'&&document.hidden))return;const k=AU.ambKey;try{musTick()}catch(e){}
+if(k==='hub'&&R()<.12)nz(.02,2200+R()*1500,5,.018);
+
+if(AU.drum){AU.beat++;if(AU.beat%5===0){tone(52,.5,'sine',.3,0,.5,.01);nz(.1,110,.6,.06,0,'lowpass')}}}
+function audioScene(){if(!AU.ctx||!AU.on)return;const menu=['hub','end','forge','beast','guild','bounty','quests','chronik','scar'];
+const key=(!P||menu.includes(S.screen))?'hub':'a'+Math.min(4,AREAS.indexOf(areaOf(Math.max(1,P.floor))));ambSet(key);AU.drum=!!(S.screen==='combat'&&E&&(E.type==='boss'||E.bounty))}
+function sndToggle(){AU.on=!AU.on;try{localStorage.setItem('riss_snd',AU.on?'1':'0')}catch(e){}if(AU.on){auInit();if(AU.ctx){AU.master.gain.setTargetAtTime(.9,AU.ctx.currentTime,.1);AU.ambKey=null;audioScene()}}else if(AU.ctx){AU.master.gain.setTargetAtTime(.0001,AU.ctx.currentTime,.1)}sndLabel()}
+function sndLabel(){const b=$('#snd');if(b)b.textContent=AU.on?'♪ Ton an':'♪ Ton aus'}
+
+const KIND={Goblin:'hum',Riesenratte:'beast',Schleim:'slime',Kobold:'hum',Höhlenfledermaus:'wing',Ghul:'hum',Skelettkrieger:'hum',Grabwächter:'hum',Banshee:'spec',Knochenhund:'beast',Feuerimp:'wing',Lavagolem:'golem',Salamander:'beast',Höllenhund:'beast',Aschenkultist:'hum',Eiswolf:'beast',Frostriese:'golem',Gletscherwyrm:'wyrm',Eishexe:'hum',Reifgeist:'spec',Leerenwandler:'spec',Abgrundritter:'hum',Seelenfresser:'spec',Gesichtsloser:'spec',Sternenfresser:'wyrm',Mimic:'chest','Rachsüchtiger Geist':'spec',Schatten:'spec'};
+/* ---------- Bilder ---------- */
+const TINT=['#8fb39a','#9d98cc','#e0894e','#8ec9e6','#b48be0'];
+const PART=['dust','dust','ember','snow','mote'];
+let ARTN=0;
+function prng(seed){let x=seed;return()=>{x=(x*16807)%2147483647;return x/2147483647}}
+function particles(kind,n,col,seed){const r=prng(seed);let h='';for(let i=0;i<n;i++){const x=(r()*360).toFixed(1),y=(r()*140).toFixed(1),s=(r()*1+.4).toFixed(2),d=(r()*6).toFixed(2),t=(kind==='ember'?3+r()*3:kind==='snow'?6+r()*5:9+r()*8).toFixed(2);
+h+=`<circle class="pt ${kind}" cx="${x}" cy="${y}" r="${s}" fill="${col}" style="animation-delay:-${d}s;animation-duration:${t}s"/>`}return h}
+let GLN=0;function glow(cx,cy,rx,ry,col,peak,cls='breathe-l'){const g='gw'+(++GLN);return `<defs><radialGradient id="${g}"><stop offset="0" stop-color="${col}" stop-opacity="${peak}"/><stop offset=".45" stop-color="${col}" stop-opacity="${(peak*.35).toFixed(3)}"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></radialGradient></defs><ellipse class="${cls}" cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="url(#${g})"/>`}
+function sceneSvg(id,inner,defs=''){return `<div class="art"><svg viewBox="0 0 360 130" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><radialGradient id="vg${id}" cx="50%" cy="55%" r="70%"><stop offset="55%" stop-color="#0c0c0e" stop-opacity="0"/><stop offset="100%" stop-color="#0c0c0e" stop-opacity="1"/></radialGradient><filter id="bl${id}" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="2.2"/></filter><filter id="bb${id}" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9"/></filter>${defs}</defs>${inner}<rect width="360" height="130" fill="url(#vg${id})"/></svg></div>`}
+function artCamp(){const id=++ARTN;return sceneSvg(id,`
+<line x1="0" y1="104" x2="360" y2="104" stroke="#3a3833" stroke-width=".8"/>
+${glow(96,100,34,24,"#ff9b4a",.35)}
+<circle class="flick" cx="96" cy="101" r="2.4" fill="#ffc47a" filter="url(#bl${id})"/><circle cx="96" cy="101" r="1.1" fill="#ffe3b0"/>
+${particles('ember',9,'#ffb36b',7).replace(/cx="(\d+\.?\d*)"/g,(m,v)=>`cx="${(86+(+v%20)).toFixed(1)}"`).replace(/cy="(\d+\.?\d*)"/g,()=>'cy="98"')}
+<path d="M196 104 L204 58 L226 44 L248 52 L258 104 Z" fill="#050506" stroke="#2c2a33" stroke-width=".8"/>
+<path class="vein" d="M222 60 L226 74 L219 86 M226 74 L236 80" stroke="#8a74c8" stroke-width="1" fill="none"/>
+<circle class="tw" cx="40" cy="22" r=".9" fill="#d9d6cf"/><circle class="tw d2" cx="150" cy="14" r=".7" fill="#d9d6cf"/><circle class="tw d3" cx="300" cy="26" r=".8" fill="#d9d6cf"/><circle class="tw" cx="330" cy="12" r=".6" fill="#d9d6cf"/>`)}
+function artCorridor(ai,boss){const id=++ARTN,c=boss?'#d8644f':TINT[ai]||TINT[0];
+const arch=(w,h,o)=>{const x=180-w/2,y=104;return `<path d="M${x} ${y} L${x} ${y-h+w/2} A${w/2} ${w/2} 0 0 1 ${x+w} ${y-h+w/2} L${x+w} ${y}" fill="none" stroke="${c}" stroke-width=".9" opacity="${o}"/>`};
+return sceneSvg(id,`<line x1="0" y1="104" x2="360" y2="104" stroke="${c}" stroke-width=".6" opacity=".35"/>
+${arch(150,120,.5)}${arch(96,84,.3)}${arch(60,58,.18)}${arch(36,38,.1)}
+${glow(180,82,30,24,c,boss?.32:.14)}
+${boss?`<g class="blink"><ellipse cx="172" cy="82" rx="2.6" ry="1.4" fill="#ff6a4d" filter="url(#bl${id})"/><ellipse cx="188" cy="82" rx="2.6" ry="1.4" fill="#ff6a4d" filter="url(#bl${id})"/><ellipse cx="172" cy="82" rx="1.3" ry=".7" fill="#ffd0c0"/><ellipse cx="188" cy="82" rx="1.3" ry=".7" fill="#ffd0c0"/></g>`:''}
+${particles(PART[ai],16,c,11+ai)}`)}
+function artFire(){const id=++ARTN;return sceneSvg(id,`<line x1="0" y1="104" x2="360" y2="104" stroke="#3a3833" stroke-width=".8"/>
+${glow(180,98,70,40,"#ff8a3a",.38)}
+<circle class="flick" cx="180" cy="98" r="7" fill="#ffb15c" filter="url(#bl${id})"/><circle class="flick d2" cx="180" cy="99" r="3" fill="#ffe1a8"/>
+${particles('ember',14,'#ffb36b',23).replace(/cx="(\d+\.?\d*)"/g,(m,v)=>`cx="${(165+(+v%30)).toFixed(1)}"`).replace(/cy="(\d+\.?\d*)"/g,()=>'cy="94"')}`)}
+function artMerchant(){const id=++ARTN;return sceneSvg(id,`<line x1="0" y1="104" x2="360" y2="104" stroke="#3a3833" stroke-width=".8"/>
+<line x1="180" y1="0" x2="180" y2="30" stroke="#55524b" stroke-width=".8"/>
+<g class="sway2"><line x1="180" y1="30" x2="180" y2="52" stroke="#6b675e" stroke-width=".8"/><rect x="174" y="52" width="12" height="16" fill="none" stroke="#8a8478" stroke-width=".8"/><circle class="flick" cx="180" cy="60" r="3" fill="#ffc47a" filter="url(#bl${id})"/>${glow(180,60,22,22,"#ffae57",.4,"")}</g>`)}
+const EYEK={beast:{y:92,gap:9,rx:2.2,ry:1.1,c:'#ff6a4d'},hum:{y:58,gap:8,rx:2,ry:1.1,c:'#ff6a4d'},golem:{y:46,gap:20,rx:3.2,ry:1.6,c:'#ffa24d'},spec:{y:54,gap:10,rx:2.4,ry:2.4,c:'#9fd3ff'},wing:{y:66,gap:5,rx:1.4,ry:1.1,c:'#ff6a4d'},slime:{y:86,gap:14,rx:1.8,ry:1.8,c:'#b7f08a'},wyrm:{y:72,gap:7,rx:2.6,ry:1,c:'#ffd04d'},chest:{y:84,gap:14,rx:2,ry:2,c:'#ff6a4d'},boss:{y:52,gap:16,rx:4,ry:2,c:'#ff4d3a'}};
+function artEnemy(e){const id=++ARTN,ai=Math.min(4,AREAS.indexOf(areaOf(Math.max(1,P.floor)))),boss=e.type==='boss',k=boss?'boss':(KIND[e.base]||'hum'),K=EYEK[k],big=boss||e.type==='elite'||!!e.bounty,c=TINT[ai]||TINT[0];
+const eye=x=>`<ellipse cx="${x}" cy="${K.y}" rx="${K.rx*1.8}" ry="${K.ry*1.8}" fill="${K.c}" filter="url(#bl${id})"/><ellipse cx="${x}" cy="${K.y}" rx="${K.rx*.6}" ry="${K.ry*.6}" fill="#fff2e8"/>`;
+const extra=k==='slime'?[180-K.gap*2,180+K.gap*2]:k==='spec'&&big?[180]:[];
+return sceneSvg(id,`<line x1="0" y1="104" x2="360" y2="104" stroke="${c}" stroke-width=".6" opacity=".3"/>
+${glow(180,K.y+6,boss?80:big?60:44,boss?46:big?34:26,big?"#c0352a":c,big?.3:.12)}
+${boss?`<g class="spin" style="transform-origin:180px ${K.y}px"><circle cx="180" cy="${K.y}" r="34" fill="none" stroke="#c0352a" stroke-width=".7" stroke-dasharray="2 6" opacity=".7"/><circle cx="180" cy="${K.y}" r="44" fill="none" stroke="#c0352a" stroke-width=".4" opacity=".35"/></g>`:''}
+<g class="foe-eyes blink ${k==='wing'?'hover':'breathe-e'}">${eye(180-K.gap)}${eye(180+K.gap)}${extra.map(eye).join('')}</g>
+${particles(PART[ai],10,c,31+ai)}`)}
+const IMG={"g1":{"e":[[49.8,12.5,1.4],[43.7,15.3,1.4]],"c":"y"},"g2":{"e":[[47.3,0.5,0.8],[49.3,0.8,0.8]],"c":"b"},"g3":{"e":[[51.3,18.8,0.9],[45.5,20.4,1.1]],"c":"y"},"g4":{"e":[[47.6,1.9,0.8],[49.5,1.8,0.8]],"c":"p"},"g5":{"e":[[58.4,40.5,0.8],[67.7,40.8,0.8]],"c":"y"},"g6":{"e":[[51.0,6.9,1.1],[49.2,7.1,1.1]],"c":"o","g":[[50,45,25,"o","slow"]]},"g7":{"e":[[47.8,4.9,0.6],[49.9,4.9,0.6]],"c":"b"},"g8":{"e":[[45.5,29.7,0.8],[53.9,30.0,0.8]],"c":"r"},"g9":{"e":[[44.1,9.8,1.9],[60.5,9.9,1.9],[50.5,21.4,4.8],[35.9,23.1,1.9],[65.0,30.1,4.8],[39.2,33.0,1.1],[53.0,36.4,1.9],[67.0,40.4,1.4],[60.3,46.1,2.0],[77.7,59.1,4.8],[55.7,72.8,1.4]],"c":"g"},"g10":{"e":[[45.3,47.2,1.4],[52.7,48.1,1.4]],"c":"y"},"g11":{"e":[[46.3,31.6,1.6],[56.4,33.8,1.6]],"c":"y"},"g12":{"e":[[50.0,0.1,1.2],[52.6,1.0,1.2]],"c":"o"},"b1":{"e":[[50.5,10.4,1.2],[46.7,12.2,1.4]],"c":"y"},"b2":{"e":[[52.2,7.0,1.2],[49.4,7.4,1.2]],"c":"b"},"b3":{"e":[[51.5,2.8,1.4],[48.4,3.2,1.2]],"c":"o","g":[[52,40,25,"o","fl2"]],"p":"embers"},"b4":{"e":[[52.0,3.9,1.6],[49.2,4.2,1.4]],"c":"b","p":"snow"},"b5":{"e":[[52.0,8.5,1.2],[54.2,9.3,1.2],[47.0,9.6,1.2],[48.4,11.2,1.2],[50.0,11.6,1.4],[46.3,13.2,1.2],[54.0,15.1,1.2],[51.1,15.6,1.4],[47.9,17.7,1.2],[51.8,18.0,1.4],[53.9,18.6,1.2],[49.8,21.2,1.2],[46.4,21.4,1.2],[52.3,21.6,1.4],[48.3,22.6,1.2],[53.9,22.9,1.2],[49.0,26.6,1.2],[51.9,28.2,1.2],[53.0,32.1,1.2],[49.4,32.3,1.2],[48.3,35.4,1.2],[51.1,37.1,1.2],[54.8,37.5,1.2],[43.9,38.3,1.2],[48.7,40.7,1.2],[51.1,43.6,1.2],[55.2,44.0,1.2],[45.7,46.5,1.2],[49.6,47.1,1.2],[55.3,48.7,1.2],[51.2,49.4,1.2],[43.0,49.5,1.2],[51.1,53.2,1.4],[56.7,54.2,1.4],[43.9,57.0,1.2],[52.7,59.2,1.2],[48.0,59.5,1.2],[45.9,61.7,1.2],[54.4,65.4,1.2],[44.9,66.0,1.2],[59.1,69.8,1.2],[56.1,71.7,2.2],[39.9,71.8,1.2],[45.1,72.6,1.2],[48.1,72.8,1.2],[50.2,75.0,2.5],[41.6,77.6,1.2],[44.2,78.1,1.2],[46.9,80.5,1.2],[42.7,82.1,1.2],[38.1,82.8,1.1],[52.4,82.9,1.2],[43.9,88.3,1.4],[33.7,89.8,1.2],[55.2,90.7,1.2],[37.4,91.5,1.2],[61.4,95.7,2.5],[57.6,97.2,2.5]],"c":"v"},"t1":{"e":[[53.3,1.0,1.2],[50.4,1.2,1.2]],"c":"y"},"t2":{"e":[[47.0,1.9,1.2],[49.3,2.1,1.2]],"c":"b"},"t3":{"e":[[50.3,12.6,2.0],[43.5,13.6,2.2]],"c":"o","g":[[48,45,22,"o","fl2"]],"p":"embers"},"t4":{"e":[[50.1,12.9,1.6],[48.2,13.1,1.6]],"c":"b","p":"snow"},"t5":{"e":[[50.5,4.0,0.5],[49.0,4.0,0.6]],"c":"v"},"k1":{"e":[[53.7,38.0,1.2],[63.8,38.4,1.2]],"c":"y"},"k2":{"e":[[54.8,7.8,1.4],[60.6,10.9,1.2],[48.9,11.4,1.4],[41.7,12.7,1.2],[44.4,15.9,1.2],[41.3,21.9,1.2],[46.3,22.6,1.2],[64.9,24.9,1.2],[26.5,27.2,1.2],[68.5,30.2,1.2],[76.0,32.6,1.2],[28.5,36.8,1.2],[45.5,37.7,1.4],[20.7,39.3,1.2],[68.3,42.6,1.2],[75.4,43.8,1.2],[81.6,49.0,1.2],[15.7,52.6,1.2],[48.5,55.7,1.2],[27.2,56.3,2.0],[84.3,58.4,1.2],[69.3,59.7,1.4],[44.9,67.7,1.2],[13.2,68.6,1.4],[92.5,69.4,1.2],[21.0,72.8,1.4],[75.8,74.5,1.2],[62.6,80.2,1.2],[19.7,82.8,1.4],[42.0,82.7,1.2]],"c":"g"},"k3":{"e":[[49.7,1.5,1.4],[52.2,1.5,1.4]],"c":"b"},"k4":{"e":[],"c":"p"},"k5":{"e":[[50.6,2.8,1.4],[47.9,3.5,1.4]],"c":"o","g":[[30,55,20,"o","fl2"]],"p":"embers"},"k6":{"e":[[48.2,2.8,1.4],[51.2,2.7,1.2]],"c":"o","g":[[49.5,19,8,"o","fl2"],[50,88,40,"o","fl2"]],"p":"embers"},"k7":{"e":[[43.9,36.6,1.4],[51.3,36.7,1.4]],"c":"b","p":"snow"},"k8":{"e":[[49.0,6.7,1.4],[50.7,6.6,1.4]],"c":"b","p":"snow"},"k9":{"e":[[48.9,2.1,1.2],[50.8,3.3,1.2]],"c":"p"},"k10":{"e":[[51.0,0.2,1.2]],"c":"v"},"o1":{"g":[[28.6,56,7,"o","fl"],[43,30,10,"v","pulse"],[69,8,5,"p","slow"]],"fog":1},"o2":{"g":[[84.6,11,6,"o","fl"],[60,80,15,"p","slow"]],"p":"dust"},"o3":{"g":[[25,80,6,"o","fl"],[81,90,6,"o","fl"],[35,64,4,"o","fl"],[66,70,4,"o","fl"],[50,46,4,"o","fl"]],"p":"dust"},"o4":{"g":[[62,80,18,"o","fl2"],[60,50,12,"o","fl2"],[15,46,4,"o","fl"],[88,30,4,"o","fl"]],"p":"embers"},"o5":{"g":[[45,45,30,"b","slow"]],"p":"snow","fog":1},"o6":{"g":[[70,22,4,"r","eye"]],"p":"dust"},"o7":{"g":[[18,12,6,"o","fl"],[79.5,12,6,"o","fl"],[49.8,56,4,"r","eye"]],"p":"dust"},"o8":{"g":[[51.4,66,9,"o","fl"]]},"o9":{"g":[[60.4,16,6,"o","fl"]],"p":"dust"},"x1":{"g":[[28.6,56,6,"v","pulse"]]},"x2":{"g":[[83,47,12,"o","fl"],[40,76,10,"o","fl"]]},"x3":{"g":[[50,47,10,"v","pulse"]],"p":"dust"},"x4":{"g":[[17.6,44.5,5,"o","fl"]]}};
+const FOE={Goblin:'g1',Kobold:'g1',Skelettkrieger:'g2',Grabwächter:'g2',Abgrundritter:'g2',Ghul:'g3','Erwachter Toter':'g3',Aschenkultist:'g4',Eishexe:'g4',Riesenratte:'g5',Knochenhund:'g5',Höllenhund:'g5',Eiswolf:'g5',Salamander:'g5',Lavagolem:'g6',Frostriese:'g6',Banshee:'g7',Reifgeist:'g7',Leerenwandler:'g7',Seelenfresser:'g7',Gesichtsloser:'g7',Schatten:'g7','Rachsüchtiger Geist':'g7','Höhlenfledermaus':'g8',Feuerimp:'g8',Schleim:'g9',Gletscherwyrm:'g10',Sternenfresser:'g10',Mimic:'g11',
+'Goblinhäuptling Krag':'b1','Der Knochenkönig':'b2','Ignaroth, Herr der Glut':'b3','Hrimfang der Ewige':'b4','Das Namenlose':'b5','Brakk, der Grubenoger':'t1','Morvane, die Grabhüterin':'t2','Die Aschenbrut':'t3','Skadi, die Eiswächterin':'t4','Der Leerenhüter':'t5'};
+const BKEY={grimmzahn:'k1',mutter:'k2',aldric:'k3',weinende:'k4',ossa:'k5',schlacke:'k6',weissfell:'k7',ylva:'k8',zaehlende:'k9',kaelen:'k10'};
+function foeKey(e){if(e.bounty&&BKEY[e.bounty])return BKEY[e.bounty];if(FOE[e.base])return FOE[e.base];if(e.type==='boss')return'g12';const n=String(e.name||'');for(const b in FOE)if(n.includes(b))return FOE[b];return'g7'}
+const AREAP=['dust','dust','embers','snow','dust'];
+function artImg(k,o={}){const d=IMG[k];if(!d)return'';const src=`img/${k}.webp`;let h=`<img class="base" src="${src}" alt="">`;
+const gl=(x,y,r,c,a)=>{const m=`radial-gradient(ellipse ${r}% ${(r*1.78).toFixed(1)}% at ${x}% ${y}%,#000 30%,transparent 100%)`;return `<img class="hl c-${c} a-${a}" src="${src}" alt="" style="-webkit-mask-image:${m};mask-image:${m}">`};
+if(o.rite){h+=gl(43,30,16,'v','pulse');h+=gl(43,30,9,'v','fl2')}
+for(const g of d.g||[]){h+=gl(...g);if(g[4]==='fl'){const r=g[2]*2.6;h+=`<div class="pool" style="background:radial-gradient(ellipse ${r}% ${(r*1.78).toFixed(1)}% at ${g[0]}% ${g[1]}%,rgba(255,150,60,.22),rgba(255,120,40,.08) 45%,transparent 100%)"></div>`}}
+if(d.e&&d.e.length){const ec=o.elite?'r':d.c,many=d.e.length>4,mk=d.e.map(e=>{const r=Math.max(e[2]*1.3,many?1.4:2);return `radial-gradient(ellipse ${r}% ${(r*1.78).toFixed(1)}% at ${e[0]}% ${e[1]}%,#000 25%,transparent 100%)`}).join(',');
+ h+=`<img class="hl c-${ec} a-eye" src="${src}" alt="" style="-webkit-mask-image:${mk};mask-image:${mk}">`;
+ const EC={y:'255,214,120',b:'150,200,255',r:'255,60,40',o:'255,140,40',v:'190,140,255',g:'150,255,120',p:'235,230,215'}[ec]||'255,220,150';
+ const bg=d.e.map(e=>{const r=Math.max(e[2]*(many?.55:.75),.7);return `radial-gradient(ellipse ${r}% ${(r*1.78).toFixed(1)}% at ${e[0]}% ${e[1]}%,rgba(${EC},.95) 0%,rgba(${EC},.35) 45%,transparent 100%)`}).join(',');
+ h+=`<div class="eg a-eye" style="background-image:${bg}"></div>`}
+let pt=d.p;if(!pt&&o.area!=null)pt=AREAP[o.area];
+if(pt){const px=d.px,n=pt==='snow'?16:pt==='embers'?12:10;for(let i=0;i<n;i++){const x=px!=null?px-3+((i*37)%60)/10:((i*61)%97)+1.5,dl=((i*0.83)%5).toFixed(2),du=(pt==='snow'?6:pt==='embers'?2.6:9)+((i*0.71)%3);
+ const top=pt==='snow'?'-4':pt==='embers'?(d.py!=null?d.py:96):(i*29)%90;
+ h+=`<i class="pt ${pt}" style="left:${x.toFixed(1)}%;top:${top}%;animation-delay:-${dl}s;animation-duration:${du.toFixed(2)}s"></i>`}}
+if(d.fog)h+='<div class="fog"></div><div class="fog f2"></div>';
+return `<div class="art img${o.elite?' elite':''}${o.boss?' boss':''}">${h}<div class="edge"></div></div>`}
+function artFor(){const s=S.screen;
+if(s==='hub')return artImg('o1');if(s==='rite')return artImg('o1',{rite:true});if(s==='forge')return artImg('x2');if(s==='story'&&S.story&&/^bq/.test(S.story.id))return IMG.x4?artImg('x4'):'';if(s==='story'||s==='quests')return artImg('x1');
+if(!P)return'';const ai=Math.min(4,Math.max(0,AREAS.indexOf(areaOf(P.floor||1))));
+if(s==='doors'){if(S.fireOpen)return artImg('o8');const nf=P.floor+1,boss=P.tut?nf===3:nf%5===0;if(boss)return artImg('o7');return artImg('o'+(2+Math.min(4,Math.max(0,AREAS.indexOf(areaOf(nf))))))}
+if(s==='combat'&&E)return artImg(foeKey(E),{elite:E.type==='elite',boss:E.type==='boss',area:ai});
+if(s==='room'){if(S.roomKey==='haendler')return artImg('o9');if(S.roomKey==='rast')return artImg('o8');if(S.roomKey==='tresorTuer')return artImg('x3');if(S.roomKey==='schrein')return artImg('o3')}
+return''}
+
+
+/* ---------- Koop ---------- */
+const NET={db:null,user:null,uid:null,names:{},msgs:[],shades:[],ready:false,st:null};
+const esc=t=>String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const WALL=['Vorsicht, hier lauert ein Elite.','Hier hilft nur Abwehren.','Spart euch die Tränke für den Wächter.','Haltet einen Schlüssel bereit.','Hier bin ich gestorben. Seid schlauer als ich.','Nicht aus der Quelle trinken!','Der Händler hier unten ist ehrlich.','Kehrt um, solange ihr könnt.','Weiter! Es lohnt sich.','Grüßt Varga von mir.'];
+async function netInit(){try{if(typeof claude==='undefined'||!claude.use)return;const [db,user]=await Promise.all([claude.use('db'),claude.use('user')]);NET.db=db;NET.user=user;if(user){try{NET.uid=await user.id()}catch(e){}}if(!db)return;NET.ready=true;await cloudLoad();await netRefresh();if(['hub','guild'].includes(S.screen))render()}catch(e){}}
+async function netRefresh(){if(!NET.db)return;try{const [m,sh]=await Promise.all([NET.db.collection('msgs').orderBy('ts','desc').limit(300).get(),NET.db.collection('shades').orderBy('ts','desc').limit(200).get()]);NET.msgs=m.docs.map(d=>Object.assign({},d.data(),{id:d.id}));NET.shades=sh.docs.map(d=>Object.assign({},d.data(),{id:d.id}));await resolveNames([...NET.msgs,...NET.shades].map(x=>x.uid))}catch(e){}}
+async function resolveNames(ids){if(!NET.user||!NET.user.profiles)return;const u=[...new Set(ids.filter(x=>typeof x==='string'&&x&&!(x in NET.names)))];if(!u.length)return;try{const ps=await NET.user.profiles(u);for(const id of u)NET.names[id]=(ps&&ps[id]&&ps[id].name)||''}catch(e){}}
+const whoOf=uid=>uid&&uid===NET.uid?'dir':(NET.names[uid]||'einem anderen Ankerträger');
+function cloudSave(){if(!NET.db||!NET.uid)return;clearTimeout(NET.st);NET.st=setTimeout(()=>{try{NET.db.doc('data/users/'+NET.uid+'/save').set({m:JSON.stringify(meta),ts:meta._ts||0}).catch(()=>{})}catch(e){}},2500)}
+async function cloudLoad(){if(!NET.db||!NET.uid)return;try{const d=await NET.db.doc('data/users/'+NET.uid+'/save').get();if(d.exists){const x=d.data();if(x&&x.ts>(meta._ts||0)&&!P&&typeof x.m==='string'){meta=Object.assign(defMeta(),JSON.parse(x.m));try{localStorage.setItem(SAVE,JSON.stringify(meta))}catch(e){}sys('Spielstand von einem anderen Gerät geladen.');render();return}}cloudSave()}catch(e){}}
+function wallMsg(f){if(!NET.msgs.length||R()>.5)return;const c=NET.msgs.filter(m=>m.floor===f&&WALL[m.t]);if(!c.length)return;const m=pick(c);log(`Kreideschrift an der Wand: „${WALL[m.t]}“ – von ${esc(whoOf(m.uid))}`,'sys')}
+function leaveMsg(t){if(!NET.db)return;P.msgLeft=(P.msgLeft==null?2:P.msgLeft)-1;const doc={uid:NET.uid||'',floor:P.floor,t,ts:Date.now()};NET.db.collection('msgs').add(doc).then(()=>{NET.msgs.unshift(doc)}).catch(()=>{log('Die Kreide bricht ab – die Botschaft ließ sich nicht speichern.','dim');render()});log(`Du kritzelst an die Wand: „${WALL[t]}“`,'sys')}
+function safeItem(x,nm){if(!x||!SK[x.slot])return null;const TT=x.slot==='w'?WT:x.slot==='a'?AT:XT[x.slot];if(!TT||!TT[x.type])return null;const it={slot:x.slot,type:x.type,r:Math.max(0,Math.min(3,x.r|0))};for(const k of ['atk','def','hp','crit','dodge','ls','luck','gold','skill','bleed','stun'])if(typeof x[k]==='number')it[k]=Math.max(0,Math.min(999,Math.round(x[k])));if(UNIQ[x.uq])it.uq=x.uq;if(CURSES[x.curse])it.curse=x.curse;it.name=(it.uq?UNIQ[it.uq].n:TT[x.type].n)+' aus dem Nachlass'+(it.curse?' (verflucht)':'');return it}
+function pickShade(f){if(!NET.shades.length||f%5===0||R()>.18)return null;P.shadeSeen=P.shadeSeen||[];const c=NET.shades.filter(x=>!x.claimed&&typeof x.floor==='number'&&Math.abs(x.floor-f)<=1&&!P.shadeSeen.includes(x.id));if(!c.length)return null;const x=pick(c);P.shadeSeen.push(x.id);
+ return{id:x.id,nm:x.uid===NET.uid?'dir selbst':(NET.names[x.uid]||'einem Ankerträger'),cls:CLS[x.cls]?CLS[x.cls].name:'Ankerträger',floor:x.floor,item:safeItem(x.item)}}
+function claimShade(id){const x=NET.shades.find(s=>s.id===id);if(x)x.claimed=true;if(!NET.db)return;try{NET.db.doc('shades/'+id).update({claimed:true,by:NET.uid||''}).catch(()=>{})}catch(e){}}
+function writeShade(){if(!NET.db||P.tut)return;const it=P.weapon||P.armor;try{NET.db.collection('shades').add({uid:NET.uid||'',floor:P.floor,cls:P.cls,lvl:P.lvl,item:it?JSON.parse(JSON.stringify(it)):null,claimed:false,ts:Date.now()}).catch(()=>{})}catch(e){}}
+function writeBoard(f){if(!NET.db||!NET.uid||P.tut)return;try{NET.db.doc('board/'+NET.uid).set({uid:NET.uid,best:Math.max(meta.best,f),runs:meta.runs+1,bounties:meta.bounty.length,ts:Date.now()}).catch(()=>{})}catch(e){}}
+async function loadGuild(){S.guild=null;if(!NET.db){S.guild=[];return}try{const q=await NET.db.collection('board').orderBy('best','desc').limit(25).get();const rows=q.docs.map(d=>d.data()).filter(x=>x&&typeof x.best==='number');await resolveNames(rows.map(r=>r.uid));S.guild=rows}catch(e){S.guild=[]}if(S.screen==='guild')render()}
+function forgeDo(t,r){const c=60*(t+1)*(r===3?4:r===2?2:1);meta.mats['m'+t]-=r===3?8:4;if(r>=2)meta.mats.kern-=r===3?2:1;meta.gold-=c;const it=forgeItem(S.fSlot,S.fType,t,r);it.tier=t;meta.armory.push(it);saveMeta();sys(`Hild hat ${it.name} geschmiedet. Es liegt in der Waffenkammer.`);S.fSlot=null;S.fType=null}
+/* ---------- Darstellung ---------- */
+function bar(v,m,c){return `<div class="bar2"><div style="width:${Math.max(0,Math.min(100,v/m*100))}%;background:${c}"></div></div>`}
+function scene(h){$('#scene').innerHTML=h}
+function group(t){const g=document.createElement('div');g.className='grp';if(t)g.innerHTML=`<div class="gt">${t}</div>`;const w=document.createElement('div');w.className='row';g.appendChild(w);$('#actions').appendChild(g);return w}
+function btn(par,label,fn,o={}){const b=document.createElement('button');b.className='btn '+(o.cls||'');
+b.innerHTML=`<span>${label}</span>${o.sub?`<small>${fxc(o.sub)}</small>`:''}<i class="bar"></i>`;if(o.dis)b.disabled=true;
+b.onclick=()=>{if(lock||b.disabled)return;try{auInit()}catch(e){}const d=o.delay??220,br=b.querySelector('.bar');lock=true;br.style.transitionDuration=d+'ms';void b.offsetWidth;br.style.width='100%';
+setTimeout(()=>{lock=false;fn();render()},d)};par.appendChild(b);return b}
+
+function infoHTML(k){if(!k)return'';const [t,id]=k.split(':');let h='';
+if(t==='n'){const sc=SCARS[id];return sc?`<div class="pinfo small"><b>${sc.n}</b> – Steinnarbe, bleibt für immer.<br><span class="good">${sc.pro}</span> · <span class="bad">${sc.con}</span></div>`:''}
+if(!P)return'';
+const row=(l,v)=>v?`<div class="srow"><span>${l}</span><span class="r">${v>0?'+':''}${v}</span></div>`:'';
+const eqSum=(f)=>['weapon','armor','helm','gloves','jewel'].reduce((a,s)=>a+(P[s]?f(P[s],s)||0:0),0);
+if(t==='p'){if(!P.perks.includes(id))return'';const p=PK(id);h=`<b>${pName(p,pCount(id))}</b> – ${p.d}<br><span class="dim">${p.cur()}</span>`}
+else if(t==='e'){const it=P[id];if(!it)return'';h=`<b>${iName(it)}</b> <span class="small dim">${RAR[it.r].n} ${slotN(it)}${it.src?' · von '+it.src:''}</span><br>${iStats(it)}`}
+else if(id==='hp')h=`<b>Lebenspunkte</b> – fällst du auf 0, holt dich der Stein zurück.${row('Basis',P.baseHp)}${row('Ausrüstung',eqSum(i=>i.hp))}${row('Fähigkeiten & Ereignisse',P.bonus.hp)}`;
+else if(id==='xp')h=`<b>Erfahrung</b> – bei jedem Aufstieg wählst du eine Fähigkeit.<br>Noch ${P.xpNext-P.xp} EP bis Stufe ${P.lvl+1}.`;
+else if(id==='atk')h=`<b>Angriff</b> – bestimmt deinen Schaden. Die Verteidigung des Gegners wird abgezogen.${row('Basis',P.baseAtk)}${row('Waffe',P.weapon?P.weapon.atk:0)}${row('Weitere Ausrüstung',gs('atk'))}${row('Fähigkeiten & Ereignisse',P.bonus.atk)}${row('Blutrausch',P.rageStacks)}`;
+else if(id==='def')h=`<b>Verteidigung</b> – wird von jedem Treffer abgezogen.${row('Basis',P.baseDef)}${row('Rüstung',P.armor?P.armor.def:0)}${row('Weitere Ausrüstung',gs('def'))}${row('Fähigkeiten & Ereignisse',P.bonus.def)}`;
+else if(id==='crit')h=`<b>Krit-Chance</b> – ein Krit macht doppelten Schaden. Höchstens 75 %.${row('Basis',P.baseCrit)}${row('Waffenart',P.weapon?wt(P.weapon).crit||0:0)}${row('Waffenbonus',P.weapon?P.weapon.crit||0:0)}${row('Rüstung',P.armor?at_(P.armor).crit||0:0)}${row('Weitere Ausrüstung',gs('crit'))}${row('Fähigkeiten & Ereignisse',P.bonus.crit)}`;
+else if(id==='dodge')h=`<b>Ausweichen</b> – Chance, einem Treffer ganz zu entgehen. Höchstens 60 %.${row('Rüstung',P.armor?(at_(P.armor).dodge||0)+(P.armor.dodge||0):0)}${row('Weitere Ausrüstung',gs('dodge'))}${row('Fähigkeiten',P.bonus.dodge||0)}`;
+else if(id==='gold')h=`<b>Gold</b> – gibst du bei Händlern aus. In die Ordenskasse kommt es nur über einen Korb. Stirbst du, ist es weg.${gBonus()?`<br>Gold-Bonus: +${gBonus()} %`:''}`;
+else if(id==='ess')h=`<b>Seelensplitter</b> – kommen immer mit zurück, auch wenn du stirbst. Im Lager gibst du sie für Training aus.<br>Dazu kommen am Ende: +1 pro Etage, +5 pro Torwächter.`;
+else if(id==='pot')h=`<b>Heiltrank</b> – heilt ${potHeal()} LP. Im Kampf kostet er eine Runde.`;
+else if(id==='key')h=`<b>Schlüssel</b> – öffnet versiegelte Türen. Dahinter liegt garantiert epische Beute. Torwächter, Elites und Kopfgeld-Gegner lassen manchmal welche fallen.`;
+else if(id==='fire')h=`<b>Zunder</b> – damit zündest du im Gang ein Lagerfeuer an: Ausruhen (+${Math.round(maxHp()*.3)} LP) oder Trainieren (+${trainV()} Angriff).`;
+else if(id==='bell')h=`<b>Händlerglocke</b> – läutest du im Gang, kommt ein Händler zu dir. Praktisch in der Tiefe, wo es kaum Händler gibt.`;
+else if(id==='comp'&&P.comp)h=`<b>${esc(P.comp.n)}</b> – kämpft an deiner Seite und trifft nach dir für etwa ${P.comp.atk} Schaden. Gegner greifen manchmal ${esc(P.comp.n)} statt dich an. Bleibt noch etwa ${P.comp.left} Etagen.`;
+else if(id==='mat')h=`<b>Material</b> für Hilds Schmiede:<br>`+Object.keys(P.mats||{}).map(k=>`${P.mats[k]}× ${MATS[k].n} – ${MATS[k].soul?'seelengebunden, kommt immer mit':'kommt nur über einen Korb nach oben'}`).join('<br>');
+else if(id==='mod'){const m=RMODS[P.mod];h=`<b>${m.n}</b> – ${m.d}. Gilt für diesen ganzen Run.`}
+return h?`<div class="pinfo small">${fxc(h)}</div>`:''}
+const ck=(k,html)=>`<span class="ck${S.info===k?' on':''}" data-i="${k}">${html}</span>`;
+function statsHTML(){if(!P||['hub','end'].includes(S.screen))return `<div class="srow"><span>Ordensrang: ${rankBadge()}</span><span class="r">Tiefste Etage ${meta.best} · Runs ${meta.runs}</span></div><div class="srow small"><span class="c-ess t2">${meta.essence} ✧ Seelensplitter</span><span class="r">${meta.kills} Gegner · ${meta.bosses} Torwächter</span></div>${(meta.scars||[]).length?`<div class="chips small">${meta.scars.map(id=>`<span class="chip${S.info==='n:'+id?' on':''}" data-i="n:${id}" style="color:#c9b8ff">◈ ${SCARS[id].n}</span>`).join('')}</div>${infoHTML(S.info)}`:''}`;
+return `<div class="srow"><span><b>${CLS[P.cls].name}</b> · Stufe ${P.lvl}</span><span class="r">Etage ${P.floor} · ${areaOf(P.floor).name}</span></div>
+<div class="srow"><span>${ck('s:hp',`<span class="c-hp">LP</span> ${Math.max(0,P.hp)}/${maxHp()}`)}</span>${bar(P.hp,maxHp(),'var(--red)')}</div>
+<div class="srow"><span>${ck('s:xp',`<span class="c-xp">EP</span> ${P.xp}/${P.xpNext}`)}</span>${bar(P.xp,P.xpNext,'var(--accent)')}</div>
+<div class="srow small">${ck('s:atk',`<span class="c-atk">⚔ ${atk()}</span>`)} · ${ck('s:def',`<span class="c-def">⛨ ${def()}</span>`)} · ${ck('s:crit',`<span class="fx-crit">✦ ${crit()} %</span>`)}${dodge()?` · ${ck('s:dodge',`<span class="fx-dodge">↷ ${dodge()} %</span>`)}`:''} · ${ck('s:gold',`<span class="c-gold">${P.gold} Gold</span>`)} · ${ck('s:ess',`<span class="c-ess">${P.ess} ✧</span>`)}</div>
+<div class="srow small">${ck('s:pot',`<span class="c-pot">${P.potions} Tränke</span>`)} · ${ck('s:key',`<span class="c-key">${P.keys||0} Schlüssel</span>`)} · ${ck('s:fire',`<span class="c-fire">${P.kindling||0} Zunder</span>`)}${P.bells?` · ${ck('s:bell',`<span class="c-key">${P.bells} Glocke</span>`)}`:''}</div>
+${P.comp?`<div class="srow small">${ck('s:comp',`Begleiter: <b>${esc(P.comp.n)}</b> ${Math.max(0,P.comp.hp)}/${P.comp.max} LP`)}</div>`:''}${Object.keys(P.mats||{}).length?`<div class="srow small">${ck('s:mat',`<span class="mat">Material: ${Object.values(P.mats).reduce((a,b)=>a+b,0)}</span>`)}</div>`:''}
+${P.mod&&P.mod!=='ruhig'&&RMODS[P.mod]?`<div class="srow small dim">Riss heute: ${ck('s:mod',`<b>${RMODS[P.mod].n}</b>`)}</div>`:''}
+<div class="chips small">${['weapon','armor','helm','gloves','jewel'].map(k=>P[k]?`<span class="chip${S.info==='e:'+k?' on':''}" data-i="e:${k}" style="color:${RAR[P[k].r].c}">${P[k].name}</span>`:'').join('')}${!P.weapon&&!P.armor&&!P.helm&&!P.gloves&&!P.jewel?'<span class="dim">Keine Ausrüstung</span>':''}</div>
+${P.perks.length?`<div class="chips small">${[...new Set(P.perks)].map(id=>`<span class="chip${S.info==='p:'+id?' on':''}" data-i="p:${id}" style="${(P.perkR||{})[id]?'color:'+RAR[P.perkR[id]].c:''}">${pName(PK(id),pCount(id))}</span>`).join('')}</div>`:''}
+${(meta.scars||[]).length?`<div class="chips small">${meta.scars.map(id=>`<span class="chip${S.info==='n:'+id?' on':''}" data-i="n:${id}" style="color:#c9b8ff">◈ ${SCARS[id].n}</span>`).join('')}</div>`:''}
+${infoHTML(S.info)}
+${S.info?'':'<div class="legend">Tippe auf Werte, Ausrüstung oder Fähigkeiten für Details.</div>'}`}
+
+const SCR={
+story(){const st=S.story,pages=STORIES[st.id].p(),last=st.i>=pages.length-1;
+scene(`<div class="story">${pages[st.i].split('\n').map(l=>l.startsWith('+')?`<p class="sys">${l}</p>`:`<p>${l}</p>`).join('')}</div><p class="dim small">${st.i+1} / ${pages.length}</p>`);
+const g=group('');if(!last)btn(g,'Weiter',()=>st.i++,{cls:'big',delay:300});else for(const o of STORIES[st.id].end())btn(g,o.l,o.fn,{sub:o.sub,cls:'big',delay:500})},
+forge(){unlock('hild');const mm=meta.mats||{},ml=Object.keys(MATS).filter(k=>mm[k]).map(k=>`${mm[k]}× ${MATS[k].n}`).join(' · ')||'noch nichts',tl=Object.keys(meta.troph||{}).filter(k=>meta.troph[k]).map(k=>`${meta.troph[k]}× ${TROPH[k]}`).join(' · ');
+scene(`<p class="dim">Hilds Schmiede liegt am Rand des Lagers. Es riecht nach Kohle und nassem Eisen. ${(meta.rank||0)>=2?'„Na, Pfadgänger. Für dich hol ich die guten Hämmer raus.“':'„Bring mir was von unten, dann mach ich dir was draus.“'}</p><div class="srow small">Material: <span class="mat">${ml}</span></div>${tl?`<div class="srow small">Trophäen: <span class="mat">${tl}</span></div>`:''}<div class="srow small"><span class="c-gold">${meta.gold||0} Gold</span>&nbsp;in der Ordenskasse</div>`);
+const full=(meta.armory||[]).length>=6;let g=group('Schmieden'+(full?' – Waffenkammer voll':''));
+if(!S.fSlot){for(const k of ['w','a','h','g','j'])btn(g,SN[k],()=>{S.fSlot=k;S.fType=null},{delay:150})}
+else if(!S.fType){const TT=S.fSlot==='w'?WT:S.fSlot==='a'?AT:XT[S.fSlot];for(const t in TT)btn(g,TT[t].n,()=>S.fType=t,{sub:TT[t].d,delay:150});btn(g,'Zurück',()=>S.fSlot=null,{delay:120})}
+else{const TT=S.fSlot==='w'?WT:S.fSlot==='a'?AT:XT[S.fSlot],T=TT[S.fType],maxT=Math.min(4,Math.floor(meta.best/10));
+ for(let t=0;t<=maxT;t++){const mk='m'+t,have=mm[mk]||0,c=60*(t+1);
+  btn(g,`${T.n} aus ${MATS[mk].n}`,()=>forgeDo(t,1),{sub:`4× ${MATS[mk].n} (du hast ${have}) · ${c} Gold → Selten, stark wie Etage ${t*10+8}`,dis:full||have<4||(meta.gold||0)<c});
+  btn(g,'… mit Wächterkern',()=>forgeDo(t,2),{sub:`dazu 1× Wächterkern (du hast ${mm.kern||0}) · ${c*2} Gold → Episch`,dis:full||have<4||(mm.kern||0)<1||(meta.gold||0)<c*2});
+  if((meta.rank||0)>=2)btn(g,'… als Meisterarbeit',()=>forgeDo(t,3),{sub:`8× ${MATS[mk].n} · 2× Wächterkern · ${c*4} Gold → Legendär`,cls:'rar3',dis:full||have<8||(mm.kern||0)<2||(meta.gold||0)<c*4})}
+ btn(g,'Zurück',()=>S.fType=null,{delay:120})}
+if((meta.uniq||[]).length){g=group('Unikate');for(const id of meta.uniq){const b=BOUNTIES.find(x=>x.id===id);if(!b)continue;const tr=(meta.troph||{})[id]||0,lv=(meta.uqLvl||{})[id]||0,mk='m'+b.area,km=mm.kern||0;
+ btn(g,`${UNIQ[id].n} nachschmieden`,()=>{meta.troph[id]--;meta.mats.kern-=2;meta.gold-=200;const it=makeUnique(id,(b.area+1)*10);it.aid='a'+Date.now().toString(36)+ri(0,999);it.src='Hild';meta.armory.push(it);saveMeta();sys(`Hild hat ${it.name} nachgeschmiedet.`)},{sub:`1× ${TROPH[id]} (${tr}) · 2× Wächterkern (${km}) · 200 Gold`,dis:full||tr<1||km<2||(meta.gold||0)<200});
+ if(lv<5)btn(g,`${UNIQ[id].n} verstärken · Stufe ${lv}/5`,()=>{meta.troph[id]--;meta.mats[mk]-=6;meta.gold-=100;meta.uqLvl[id]=lv+1;saveMeta();sys(`${UNIQ[id].n} ist jetzt Stufe ${lv+1}: stärker, und es fällt öfter.`)},{sub:`1× ${TROPH[id]} (${tr}) · 6× ${MATS[mk].n} (${mm[mk]||0}) · 100 Gold · +15 % Werte, häufiger`,dis:tr<1||(mm[mk]||0)<6||(meta.gold||0)<100})}}
+g=group(`Waffenkammer ${meta.armory.length}/6`);if(!meta.armory.length)btn(g,'Noch leer',()=>{},{dis:true,cls:'big info',sub:'Geschmiedete Stücke landen hier. Du kannst sie in den nächsten Run mitnehmen.'});
+for(const it of meta.armory){const on=meta.take.includes(it.aid);btn(g,(on?'✓ ':'')+iName(it),()=>{S.armSel=S.armSel===it.aid?null:it.aid},{sub:`${RAR[it.r].n} ${slotN(it)} · ${iStats(it)}${on?' · wird mitgenommen':''}`,cls:'big'+(on?' rar1':''),delay:120})}
+if(S.armSel){const it=meta.armory.find(i=>i.aid===S.armSel);if(it){const on=meta.take.includes(it.aid);g=group(esc(it.name));
+ btn(g,on?'Doch nicht mitnehmen':'Mitnehmen',()=>{if(on)meta.take=meta.take.filter(a=>a!==it.aid);else{meta.take=meta.take.filter(a=>{const o=meta.armory.find(i=>i.aid===a);return o&&o.slot!==it.slot});meta.take.push(it.aid)}saveMeta()},{sub:on?'':'Wird beim nächsten Abstieg angelegt. Stirbst du oder kletterst du hoch, ist es weg.'});
+ btn(g,'Einschmelzen',()=>{meta.armory=meta.armory.filter(i=>i!==it);meta.take=meta.take.filter(a=>a!==it.aid);const mk=it.uq?'kern':'m'+(it.tier||0);meta.mats[mk]=(meta.mats[mk]||0)+2;S.armSel=null;saveMeta();sys(`Eingeschmolzen: ${it.name}. +2 ${MATS[mk].n}`)},{cls:'danger',sub:'Gibt 2 Material zurück'})}}
+btn(group(''),'Zurück ins Lager',()=>{S.screen='hub';S.fSlot=S.fType=S.armSel=null},{cls:'big'})},
+beast(){const B=meta.beast||{};let h=`<p class="gt">Bestiarium</p><p class="dim small">Ab 10, 30 und 75 Siegen gegen eine Art machst du +5, +10 und +15 % Schaden gegen sie.</p>`;
+AREAS.forEach((a,ai)=>{h+=`<p class="gt" style="margin-top:14px">${a.name}</p>`;for(const n of [...a.mobs,TW[ai].n,a.boss]){const k=B[n]||0;if(!k){h+=`<div class="srow small dim">???</div>`;continue}const nx=[10,30,75].find(t=>k<t);h+=`<div class="lore"><b>${n}</b> <span class="small dim">· ${k} besiegt${bb(n)?` · <span class="good">+${Math.round(bb(n)*100)} % Schaden</span>`:''}${nx?` · nächste Stufe ab ${nx}`:' · gemeistert'}</span><p class="small">${BDESC[n]||''}</p></div>`}});
+scene(h);btn(group(''),'Zurück ins Lager',()=>S.screen='hub',{cls:'big'})},
+scar(){const o=meta.scarOffer;if(!o){S.screen='hub';return SCR.hub()}
+scene(`<p>Die Narbe auf deiner Hand ist gewachsen. Sie pocht, als hätte sie einen eigenen Herzschlag.</p><p class="dim small">Der Stein nimmt dir etwas und gibt dir etwas dafür. Diese Narbe bleibt für immer.</p>`);
+const g=group('Wähle deine Steinnarbe');for(const id of o){const sc=SCARS[id];btn(g,sc.n,()=>{meta.scars.push(id);meta.scarOffer=null;saveMeta();sys(`Neue Steinnarbe: ${sc.n}.`);S.screen='hub'},{sub:`<span class="good">${sc.pro}</span> · <span class="bad">${sc.con}</span>`,cls:'big',delay:500})}},
+guild(){let h=`<p class="gt">Ordensbuch</p><p class="dim small">Die tiefsten Abstiege aller Ankerträger, mit denen du dieses Spiel teilst. Ihre Schatten und Kreidebotschaften findest du unten im Riss.</p>`;
+if(!NET.ready)h+=`<p class="small">Das Ordensbuch ist hier gerade nicht erreichbar. Es funktioniert, wenn du das Spiel in claude.ai geöffnet hast und angemeldet bist.</p>`;
+else if(!S.guild)h+=`<p class="small dim">Wird geladen …</p>`;
+else if(!S.guild.length)h+=`<p class="small">Noch keine Einträge. Beende einen Run, dann stehst du hier drin.</p>`;
+else h+=S.guild.map((r,i)=>`<div class="srow${r.uid===NET.uid?' sys':''}"><span>${i+1}. ${esc(r.uid===NET.uid?'Du':(NET.names[r.uid]||'Ankerträger'))}</span><span class="r">Etage ${r.best|0} · ${rankOf(r.best|0)} · ${r.bounties|0} Kopfgelder</span></div>`).join('');
+h+=`<p class="small dim" style="margin-top:12px">Freunde einladen: Teile das Spiel über claude.ai und gib ihnen die Stufe „Mitwirkender“. Dann sehen sie deine Botschaften und deinen Schatten – und du ihre.</p>`;
+scene(h);btn(group(''),'Zurück ins Lager',()=>S.screen='hub',{cls:'big'})},
+bounty(){scene(`<p class="gt">Kopfgeldliste · ${meta.bounty.length}/${BOUNTIES.length} erledigt</p><p class="dim small">Varga zahlt für jeden Kopf einmal. Die Biester tauchen erst auf, wenn du den Boss ihres Gebiets einmal besiegt hast – dann zufällig in ihrem Gebiet.</p>`+BOUNTIES.map(b=>{const seen=meta.best>=b.area*10+1,done=meta.bounty.includes(b.id);
+ if(!seen)return `<div class="lore dim"><b>???</b><p class="small">Gebiet noch nicht erreicht.</p></div>`;
+ if(b.id==='kaelen'&&meta.vq<3)return `<div class="lore dim"><b>???</b><p class="small">Varga will über diesen Steckbrief nicht reden.</p></div>`;
+ const ready=meta.best>(b.area+1)*10;
+ return `<div class="lore${done?' dim':''}"><b>${b.name}</b> <span class="small dim">– ${b.t}</span><br><span class="small">${AREAS[b.area].name} · ${done?'<span class="good">Erledigt</span>':`<span class="c-ess">${b.reward} ✧ Belohnung</span>`}</span>${!ready&&!done?`<p class="small" style="color:#d9a25a">Taucht erst auf, wenn du ${AREAS[b.area].boss} einmal besiegt hast.</p>`:''}<p>${b.story}</p>${done?`<p class="small"><i>${b.after}</i></p>`:''}${UNIQ[b.id]?`<p class="small">Unikat: <span style="color:${RAR[3].c}">${meta.uniq.includes(b.id)?UNIQ[b.id].n:'???'}</span></p>`:''}</div>`}).join(''));
+btn(group(''),'Zurück ins Lager',()=>S.screen='hub',{cls:'big'})},
+quests(){scene(`<p class="gt">Aufträge · ${meta.quests.length}/${QUESTS.length}</p><p class="dim small">Erfüllte Aufträge werden sofort ausgezahlt.</p>`+QUESTS.map(q=>{const d=meta.quests.includes(q.id);return `<div class="srow${d?' dim':''}"><span>${d?'✓':'○'} ${q.t}</span><span class="r ${d?'':'c-ess'}">${q.r} ✧</span></div>`}).join(''));
+btn(group(''),'Zurück ins Lager',()=>S.screen='hub',{cls:'big'})},
+chronik(){const keys=Object.keys(LORE);
+scene(`<p class="gt">Chronik · ${keys.filter(k=>meta.lore.includes(k)).length}/${keys.length}</p>`+keys.map(k=>meta.lore.includes(k)?`<div class="lore"><b>${LORE[k].t}</b><p>${LORE[k].x}</p></div>`:`<div class="lore dim"><b>???</b><p class="small">Noch nicht entdeckt.</p></div>`).join(''));
+btn(group(''),'Zurück ins Lager',()=>S.screen='hub',{cls:'big'})},
+settings(){const sl=(k,l)=>`<div class="cfgrow"><span>${l}</span><input type="range" min="0" max="100" value="${CFG[k]}" oninput="CFG.${k}=+this.value;cfgApply();this.nextElementSibling.textContent=this.value+' %'" onchange="cfgSave()"><span class="dim small">${CFG[k]} %</span></div>`;
+scene(`<p class="gt">Einstellungen</p>${sl('mus','Musik')}${sl('fx','Effekte')}`);
+let g=group('Ton');btn(g,AU.on?'♪ Ton ist an':'♪ Ton ist aus',()=>sndToggle(),{sub:'Schaltet alles stumm oder wieder an',delay:120});
+g=group('Textgröße');['Klein','Normal','Groß'].forEach((n,i)=>btn(g,(CFG.size===i?'✓ ':'')+n,()=>{CFG.size=i;cfgSave()},{delay:100,cls:CFG.size===i?'rar2':''}));
+g=group('Darstellung');btn(g,CFG.anim?'Animationen: an':'Animationen: aus',()=>{CFG.anim=CFG.anim?0:1;cfgSave()},{sub:'Flackern, Zoom, Partikel und Wackeln',delay:100});
+g=group('Spielstand');btn(g,'Spielstand sichern & laden',()=>{S.screen='save';S.saveMsg='';S.loadArm=false},{sub:'Als Code oder Datei, z. B. für ein neues Handy'});
+g=group('');btn(g,'Zurück',()=>{S.screen=S.prevScreen&&S.prevScreen!=='settings'&&S.prevScreen!=='save'?S.prevScreen:'hub'},{cls:'big',delay:120})},
+save(){const code=saveCode();
+scene(`<p class="gt">Spielstand</p><p class="dim small">Dein Fortschritt liegt nur in diesem Browser. Wenn du den Verlauf löschst oder das Handy wechselst, ist er weg. Sichere ihn hier als Code oder Datei.</p>
+<textarea class="code" readonly onclick="this.select()">${code}</textarea>${S.saveMsg?`<p class="good small">${S.saveMsg}</p>`:''}
+<p class="gt" style="margin-top:18px">Spielstand laden</p><textarea class="code" id="saveIn" placeholder="Code hier einfügen" oninput="S.saveIn=this.value;S.loadArm=false">${esc(S.saveIn||'')}</textarea>
+<label class="filel">Oder Datei wählen <input type="file" accept=".txt,.json,text/plain" onchange="saveFile(this)"></label>${S.loadErr?`<p class="bad small">${S.loadErr}</p>`:''}`);
+let g=group('Sichern');btn(g,'Code kopieren',()=>{S.saveMsg=copyText(code)?'Code kopiert. Heb ihn irgendwo gut auf.':'Kopieren ging nicht. Tipp den Code an und kopier ihn von Hand.'},{delay:120});btn(g,'Als Datei herunterladen',()=>saveDownload(),{delay:120});
+g=group('Laden');btn(g,S.loadArm?'Wirklich laden? Nochmal tippen':'Spielstand laden',()=>{S.loadErr='';if(!S.loadArm){S.loadArm=true;return}try{importMeta(loadCode(S.saveIn))}catch(e){S.loadArm=false;S.loadErr='Der Code ist ungültig oder unvollständig.'}},{sub:S.loadArm?'Dein jetziger Spielstand wird überschrieben':'',dis:!(S.saveIn||'').trim(),cls:S.loadArm?'rar3':'',delay:150});
+g=group('');btn(g,'Zurück',()=>{S.screen='settings'},{delay:120})},
+rite(){const i=meta.rankPend,R_=RANG[i];if(!R_){S.screen='hub';return SCR.hub()}
+scene(`<div class="rite"><div class="rbig" style="color:${R_.c}">${R_.s}</div><div class="rname" style="color:${R_.c}">${R_.n}</div><p>${R_.t}</p><p>${R_.v}</p><p class="oath">${R_.o}</p><div class="runl"><b>Freigeschaltet</b><br>${R_.un}</div><p class="dim small">${R_.l}</p></div>`);
+const g=group('');btn(g,'Den Schwur leisten',()=>{meta.rank=i;meta.rankPend=0;if(i===5){const it=forgeItem('w','schwert',4,3);it.name='Vargas Klinge';it.tier=4;meta.armory.push(it)}saveMeta();try{sfx('boss');setTimeout(()=>{try{sfx('level')}catch(e){}},700)}catch(e){}sys(`Du bist jetzt ${R_.n} des Ordens.`);S.vline=VRANK[i];S.screen='hub'},{cls:'big rar3',delay:1200})},
+ranks(){scene(`<p class="dim">Die Ränge des Ordens. Jeden Rang bekommst du nur über eine Prüfung: Ein Torwächter tief unten wird zum Prüfer und ist stärker als sonst.</p>`+RANG.map((x,i)=>`<div class="rrow${i<= (meta.rank||0)?'':' locked'}"><span class="rs" style="color:${x.c}">${x.s}</span><div><b style="color:${x.c}">${x.n}</b>${x.f?` <span class="dim small">· Prüfung auf Etage ${x.f}</span>`:''}<div class="small">${x.un||'Der Anfang. Jeder fängt hier an.'}</div>${i<=(meta.rank||0)&&x.o?`<div class="small dim"><i>„${x.o}“</i></div>`:''}</div></div>`).join(''));
+const g=group('');btn(g,'Zurück',()=>S.screen='hub')},
+hub(){if(meta.vqPend&&STORIES[meta.vqPend]){storyPages(meta.vqPend);return SCR.story()}
+if(meta.scarOffer){if(!meta.lore.includes('narbe')){storyPages('narbe');return SCR.story()}S.screen='scar';return SCR.scar()}
+if((meta.vq||0)===0&&meta.runs>=3&&meta.tut){storyPages('vq0');return SCR.story()}
+if(meta.bq===1&&meta.bqPend){storyPages('bq1');return SCR.story()}
+if(meta.bq===2&&meta.bounty.includes('zaehlende')){storyPages('bq2');return SCR.story()}
+if(!meta.bq&&meta.runs>=6&&meta.best>=12&&(meta.vq||0)>=1&&meta.tut){storyPages('bq0');return SCR.story()}
+if(meta.rankPend&&RANG[meta.rankPend]){S.screen='rite';return SCR.rite()}
+if(!S.vline)S.vline=(meta.rank||0)>=1&&R()<.35?VRANK[meta.rank]:meta.lore.includes('ende')?'„Du warst am Grund. Und du bist trotzdem zurückgekommen. Was hast du da unten gesehen?“':pick(VARGA);
+scene(`<p class="dim">Das Lager des Ordens. Zelte, ein paar Feuer, der schwarze Ankerstein. Ein paar Schritte weiter geht es hinab in den Riss.</p><p class="small"><i>Varga: ${S.vline}</i></p>`);
+let g;if(!meta.tut){g=group('Zuerst');btn(g,'Mit Varga üben',startTutorial,{sub:'Tutorial: Kampf, Türen und Aufstiege',cls:'big',delay:600})}
+{const nx=RANG[(meta.rank||0)+1];g=group('Orden');
+ if(nx){const ok=meta.best>=nx.f;btn(g,ok?`${S.trial?'✓ ':''}Rangprüfung zum ${nx.s} ${nx.n}`:`Nächster Rang: ${nx.s} ${nx.n}`,ok?()=>S.trial=!S.trial:()=>{},{dis:!ok,cls:'big'+(ok?(S.trial?' rar2':''):' info'),sub:ok?`Auf Etage ${nx.f} wartet ${TRIALB[(meta.rank||0)]} als Prüfer, stärker als sonst. Besiegst du ihn, nimmt Varga dich auf · ${S.trial?'aktiv für den nächsten Run':'antippen zum Annehmen'}`:`Erreiche Etage ${nx.f}, dann darfst du zur Prüfung · Danach: ${nx.un.split(':')[0]}`})}
+ else btn(g,`${RANG[5].s} Grundläufer`,()=>{},{dis:true,cls:'big info',sub:'Der höchste Rang des Ordens'});
+ if((meta.rank||0)>=4)btn(g,`${S.jump?'✓ ':''}Ankersprung`,()=>S.jump=!S.jump,{cls:'big'+(S.jump?' rar2':''),sub:`Start direkt auf Etage 11 mit Stufe 7 und seltener Ausrüstung · ${S.jump?'aktiv für den nächsten Run':'antippen zum Aktivieren'}`});
+ btn(g,'Rangabzeichen',()=>S.screen='ranks',{sub:'Was die Ränge bedeuten und was du schon freigeschaltet hast'})}
+{const W=weekly(),done=meta.weekDone===W.k;g=group('Tiefe der Woche');btn(g,`${S.weekly?'✓ ':''}${RMODS[W.mod].n} · Ziel Etage ${W.goal}`,()=>S.weekly=!S.weekly,{sub:done?'Diese Woche schon geschafft – du kannst trotzdem spielen':`${RMODS[W.mod].d} · Belohnung ${W.reward} ✧ · ${S.weekly?'aktiv für den nächsten Run':'antippen zum Aktivieren'}`,cls:'big'+(S.weekly?' rar2':'')})}
+if(meta.vq>=1&&meta.vq<=3){const V=VQ[meta.vq-1];g=group('Vargas Liste');btn(g,'◆ '+V.t,()=>{},{dis:true,cls:'big info',sub:V.goal})}
+if(meta.bq===1||meta.bq===2){g=group('Brenns Buch');btn(g,meta.bq===1?'◆ Die Wand der Striche':'◆ Der Zählende',()=>{},{dis:true,cls:'big info',sub:meta.bq===1?'Finde die Wand voller Striche in der Vergessenen Krypta (Etage 13–19)':'Stell den Zählenden im Abgrund. Er steht auf der Kopfgeldliste.'})}
+g=group('Den Riss betreten');
+for(const id in CLS)if(meta.classes.includes(id))btn(g,'Als '+CLS[id].name,()=>startRun(id),{sub:`${(meta.cbest||{})[id]?`Rekord: Etage ${meta.cbest[id]} · `:''}${CLS[id].desc} · ${CLS[id].skill.name}: ${CLS[id].skill.desc}`,delay:700,cls:'big'});
+{const pk=meta.pack||{},pl=QM.filter(q=>pk[q.id]).map(q=>`${pk[q.id]}× ${q.n}`);
+g=group(`Quartiermeister Brenn · <span class="c-gold">${meta.gold||0} Gold</span> in der Ordenskasse`);
+for(const q of QM){const have=pk[q.id]||0,qc=Math.round(q.c*(meta.bq>=3?.8:1));btn(g,`${q.n} ${have}/${q.max}`,()=>{meta.gold-=qc;meta.pack=Object.assign({},pk,{[q.id]:have+1});unlock('brenn');saveMeta();log(`Brenn packt dir ein: ${q.n}.`,'goldt')},{sub:`${q.d} · ${qc} Gold`,dis:have>=q.max||(meta.gold||0)<qc})}
+if(pl.length)btn(g,'Gepackt: '+pl.join(', '),()=>{},{dis:true,cls:'big info',sub:'Wird beim nächsten Abstieg mitgenommen'})}
+g=group(`Training · <span class="c-ess">${meta.essence} ✧</span>`);
+for(const u of UPG){const l=ul(u.id);if(l>=u.max){btn(g,`${u.name} ${l}/${u.max}`,()=>{},{dis:true,cls:'info',sub:'✓ Gemeistert'});continue}
+const c=u.cost(l);btn(g,`${u.name} ${l}/${u.max}`,()=>{meta.essence-=c;meta.up[u.id]=l+1;saveMeta();sys(`${u.name} gestärkt (${l+1}/${u.max}).`)},{sub:`${typeof u.desc==='function'?u.desc(l):u.desc} · ${c} ✧`,dis:meta.essence<c})}
+const lockd=Object.keys(CLS).filter(id=>!meta.classes.includes(id));
+if(lockd.length){g=group('Kampfstile lernen');for(const id of lockd){const c=CLS[id];btn(g,c.name,()=>{meta.essence-=c.cost;meta.classes.push(id);saveMeta();sys(`Neuer Kampfstil: ${c.name}.`)},{sub:`${c.desc} · ${c.cost} ✧`,dis:meta.essence<c.cost})}}
+g=group('Lager');
+btn(g,'⚒ Schmiedin Hild',()=>{S.screen='forge';S.fSlot=S.fType=S.armSel=null},{sub:`Material zu Ausrüstung schmieden · ${meta.armory.length}/6 in der Waffenkammer`});
+btn(g,'Bestiarium',()=>S.screen='beast',{sub:'Gegner, die du kennst'});
+btn(g,'Ordensbuch',()=>{S.screen='guild';loadGuild()},{sub:'Bestenliste mit Freunden'});
+btn(g,'Spielstand sichern',()=>{S.prevScreen='hub';S.screen='save';S.saveMsg='';S.loadArm=false},{sub:'Als Code oder Datei, damit nichts verloren geht'});
+btn(g,`Kopfgeldliste ${meta.bounty.length}/${BOUNTIES.length}`,()=>S.screen='bounty',{sub:'Gesuchte Biester im Riss'});
+btn(g,`Aufträge ${meta.quests.length}/${QUESTS.length}`,()=>S.screen='quests',{sub:'Ziele mit Splitter-Belohnung'});
+btn(g,`Chronik ${Object.keys(LORE).filter(k=>meta.lore.includes(k)).length}/${Object.keys(LORE).length}`,()=>S.screen='chronik',{sub:'Was du über den Riss weißt'});
+if(meta.tut)btn(g,'Mit Varga üben',startTutorial,{sub:'Tutorial wiederholen'});
+btn(g,'Einführung',()=>storyPages('replay'),{sub:'Die Geschichte erneut ansehen'});
+g=group('');btn(g,resetArm?'Wirklich alles löschen?':'Spielstand löschen',()=>{if(!resetArm){resetArm=true;return}resetArm=false;meta=defMeta();saveMeta();logs=[];sys('Alles vergessen. Ein neuer Anfang.')},{cls:'danger'})},
+doors(){if(resetArm)resetArm=false;
+const nf=P.floor+1,boss=P.tut?nf===3:nf%5===0;
+scene(`<p>${P.floor===0?'Der Gang liegt dunkel vor dir.':`Etage ${P.floor} liegt hinter dir.`}${boss?' Vor dir ragt ein Tor auf. Dahinter atmet etwas.':''}</p><p class="dim small">Als Nächstes: Etage ${nf} · ${areaOf(nf).name}</p>`);
+let g=group('');btn(g,boss?'♛ Zum Torwächter':'Weitergehen',advance,{delay:600,cls:'big'+(boss?' danger':'')});
+if(P.kindling>0){g=group(S.fireOpen?'Lagerfeuer – was willst du tun?':'Vorräte');
+ if(!S.fireOpen)btn(g,'♨ Lagerfeuer anzünden',()=>S.fireOpen=true,{sub:`${P.kindling} Zunder übrig`,cls:'big'});
+ else{const hh=Math.round(maxHp()*.3*(hasS('blut')?.5:1));
+  btn(g,'Ausruhen',()=>{P.kindling--;S.fireOpen=false;P.rests=(P.rests||0)+1;const x=heal(hh);if(P.comp)P.comp.hp=P.comp.max;log(`Du zündest den Zunder an und ruhst dich am Feuer aus. +${x} LP`,'good')},{sub:`+${hh} LP · verbraucht 1 Zunder`,dis:P.hp>=maxHp()&&!(P.comp&&P.comp.hp<P.comp.max),delay:500});
+  btn(g,'Trainieren',()=>{P.kindling--;S.fireOpen=false;P.rests=(P.rests||0)+1;const v=trainV();P.bonus.atk+=v;log(`Du zündest den Zunder an und übst ein paar Schläge am Feuer. +${v} Angriff`,'good')},{sub:`+${trainV()} Angriff · verbraucht 1 Zunder`,delay:500});
+  btn(g,'Doch nicht',()=>S.fireOpen=false,{sub:'Zunder aufheben'})}}
+if(P.bells>0){g=group('');btn(g,'🔔 Händlerglocke läuten',()=>{P.bells--;log('Du läutest die Glocke. Nach einer Weile knarren Räder im Dunkeln.','goldt');roomHaendler()},{sub:`Ruft einen Händler · ${P.bells} übrig`,delay:600})}
+if(NET.ready&&P.floor>0&&!P.tut&&(P.msgLeft==null||P.msgLeft>0)){g=group(S.msgOpen?'Was schreibst du an die Wand?':'');if(!S.msgOpen)btn(g,'✎ Botschaft an die Wand',()=>S.msgOpen=true,{sub:'Andere Ankerträger finden sie hier'});else{WALL.forEach((w,i)=>btn(g,w,()=>{S.msgOpen=false;leaveMsg(i)},{delay:200}));btn(g,'Doch nicht',()=>S.msgOpen=false)}}
+g=group('');btn(g,'Rucksack',()=>{S.invSel=null;S.screen='inv'},{sub:`${P.bag.length}/${BAG} · Ausrüstung wechseln`});
+if(P.potions>0&&P.hp<maxHp())btn(g,'Heiltrank trinken',drink,{sub:`${P.potions} übrig`})},
+combat(){const e=E,nm=e.mechs&&e.mechEvery&&(e.turn+1)%e.mechEvery===0?e.mechs[(e.mi||0)%e.mechs.length]:null,warn=!e.stun&&(nm||(!e.mechs&&e.heavyEvery&&(e.turn+1)%e.heavyEvery===0));
+const col=e.type==='boss'||e.bounty?'var(--orange)':e.type==='elite'?'var(--red)':'var(--fg)';
+scene(`<div class="enemy"><div class="nm" style="color:${col}">${e.bounty?'<span class="small">KOPFGELD · </span>':e.type==='elite'?'<span class="small">ELITE · </span>':''}${e.name}</div><div class="srow small"><span>LP ${Math.max(0,e.hp)}/${e.maxHp}</span>${bar(e.hp,e.maxHp,col)}</div>
+<div class="srow small dim">⚔ ${e.atk} · ⛨ ${e.def}${fxc(`${e.stun?' · betäubt':''}`)}${fxc(`${e.burn?' · brennt':''}${e.bleed?' · blutet':''}${e.poison?' · giftig':''}${e.ls?' · saugt Leben':''}${e.regen?' · regeneriert':''}${e.double?' · schlägt doppelt':''}${e.evade?` · weicht aus (${Math.round(e.evade*100)} %)`:''}${e.enrage?(e.raged?' · <span class="bad">rasend</span>':' · wird rasend'):''}`)}</div>
+<div class="intent ${warn?'warn':''}">${e.stun?'Ist betäubt.':e.shield?'Verschanzt sich hinter dem Schild.':e.mirror?'Spiegelt jeden Treffer.':nm?TELE[nm]:warn?TELE.heavy:'Lauert auf eine Lücke.'}</div></div>${P.poison?'<p class="small"><span class="fx-poison">Du bist vergiftet.</span></p>':''}${P.burn?'<p class="small"><span class="fx-burn">Du brennst.</span></p>':''}${P.frozen?'<p class="small"><span class="fx-stun">Deine Hände sind steif vor Kälte.</span></p>':''}`);
+const sk=CLS[P.cls].skill;let g=group('');
+btn(g,'Angriff',()=>act('atk'),{delay:450,sub:`~${Math.max(1,Math.round(atk()-e.def*(1-wp('pierce')/100)))} Schaden`});
+btn(g,sk.name,()=>act('skill'),{delay:450,dis:P.cd>0,sub:P.cd>0?`Lädt … ${P.cd}`:sk.desc});
+btn(g,'Abwehren',()=>act('def'),{delay:450,sub:'Schaden stark verringert'});
+btn(g,'Heiltrank',()=>act('potion'),{delay:450,dis:P.potions<1||P.hp>=maxHp(),sub:`${P.potions} übrig`});
+if(e.type!=='boss'&&!P.tut)btn(g,'Fliehen',()=>act('flee'),{delay:450,sub:'55 % Chance'})},
+room(){scene(`<p>${S.room.text}</p>`);const g=group('');for(const o of S.room.opts())btn(g,o.l,o.fn,{sub:o.sub,dis:o.dis,delay:350})},
+perks(){scene(`<p class="sys">${S.ptitle}</p><p class="dim">Wähle eine Fähigkeit. Sie hält bis zum Ende des Runs.</p>`);const g=group('');
+for(const c of S.choices.map(c=>typeof c==='string'?{id:c,r:0}:c)){const p=PK(c.id),m=PR[c.r].m,n=pCount(p.id)+1;btn(g,`<span style="color:${RAR[c.r].c}">${pName(p,n)}</span>`+(c.r?` <span class="small" style="color:${RAR[c.r].c}">${PR[c.r].n}</span>`:'')+(n>1?' <span class="dim small">(verstärkt)</span>':''),()=>{p.f(m);P.perks.push(p.id);P.perkR=P.perkR||{};P.perkR[p.id]=Math.max(P.perkR[p.id]||0,c.r);sys(`Gelernt: ${pName(p,n)}${c.r?' ('+PR[c.r].n+')':''}.`);next()},{sub:`${p.d}<br><span class="sys">${p.pv(m)}</span>`,cls:'big'+(c.r?' rar'+c.r:''),delay:400})}},
+inv(){const sel=S.invSel,eq=(it,l)=>`<div class="item" style="border-color:${it?RAR[it.r].c:'#333'}"><span class="small dim">${l}</span><br>${it?iName(it)+`<br><span class="small dim">${fxc(iStats(it))}</span>`:'<span class="dim">nichts</span>'}</div>`;
+scene(`<p class="gt">Ausgerüstet</p>${['w','a','h','g','j'].map(k=>eq(P[SK[k]],SN[k])).join('')}<p class="gt" style="margin-top:14px">Rucksack ${P.bag.length}/${BAG}</p>${P.bag.length?'<p class="dim small">Tippe auf einen Gegenstand.</p>':'<p class="dim small">Leer.</p>'}`);
+let g=group('');P.bag.forEach((it,i)=>btn(g,(i===sel?'▸ ':'')+iName(it),()=>{S.invSel=sel===i?null:i},{sub:`${RAR[it.r].n} ${slotN(it)} · ${iStats(it)}${iDiff(it)}`,cls:'big',delay:120}));
+if(sel!=null&&P.bag[sel]){const it=P.bag[sel];g=group(it.name);
+ {const c=P[SK[it.slot]];btn(g,'Anlegen',()=>{P.bag.splice(sel,1);S.invSel=null;equip(it);log(`${it.name} angelegt.`,'good')},{dis:!!(c&&c.curse),sub:c&&c.curse?'Dein verfluchtes Teil lässt sich nicht ablegen':''})}
+ btn(g,'Wegwerfen',()=>{P.bag.splice(sel,1);S.invSel=null;log(`${it.name} weggeworfen.`,'dim')},{cls:'danger'})}
+if(P.kindling>0)btn(group('Vorräte'),'♨ Lagerfeuer anzünden',()=>{S.invSel=null;S.screen='doors';S.fireOpen=true},{sub:`${P.kindling} Zunder übrig`,cls:'big'});
+btn(group(''),'Zurück',()=>{S.invSel=null;S.screen='doors'},{cls:'big'})},
+loot(){const it=S.item,cur=P[SK[it.slot]];
+scene(`<p>Beute!${it.src?` <span class="small dim">Von: ${it.src}</span>`:''}</p><div class="item" style="border-color:${RAR[it.r].c}">${iName(it)}<br><span class="small dim">${RAR[it.r].n} ${slotN(it)} · ${fxc(iStats(it))}${iDiff(it)}</span></div>
+${cur?`<div class="item" style="border-color:#333"><span class="small dim">Aktuell: ${iName(cur)}<br>${fxc(iStats(cur))}</span></div>`:'<p class="small dim">Du trägst nichts in diesem Platz.</p>'}`);
+const full=P.bag.length>=BAG,g=group('');
+btn(g,'Anlegen',()=>{equip(it);log(`${it.name} angelegt.`,'good');next()},{dis:!!(cur&&cur.curse),sub:cur&&cur.curse?'Dein verfluchtes Teil lässt sich nicht ablegen':cur?(full?'Rucksack voll: Altes Teil bleibt liegen':'Altes Teil kommt in den Rucksack'):''});
+btn(g,'Einpacken',()=>{P.bag.push(it);log(`${it.name} eingepackt.`,'dim');next()},{dis:full,sub:`Rucksack ${P.bag.length}/${BAG}`});
+btn(g,'Liegen lassen',()=>{log(`Du lässt ${it.name} liegen.`,'dim');next()})},
+gate(){if(P.floor===30){unlock('foerder');scene(`<p>Hinter dem Wächter hängt ein uralter Förderkorb an rostigen Ketten. Sie führen nach oben ins Dunkel. Älter als der Orden – aber sie halten.</p><p class="dim small">Du kannst Gold in den Korb laden und hochschicken – und selbst weitergehen. Oder du fährst selbst hoch: +75 % Splitter.</p>`);const g=group('');btn(g,'Tiefer hinab',next,{sub:`Etage ${P.floor+1} wartet`,delay:500});
+btn(g,'Gold & Material in den Förderkorb',()=>{meta.gold=(meta.gold||0)+P.gold;const m=matsToMeta();saveMeta();log(`Du lädst ${P.gold} Gold${m.length?' und '+m.join(', '):''} in den Korb. Die Ketten rattern, dann ist es oben.`,'goldt');P.gold=0},{dis:P.gold<1&&!Object.keys(P.mats||{}).length,sub:`${P.gold} Gold${Object.keys(P.mats||{}).length?' und dein Material':''} nach oben`});btn(g,'Mit dem Förderkorb hoch',()=>{log('Die Ketten ächzen. Stunden später siehst du wieder Tageslicht.','good');P.lift=true;meta.lifted=true;endRun(true)},{sub:P.gold?`+75 % Splitter · ${P.gold} Gold bleiben hier`:'+75 % Splitter',delay:700});return}
+if(P.floor>20){unlock('seile');scene(`<p>Der Wächter liegt am Boden. Einen Weg nach oben gibt es hier nicht. So tief hat der Orden nie ein Seil gespannt.</p><p class="dim small">Ab hier geht es nur noch abwärts. Oder über den Stein zurück.</p>`);btn(group(''),'Tiefer hinab',next,{sub:`Etage ${P.floor+1} wartet`,delay:500,cls:'big'});return}
+scene(`<p>Der Wächter liegt am Boden. Dahinter führt ein Schacht nach oben, jemand vom Orden hat ein Seil gespannt. Daneben hängt ein Korb für Brenn.</p><p class="dim small">Gold kommt nur über den Korb in die Ordenskasse. Hochklettern bringt 50 % mehr Splitter, aber das Seil trägt nur dich.</p>`);
+const g=group('');btn(g,'Tiefer hinab',next,{sub:`Etage ${P.floor+1} wartet`,delay:500});
+btn(g,'Gold & Material in den Korb',()=>{meta.gold=(meta.gold||0)+P.gold;const m=matsToMeta();saveMeta();log(`Du legst ${P.gold} Gold${m.length?' und '+m.join(', '):''} in den Korb. Oben zieht jemand daran.`,'goldt');P.gold=0},{dis:P.gold<1&&!Object.keys(P.mats||{}).length,sub:`${P.gold} Gold${Object.keys(P.mats||{}).length?' und dein Material':''} nach oben`});
+btn(g,'Hochklettern',()=>{log('Du kletterst zurück ins Lager.','good');endRun(true)},{sub:P.gold?`+50 % Splitter · ${P.gold} Gold bleiben hier`:'+50 % Splitter',delay:700})},
+end(){const x=S.end;
+scene(`<p class="${x.retreat?'good':'bad'}">${x.retreat?'Du bist lebend wieder oben.':'Du bist gestorben. Der Stein hat dich zurückgeholt.'}</p>
+<p class="small">${CLS[x.cls].name} · Etage ${x.floor} · Stufe ${x.lvl} · ${x.kills} Gegner</p>
+<p>${fxc(`+${x.tot} Seelensplitter`)}${x.retreat?' <span class="small dim">(inkl. Rückzugsbonus)</span>':''}</p>${x.goldHome?`<p>${fxc(`+${x.goldHome} Gold`)} <span class="small dim">für die Ordenskasse</span></p>`:''}${x.goldLost?`<p class="small dim">${fxc(`${x.goldLost} Gold`)} ${x.retreat?'hast du unten zurückgelassen. Nur was im Korb liegt, kommt in die Ordenskasse.':'liegen jetzt irgendwo da unten.'}</p>`:''}${x.soulHome&&x.soulHome.length?`<p class="small mat">Seelengebunden mitgebracht: ${x.soulHome.join(', ')}</p>`:''}${x.matsLost&&x.matsLost.length?`<p class="small dim">Unten geblieben: ${x.matsLost.join(', ')}</p>`:''}${x.recap?`<div class="recap"><b>Rückblick</b>${x.recap.killer?`<div class="small">Gestorben durch <span style="color:var(--red)">${esc(x.recap.killer)}</span> auf Etage ${x.floor}</div>`:''}${x.recap.w||x.recap.a?`<div class="small">Ausrüstung: ${[x.recap.w,x.recap.a].filter(Boolean).map(i=>`<span style="color:${RAR[i.r||0].c}">${esc(i.n)}</span>`).join(' · ')}</div>`:''}${x.recap.perks.length?`<div class="small">Fähigkeiten: ${x.recap.perks.join(' · ')}</div>`:'<div class="small dim">Keine Fähigkeiten gewählt</div>'}<p class="small" style="margin:8px 0 0"><i>Varga: ${x.recap.tip}</i></p></div>`:`<p class="small dim"><i>${x.line}</i></p>`}${x.newBest&&x.floor>0?'<p class="goldt small">Neue tiefste Etage!</p>':''}${nextGoal()}`);
+const g=group('');btn(g,'Zurück ins Lager',()=>{P=null;S.screen='hub'},{cls:'big',delay:600})},
+};
+
+function render(){
+checkQuests();
+if(P&&!['hub','end','chronik','settings','save'].includes(S.screen)){try{localStorage.setItem(RUNSAVE,JSON.stringify({v:2,P,E,S:{screen:S.screen,queue:S.queue,doors:S.doors,ptitle:S.ptitle,choices:S.choices,item:S.item,story:S.story,roomKey:S.roomKey,invSel:S.invSel,fireOpen:S.fireOpen},logs:logs.slice(0,15)}))}catch(e){}}
+try{rankInit();contractTick()}catch(e){}
+$('#stats').innerHTML=statsHTML();$('#actions').innerHTML='';SCR[S.screen]();
+if(P&&P.contract&&!P.tut&&S.screen==='doors'){const c=P.contract;$('#scene').insertAdjacentHTML('beforeend',`<div class="srow small contract">${c.done?'✓':'◆'} Auftrag: ${CON[c.id].t(c.n)} <span class="c-ess">${c.r} ✧</span></div>`)}
+const th=tutHint();if(th)$('#scene').innerHTML=th+$('#scene').innerHTML;
+let ah='';try{ah=artFor()}catch(e){}if(ah){const hit=S.screen==='combat'&&E&&S.lastE===E&&E.hp<S.lastEhp;if(hit)ah=ah.replace('class="art','class="art hitfx ');$('#scene').innerHTML=ah+$('#scene').innerHTML}
+S.lastE=E;S.lastEhp=E?E.hp:null;
+{const st=$('#stage');if(st&&st.classList&&st.classList.remove){const hurt=P&&S.lastPhp!=null&&P.hp<S.lastPhp&&S.screen==='combat';st.classList.remove('hurtfx');if(hurt){void st.offsetWidth;st.classList.add('hurtfx')}}S.lastPhp=P?P.hp:null}
+try{audioScene()}catch(e){}
+const LN=S.logOpen?logs.length:4;$('#log').innerHTML=logs.slice(0,LN).map((l,i)=>`<div class="${l.c}" style="opacity:${Math.max(.15,1-i*(S.logOpen?.08:.18))}">${fxc(l.t)}</div>`).join('');{const t=$('#logtog');if(t)t.textContent=logs.length>4?(S.logOpen?'▴ weniger':`▾ alle ${logs.length}`):''}
+{const m=$('#mini');if(m){m.innerHTML=P&&!['hub','end','story','chronik'].includes(S.screen)?`<span class="c-hp">LP</span> ${Math.max(0,P.hp)}/${maxHp()}${bar(P.hp,maxHp(),'var(--red)')}${E&&S.screen==='combat'?`<span class="mE">${E.name.split(' ·')[0]}</span> ${Math.max(0,Math.ceil(E.hp))}${bar(E.hp,E.maxHp,'var(--orange)')}`:''}`:'';miniCheck()}}}
+function miniCheck(){const m=$('#mini'),st=$('#stats');if(!m||!st||!st.getBoundingClientRect)return;const hide=!m.innerHTML||st.getBoundingClientRect().bottom>0;m.classList.toggle('on',!hide)}
+try{window.addEventListener('scroll',()=>{try{miniCheck()}catch(e){}},{passive:true})}catch(e){}
+
+/* ---------- Start ---------- */
+(function(){if(meta.intro){['riss','stein','orden','varga','expedition'].forEach(id=>{if(!meta.lore.includes(id))meta.lore.push(id)});if(meta.tut&&!meta.lore.includes('splitter'))meta.lore.push('splitter');saveMeta()}
+let run=null;try{run=JSON.parse(localStorage.getItem(RUNSAVE)||'null')}catch(e){}
+if(run&&run.P){try{P=run.P;P.bag=P.bag||[];for(const k of ['kindling','keys']){if(P[k]===null||(typeof P[k]==='number'&&isNaN(P[k])))P[k]=1;else if(typeof P[k]!=='number')P[k]=0}if(P.startBest==null)P.startBest=meta.best;for(const k of ['bells','burn','frozen'])if(typeof P[k]!=='number'||isNaN(P[k]))P[k]=0;if(!P.mod)P.mod='ruhig';logs=run.logs||[];
+ if(run.v===2){E=run.E;Object.assign(S,run.S);S.queue=S.queue||[];
+  if(S.screen==='combat'&&!E)S.screen='doors';
+  if(S.screen==='room'){const k=S.roomKey||'',m=k.match(/^ev(\d+)$/);
+   if(k==='rast')roomRast();else if(k==='tresorTuer')roomTresorTuer();else if(k==='haendler')roomHaendler();else if(k==='schrein')roomSchrein();else if(k==='bquest')roomBquest();else if(m&&EVENTS[+m[1]]){EVENTS[+m[1]]();S.roomKey=k}
+   else room('Der Raum ist leer. Nur der Weg nach vorn bleibt.',()=>[{l:'Weitergehen',fn:next}])}
+  if(S.screen==='doors'&&!S.doors)goDoors();
+ }else{S.doors=run.doors;S.screen='doors';S.queue=[]}
+ sys('Run fortgesetzt.')}catch(e){P=null;E=null;S={screen:'hub',queue:[]};clearRun()}}
+else if(!meta.intro)storyPages('intro');
+const st=$('#stats');if(st&&st.addEventListener)st.addEventListener('click',e=>{const c=e.target.closest&&e.target.closest('[data-i]');if(!c)return;S.info=S.info===c.dataset.i?null:c.dataset.i;render()});
+netInit();
+render();try{sndLabel()}catch(e){}})();
+</script>
+<script>if("serviceWorker" in navigator&&location.protocol==="https:")window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));</script>
+</body>
+</html>
