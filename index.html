@@ -891,6 +891,8 @@ function bBass(fr,t,d,v=.16){const c=AU.ctx,f=c.createBiquadFilter(),g=bOut(t,d,
 function bChoir(frs,t,d,v=.045){const c=AU.ctx,f=c.createBiquadFilter(),g=c.createGain();f.type='lowpass';f.frequency.value=1100;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(v,t+d*.35);g.gain.linearRampToValueAtTime(v*.8,t+d*.8);g.gain.linearRampToValueAtTime(.0001,t+d);f.connect(g);g.connect(AU.mus);
  for(const fr of frs)for(const dt of [-12,0,11]){const o=c.createOscillator();o.type='sawtooth';o.frequency.value=fr;o.detune.value=dt;const vib=c.createOscillator(),vg=c.createGain();vib.frequency.value=5+R();vg.gain.value=4;vib.connect(vg);vg.connect(o.detune);o.connect(f);o.start(t);vib.start(t);o.stop(t+d+.05);vib.stop(t+d+.05)}}
 function bBrass(frs,t,v=.09){const c=AU.ctx,f=c.createBiquadFilter(),g=bOut(t,1.1,.02,v);f.type='lowpass';f.Q.value=3;f.frequency.setValueAtTime(300,t);f.frequency.exponentialRampToValueAtTime(2200,t+.12);f.frequency.exponentialRampToValueAtTime(500,t+1);f.connect(g);for(const fr of frs)for(const dt of [-5,5]){const o=c.createOscillator();o.type='sawtooth';o.frequency.value=fr;o.detune.value=dt;o.connect(f);o.start(t);o.stop(t+1.15)}}
+function bBoom(t,fr,d){const c=AU.ctx,f=c.createBiquadFilter(),g=c.createGain();f.type='lowpass';f.frequency.value=160;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.09,t+d*.3);g.gain.linearRampToValueAtTime(.0001,t+d);f.connect(g);g.connect(AU.mus);for(const dt of [-5,5]){const o=c.createOscillator();o.type='sine';o.frequency.value=fr;o.detune.value=dt;o.connect(f);o.start(t);o.stop(t+d+.05)}
+ const n=c.createBufferSource(),nf=c.createBiquadFilter(),ng=c.createGain();n.buffer=AU.noise;n.loop=true;nf.type='lowpass';nf.frequency.value=90;ng.gain.setValueAtTime(.0001,t);ng.gain.linearRampToValueAtTime(.12,t+d*.4);ng.gain.linearRampToValueAtTime(.0001,t+d);n.connect(nf);nf.connect(ng);ng.connect(AU.mus);n.start(t);n.stop(t+d+.05)}
 const st=(r,n)=>r*Math.pow(2,n/12);
 const BRIFF=[0,0,12,0,3,0,12,0,1,1,13,1,3,1,-2,-1];
 const BCHORD=[[0,3,7],[-4,0,3],[-2,2,5],[-5,-1,2]];
@@ -900,8 +902,7 @@ function bossTick(){const c=AU.ctx;if(!AU.mus)return;const hard=E&&E.maxHp&&E.hp
   if([0,3,8,11].includes(b)||(hard&&b===14))bKick(t,b===0?.55:.42);
   if(b===4||b===12)bTaiko(t);if(i===60||i===62||(hard&&(i===28||i===30)))bTaiko(t,.26);
   if(hard&&i%2===1)bHat(t,i%4===3?.05:.03);
-  if(i%2===0){const n=BRIFF[(i/2)%16],ch=BCHORD[Math.floor(i/16)];bBass(st(root,n+ch[0]*(i%32<16?0:0)),t,sp*1.8);if(hard)bBass(st(root,n+12),t,sp*1.5,.06)}
-  if(b===0){const ch=BCHORD[Math.floor(i/16)];bChoir(ch.map(x=>st(root*2,x)),t,sp*16);if(i===0||(hard&&i===32))bBrass([st(root*2,0),st(root*2,7),st(root*4,0)],t)}
+  if(i%32===0)bBoom(t,root/2,sp*32);
   AU.bt+=sp;AU.bstep++}}
 function musTick(){const k=AU.ambKey,M=MUS[k];if(!M||!AU.mus||AU.drum)return;const n=AU.ctx.currentTime;
 if(AU.mKey!==k){AU.mKey=k;AU.mNext=n+2.5;return}
