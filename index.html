@@ -887,7 +887,7 @@ function bmLoad(){if(BMUS.loading||!AU.ctx)return;BMUS.loading=true;BMUS.src.for
 function bmStart(){if(BMUS.nodes||!BMUS.buf[0]||!BMUS.buf[1]||!AU.mus)return false;const c=AU.ctx,t=c.currentTime+.06;
  BMUS.nodes=BMUS.buf.map((b,i)=>{const s=c.createBufferSource(),g=c.createGain();s.buffer=b;s.loop=true;s.loopStart=0;s.loopEnd=Math.min(b.duration,BMUS.len);g.gain.setValueAtTime(.0001,t);s.connect(g);g.connect(AU.mus);s.start(t);return{s,g}});
  BMUS.phase=-1;bmPhase(0,1.2);return true}
-function bmPhase(ph,ramp=2.5){if(!BMUS.nodes||BMUS.phase===ph)return;BMUS.phase=ph;const t=AU.ctx.currentTime;BMUS.nodes.forEach((n,i)=>{n.g.gain.cancelScheduledValues(t);n.g.gain.setTargetAtTime(i===ph?.85:.0001,t,ramp/3)})}
+function bmPhase(ph,ramp=2.5){if(!BMUS.nodes||BMUS.phase===ph)return;BMUS.phase=ph;const t=AU.ctx.currentTime;BMUS.nodes.forEach((n,i)=>{n.g.gain.cancelScheduledValues(t);n.g.gain.setTargetAtTime(i===ph?.38:.0001,t,ramp/3)})}
 function bmStop(){if(!BMUS.nodes)return;const t=AU.ctx.currentTime,ns=BMUS.nodes;BMUS.nodes=null;ns.forEach(n=>{n.g.gain.cancelScheduledValues(t);n.g.gain.setTargetAtTime(.0001,t,.5);try{n.s.stop(t+2.5)}catch(e){}})}
 /* ---- Bossmusik (Ersatz-Trommeln) ---- */
 function bOut(t,dur,a,peak){const c=AU.ctx,g=c.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(peak,t+a);g.gain.exponentialRampToValueAtTime(.0001,t+dur);g.connect(AU.mus);return g}
