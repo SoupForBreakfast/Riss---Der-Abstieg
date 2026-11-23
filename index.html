@@ -395,6 +395,13 @@ const ENDING=[
 'Jetzt ist dir klar, woher der Stein kommt. Er ist ein Splitter von diesem Ding, und wer an ihn gebunden ist, wird Stück für Stück hier runtergezogen. Krag, der Knochenkönig, Ignaroth und Hrimfang waren alle mal Ankerträger, die irgendwann nicht mehr hochkamen.',
 'Das Ziehen in deiner Brust ist leiser geworden, aber ganz weg ist es nicht.',
 'Unter dir geht es trotzdem weiter, Ebene um Ebene. Einen Boden hat der Riss nicht, und die Schatten da unten tragen alle dieselbe Narbe wie du.'];
+const HUBL=['Am Feuer sitzen ein paar Ankerträger und wärmen sich die Hände. Hinter den Zelten fällt der Fels steil in den Riss ab.',
+'Brenn zählt vor seinem Zelt Münzen. Am Seil warten zwei Neue darauf, dass sie runterdürfen.',
+'Aus Hilds Schmiede hört man den Hammer. Irgendwo streiten sich zwei um einen Schlafplatz.',
+'Es nieselt. Die meisten haben sich in die Zelte verzogen, nur am Feuer sitzen noch ein paar.',
+'Gerade ist jemand am Stein aufgewacht und flucht. Die anderen am Feuer lachen.',
+'Der Wind kommt von unten aus dem Riss und riecht nach nassem Stein. Am Feuer wird Suppe ausgeteilt.',
+'Zwei Ankerträger schleppen einen Verletzten vom Seil zu den Zelten. Keiner sagt viel.'];
 const VARGA=['„Iss was, bevor du runtergehst. Mit leerem Magen stirbt man schneller.“','„Der Riss hat sich heute Nacht wieder bewegt. Die Karten von gestern kannst du vergessen.“','„Splitter sind kein Spielgeld. Gib sie für was Vernünftiges aus.“','„Wenn einer ausholt, gehst du in Deckung. Wie oft soll ich das noch sagen?“','„Die anderen nennen dich schon Stammgast am Stein.“','„Mein Arm? Ist unten geblieben. Lange Geschichte.“','„Du siehst müde aus. Geh trotzdem.“','„Wenn du unten einen Händler triffst, frag nicht, wie er da hingekommen ist.“'];
 const DEATHV=['Du wachst nackt und frierend am Stein auf. Varga wirft dir eine Decke über. „Wieder da. Zieh dir was an.“','„Wie tief warst du? … Hm. Nicht schlecht.“','Varga stellt dir wortlos einen Becher Tee hin.','„Tut’s noch weh? Gut. Dann merkst du’s dir.“','„Schon wieder?“ Varga seufzt. „Na komm, steh auf.“'];
 const TUT_EN={1:{name:'Alter Goblin',base:'Goblin',hp:24,maxHp:24,atk:4,def:0,heavyEvery:3,xp:10,ess:0},3:{name:'Grubenwächter',base:'Goblinhäuptling Krag',hp:60,maxHp:60,atk:6,def:1,heavyEvery:3,mechs:null,xp:30,ess:0}};
@@ -1163,7 +1170,8 @@ if(meta.bq===2&&meta.bounty.includes('zaehlende')){storyPages('bq2');return SCR.
 if(!meta.bq&&meta.runs>=6&&meta.best>=12&&(meta.vq||0)>=1&&meta.tut){storyPages('bq0');return SCR.story()}
 if(meta.rankPend&&RANG[meta.rankPend]){S.screen='rite';return SCR.rite()}
 if(!S.vline)S.vline=(meta.rank||0)>=1&&R()<.35?VRANK[meta.rank]:meta.lore.includes('ende')?'„Du warst am Grund. Und du bist trotzdem zurückgekommen. Was hast du da unten gesehen?“':pick(VARGA);
-scene(`<p class="dim">Das Lager des Ordens. Zelte, ein paar Feuer, der schwarze Ankerstein. Ein paar Schritte weiter geht es hinab in den Riss.</p><p class="small"><i>Varga: ${S.vline}</i></p>`);
+if(!S.hubLine||!S.vlineSeen||S.vlineSeen!==S.vline){S.vlineSeen=S.vline;S.hubLine=pick(HUBL)}
+scene(`<p class="dim">${S.hubLine}</p><p class="small"><i>Varga: ${S.vline}</i></p>`);
 let g;if(!meta.tut){g=group('Zuerst');btn(g,'Mit Varga üben',startTutorial,{sub:'Tutorial: Kampf, Türen und Aufstiege',cls:'big',delay:600})}
 {const nx=RANG[(meta.rank||0)+1];g=group('Orden');
  if(nx){const ok=meta.best>=nx.f;btn(g,ok?`${S.trial?'✓ ':''}Rangprüfung zum ${nx.s} ${nx.n}`:`Nächster Rang: ${nx.s} ${nx.n}`,ok?()=>S.trial=!S.trial:()=>{},{dis:!ok,cls:'big'+(ok?(S.trial?' rar2':''):' info'),sub:ok?`Auf Etage ${nx.f} wartet ${TRIALB[(meta.rank||0)]} als Prüfer, stärker als sonst. Besiegst du ihn, nimmt Varga dich auf · ${S.trial?'aktiv für den nächsten Run':'antippen zum Annehmen'}`:`Erreiche Etage ${nx.f}, dann darfst du zur Prüfung · Danach: ${nx.un.split(':')[0]}`})}
