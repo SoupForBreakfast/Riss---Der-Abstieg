@@ -505,7 +505,7 @@ const xStats=it=>Object.keys(XL).filter(k=>it[k]).map(k=>`+${it[k]} ${XL[k]}`).j
 const iStats=it=>(it.curse?`<span class="fx-curse">Fluch: ${CURSES[it.curse].n} – ${CURSES[it.curse].d}</span> · `:'')+(XT[it.slot]?xStats(it):(it.uq?`<b>${UNIQ[it.uq].d}</b> · `:'')+(it.slot==='w'?`+${it.atk} Angriff · ${wt(it).d}`+(it.crit?` · Bonus: +${it.crit} % Krit`:'')+(it.ls?` · Bonus: ${it.ls} % Lebensraub`:''):`+${it.def} Verteidigung · +${it.hp} LP · ${at_(it).d}`));
 const iValue=it=>Math.round((8+P.floor*2)*(it.r+1));
 const BAG=6;
-function equip(it){const k0=SK[it.slot];if(P[k0]&&P[k0].curse&&P[k0]!==it){log(`Der Fluch lässt dich nicht los – ${P[k0].name} bleibt, wo es ist.`,'bad');return false}
+function equip(it){try{const sl=it.slot,ty=it.type;smp(sl==='w'?'ring':sl==='a'?(ty==='platte'||ty==='kette'?'chain':'cloth'):sl==='h'?'metal':sl==='j'?'beads':'cloth',.45)}catch(e){}const k0=SK[it.slot];if(P[k0]&&P[k0].curse&&P[k0]!==it){log(`Der Fluch lässt dich nicht los – ${P[k0].name} bleibt, wo es ist.`,'bad');return false}
 const k=SK[it.slot],old=P[k],b=maxHp();P[k]=it;const d=maxHp()-b;P.hp=Math.max(1,Math.min(maxHp(),P.hp+Math.max(0,d)));
 if(old){if(P.bag.length<BAG){P.bag.push(old);log(`${old.name} kommt in den Rucksack.`,'dim')}else log(`Rucksack voll – ${old.name} bleibt liegen.`,'dim')}
 if(it.curse)log(`Als du ${it.name} anlegst, schließt es sich kalt um dich. Ausziehen geht nicht mehr.`,'bad');return true}
@@ -532,7 +532,7 @@ Object.assign(e,{name,hp:Math.round(hp),maxHp:Math.round(hp),atk:Math.round(at),
 if(ov.name)e.maxHp=e.hp;return e}
 
 /* ---------- Kampf ---------- */
-function startCombat(type,ov){E=makeEnemy(type,ov);S.screen='combat';P.cd=0;P.defending=false;P.uBlock=hasU('aldric');P.hits=0;P.wach=hasS('wach');
+function startCombat(type,ov){E=makeEnemy(type,ov);try{voice(E,0)}catch(e){}S.screen='combat';P.cd=0;P.defending=false;P.uBlock=hasU('aldric');P.hits=0;P.wach=hasS('wach');
 log(type==='boss'?`${E.name} versperrt das Tor!`:`${E.name} stellt sich dir in den Weg.`,type==='kampf'?'':'bad')}
 function dealDmg(mult,o={}){
 if(E.evade&&!hasS('stumm')&&R()<E.evade){log(`${E.name} weicht aus!`,'dim');return 0}
@@ -562,7 +562,7 @@ else if(c==='magier'){dealDmg(2.6,{pierce:1,skill:1});if(E.hp>0){E.burn=3;log(`$
 else if(c==='blut'){const d=dealDmg(2,{skill:1});const h=heal(Math.round(d*.5));if(h)log(`+${h} LP`,'good')}
 if(hasU('weinende')&&E.hp>0){E.pdot=3;log(`${E.name} ist vergiftet.`,'dim')}
 P.cd=cdNow()+1}
-function drink(){P.potions--;const h=heal(Math.round(maxHp()*.4*(1+P.bonus.potion/100)));log(`Du trinkst einen Heiltrank. +${h} LP`,'good')}
+function drink(){P.potions--;try{if(smp('drink',.5))smp('bubble',.4,1,.3)}catch(e){}const h=heal(Math.round(maxHp()*.4*(1+P.bonus.potion/100)));log(`Du trinkst einen Heiltrank. +${h} LP`,'good')}
 function enemyTurn(){
 if(E.burn>0){const d=Math.max(1,Math.round(atk()*.4));E.hp-=d;E.burn--;log(`${E.name} brennt: ${d} Schaden.`,'crit');if(E.hp<=0)return}
 if(E.pdot>0){const d=Math.max(1,Math.round(E.maxHp*.05));E.hp-=d;E.pdot--;log(`${E.name} leidet unter Gift: ${d} Schaden.`,'dim');if(E.hp<=0)return}
@@ -822,7 +822,7 @@ const AU={ctx:null,on:true,master:null,amb:null,ambKey:null,drum:false,beat:0,la
 try{AU.on=localStorage.getItem('riss_snd')!=='0'}catch(e){}
 function auInit(){if(!AU.on)return;if(AU.ctx){if(AU.ctx.state==='suspended')AU.ctx.resume().catch(()=>{});return}const C=typeof window!=='undefined'&&(window.AudioContext||window.webkitAudioContext);if(!C)return;
 try{AU.ctx=new C();AU.master=AU.ctx.createGain();AU.master.gain.value=.9;AU.master.connect(AU.ctx.destination);AU.fx=AU.ctx.createGain();AU.fx.connect(AU.master);AU.mus=AU.ctx.createGain();AU.mus.connect(AU.master);cfgApply();const c=AU.ctx,b=c.createBuffer(1,c.sampleRate*2,c.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;AU.noise=b;
-AU.timer=setInterval(auTick,230)}catch(e){AU.ctx=null}}
+AU.timer=setInterval(auTick,230);setTimeout(()=>{try{smpLoad()}catch(e){}},300)}catch(e){AU.ctx=null}}
 function auEnv(g,t,a,p,dc){g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(p,t+a);g.gain.exponentialRampToValueAtTime(.0001,t+a+dc)}
 function tone(f,dur,type='sine',vol=.2,when=0,slide=0,att=.008){const c=AU.ctx,t=c.currentTime+when,o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(20,f*slide),t+dur);auEnv(g,t,att,vol,dur);o.connect(g);g.connect(AU.fx);o.start(t);o.stop(t+dur+.05)}
 function nz(dur,freq,q=1,vol=.2,when=0,type='bandpass'){const c=AU.ctx,t=c.currentTime+when,s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();s.buffer=AU.noise;f.type=type;f.frequency.value=freq;f.Q.value=q;auEnv(g,t,.005,vol,dur);s.connect(f);f.connect(g);g.connect(AU.fx);s.start(t,Math.random());s.stop(t+dur+.05)}
@@ -855,16 +855,25 @@ speer:()=>{swish(.12,1200,3000,.16);nz(.03,2600,5,.1,.1);thud(135,.1,.14,.11)},
 hammer:()=>{swish(.25,280,850,.2);thud(55,.38,.42,.21);nz(.22,240,.6,.24,.21,'lowpass')},
 sense:()=>{swish(.3,700,2200,.2);ring(1750,.38,.035,.22);thud(110,.1,.12,.26)},
 saebel:()=>{swish(.12,1100,3200,.16);ring(2900,.22,.04,.09);thud(130,.1,.12,.1)}};
+/* ---- Samples (RPG Sound Pack, artisticdude, CC0) ---- */
+const SMG={"swing":["swing","swing2","swing3"],"clash":["sword-unsheathe","sword-unsheathe2","sword-unsheathe3","sword-unsheathe4","sword-unsheathe5"],"coin":["coin","coin2","coin3"],"cloth":["cloth","cloth-heavy"],"wood":["wood-small"],"door":["door"],"drink":["bottle"],"bubble":["bubble","bubble2","bubble3"],"armor":["armor-light"],"chain":["chainmail1","chainmail2"],"metal":["metal-small1","metal-small2","metal-small3"],"ring":["metal-ringing"],"magic":["magic1","spell"],"beads":["beads"],"beast":["mnstr1","mnstr10","mnstr11","mnstr12","mnstr13","mnstr14","mnstr15","mnstr2","mnstr3","mnstr4","mnstr5","mnstr6","mnstr7","mnstr8","mnstr9"],"slime":["slime_slime1","slime_slime10","slime_slime2","slime_slime3","slime_slime4","slime_slime5","slime_slime6","slime_slime7","slime_slime8","slime_slime9"],"giant":["giant_giant1","giant_giant2","giant_giant3","giant_giant4","giant_giant5"],"ogre":["ogre_ogre1","ogre_ogre2","ogre_ogre3","ogre_ogre4","ogre_ogre5"],"shade":["shade_shade1","shade_shade10","shade_shade11","shade_shade12","shade_shade13","shade_shade14","shade_shade15","shade_shade2","shade_shade3","shade_shade4","shade_shade5","shade_shade6","shade_shade7","shade_shade8","shade_shade9"],"bite":["beetle_bite-small","beetle_bite-small2","beetle_bite-small3"],"wolf":["misc_wolfman"]},SB={};let smpLoading=false;
+function smpLoad(){if(smpLoading||!AU.ctx)return;smpLoading=true;const all=[...new Set(Object.values(SMG).flat())];all.forEach((n,i)=>setTimeout(()=>{try{fetch('sfx/'+n+'.mp3').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).then(a=>new Promise((res,rej)=>AU.ctx.decodeAudioData(a,res,rej))).then(b=>{SB[n]=b}).catch(()=>{})}catch(e){}},i*40))}
+function smp(g,vol=.6,rate=1,when=0){if(!AU.ctx||!AU.on||!AU.fx)return false;const ok=(SMG[g]||[]).filter(n=>SB[n]);if(!ok.length)return false;const c=AU.ctx,t=c.currentTime+when,s=c.createBufferSource(),gn=c.createGain();s.buffer=SB[pick(ok)];s.playbackRate.value=rate*(.95+R()*.1);gn.gain.value=vol;s.connect(gn);gn.connect(AU.fx);s.start(t);return true}
+const VOX={g1:['beast',1.35],g2:['shade',.75],g3:['beast',.95],g4:['shade',1.1],g5:['beast',.85],g6:['giant',.85],g7:['shade',1],g8:['bite',1.2],g9:['slime',1],g10:['giant',.7],g11:['slime',.75],g12:['ogre',.8],b1:['ogre',1],b2:['shade',.65],b3:['giant',.75],b4:['giant',.9],b5:['shade',.55],t1:['ogre',.9],t2:['shade',.85],t3:['beast',.7],t5:['shade',.7],k1:['bite',.8],k2:['slime',.6],k3:['shade',.8],k4:['shade',1.2],k6:['giant',.7],k7:['wolf',.9],k9:['shade',.5]};
+function voxOf(e){if(!e)return null;if(e.base==='Riesenratte')return['bite',.9];if(/hund|wolf/i.test(e.base||''))return['wolf',(e.base==='Knochenhund'?1.1:.95)];if(e.base==='Feuerimp')return['beast',1.5];let k='';try{k=foeKey(e)}catch(x){}return VOX[k]||null}
+function voice(e,mode=0){const v=voxOf(e);if(!v)return;AU.lastVox=v;const big=e.type==='boss'||e.type==='elite'||e.bounty;smp(v[0],big?.75:.55,v[1]*(mode===2?.85:1)*(big&&mode!==2?.92:1),mode===0?.25:0)}
 function weaponSfx(crit){if(!AU.ctx||!AU.on)return;const n=Date.now();if(AU.last.w&&n-AU.last.w<70)return;AU.last.w=n;
+{const ty=P&&P.weapon?(P.weapon.type||'schwert'):'none',rt=ty==='hammer'||ty==='axt'?.78:ty==='dolch'?1.25:ty==='saebel'?1.1:1;if(smp('swing',.5,rt)){try{if(ty==='hammer'||ty==='axt'||ty==='none')thud(62,.22,.22,.1);if(crit){smp('clash',.42,ty==='hammer'?.8:1,.1);thud(62,.32,.3,.14)}}catch(e){}return}}
 const ty=P&&P.weapon?(P.weapon.type||'schwert'):'none';try{(WSND[ty]||WSND.schwert)();if(crit){const d=ty==='hammer'||ty==='axt'?.24:.18;thud(62,.32,.34,d);nz(.14,650,.7,.2,d,'lowpass');if(['schwert','saebel','sense','dolch','speer'].includes(ty))ring(1900+Math.random()*600,.35,.05,d-.02)}}catch(e){}}
 const KSND={
 krieger:()=>{swish(.14,400,1000,.15);thud(70,.28,.4,.12);nz(.06,1300,3,.18,.12);ring(900,.4,.04,.12)},
 klinge:()=>{[0,.11,.22].forEach(w=>swish(.11,1300,3600,.15,w));ring(2700,.25,.03,.3)},
 magier:()=>{const c=AU.ctx,t=c.currentTime,s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();s.buffer=AU.noise;f.type='lowpass';f.frequency.setValueAtTime(300,t);f.frequency.exponentialRampToValueAtTime(2600,t+.35);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.3,t+.2);g.gain.exponentialRampToValueAtTime(.0001,t+.7);s.connect(f);f.connect(g);g.connect(AU.fx);s.start(t);s.stop(t+.75);for(let i=0;i<6;i++)nz(.02,2600+Math.random()*1800,5,.05,.2+Math.random()*.4);tone(80,.6,'sine',.12,.1,.8,.1)},
 blut:()=>{thud(58,.4,.34,0);nz(.3,380,.6,.22,.05,'lowpass');tone(45,.7,'sine',.18,.15,.9,.15);thud(58,.25,.2,.45)}};
-function skillSfx(){if(!AU.ctx||!AU.on||!P)return;try{(KSND[P.cls]||SFX.skill)()}catch(e){}}
-function sfx(k){if(!AU.ctx||!AU.on||!SFX[k])return;const n=Date.now();if(AU.last[k]&&n-AU.last[k]<70)return;AU.last[k]=n;try{SFX[k]()}catch(e){}}
-function sfxLog(t,c){if(!AU.ctx)return;if(/Kritischer Treffer|fünfte Schnitt/.test(t))weaponSfx(true);else if(/Zweiter Hieb/.test(t))weaponSfx(false);else if(/^Du triffst|Gegenangriff/.test(t))weaponSfx(false);else if(/ trifft: /.test(t))sfx('hit');else if(/trifft dich|Feueratem|zieht dir das Leben|gewaltigen Schlag|Blutzoll|^Gift: |Du brennst|Spiegel wirft/.test(t))sfx('hurt');else if(/Stufe \d+ erreicht/.test(t))sfx('level');else if(/Alles wird schwarz/.test(t))sfx('death');else if(/ ist besiegt/.test(t))sfx('win');else if(/Deckung|weichst aus|fängt den|Schild fängt/.test(t))sfx('block');else if(/^» /.test(t)){skillSfx();AU.last.w=Date.now()+250}else if(/versperrt das Tor|Schatten …|tritt aus dem Schatten/.test(t))sfx('boss');else if(/zündest den Zunder/.test(t))sfx('fire');else if(/Schlüssel dreht sich/.test(t))sfx('door');else if(c==='good'&&/\+\d+ LP/.test(t))sfx('heal');else if(c==='goldt'||/\+\d+ Gold/.test(t))sfx('coin')}
+function skillSfx(){if(!AU.ctx||!AU.on||!P)return;if(P.cls==='magier'&&smp('magic',.6))return;try{(KSND[P.cls]||SFX.skill)()}catch(e){}}
+const SMAP={coin:()=>smp('coin',.4),rustle:()=>smp('cloth',.75),creak:()=>{const a=smp('door',.45,1.5);if(a)smp('wood',.5,.9,.32);return a},door:()=>{const a=smp('door',.6,.8);if(a)try{thud(55,.5,.2,.5)}catch(e){}return a}};
+function sfx(k){if(!AU.ctx||!AU.on||!SFX[k])return;const n=Date.now();if(AU.last[k]&&n-AU.last[k]<70)return;AU.last[k]=n;try{if(SMAP[k]&&SMAP[k]())return;SFX[k]()}catch(e){}}
+function sfxLog(t,c){if(!AU.ctx)return;try{if(E&&Object.values(TELE).some(x=>t.includes(x)))voice(E,1);if(/ ist besiegt/.test(t)&&AU.lastVox)smp(AU.lastVox[0],.45,AU.lastVox[1]*.8)}catch(e){}if(/Kritischer Treffer|fünfte Schnitt/.test(t))weaponSfx(true);else if(/Zweiter Hieb/.test(t))weaponSfx(false);else if(/^Du triffst|Gegenangriff/.test(t))weaponSfx(false);else if(/ trifft: /.test(t))sfx('hit');else if(/trifft dich|Feueratem|zieht dir das Leben|gewaltigen Schlag|Blutzoll|^Gift: |Du brennst|Spiegel wirft/.test(t))sfx('hurt');else if(/Stufe \d+ erreicht/.test(t))sfx('level');else if(/Alles wird schwarz/.test(t))sfx('death');else if(/ ist besiegt/.test(t))sfx('win');else if(/Deckung|weichst aus|fängt den|Schild fängt/.test(t))sfx('block');else if(/^» /.test(t)){skillSfx();AU.last.w=Date.now()+250}else if(/versperrt das Tor|Schatten …|tritt aus dem Schatten/.test(t))sfx('boss');else if(/zündest den Zunder/.test(t))sfx('fire');else if(/Schlüssel dreht sich/.test(t))sfx('door');else if(c==='good'&&/\+\d+ LP/.test(t))sfx('heal');else if(c==='goldt'||/\+\d+ Gold/.test(t))sfx('coin')}
 const AMB={hub:{f:[110,164.8],cut:500,wind:.004,bp:900},a0:{f:[55,82.4],cut:300,wind:.012,bp:400},a1:{f:[49,73.4],cut:260,wind:.01,bp:350},a2:{f:[41.2,61.7],cut:380,wind:.014,bp:320},a3:{f:[61.7,92.5],cut:600,wind:.016,bp:600},a4:{f:[36.7,55],cut:220,wind:.012,bp:260}};
 function ambSet(key){if(!AU.ctx||AU.ambKey===key)return;AU.ambKey=key;const c=AU.ctx,t=c.currentTime;
 if(AU.amb){const old=AU.amb;old.g.gain.cancelScheduledValues(t);old.g.gain.setTargetAtTime(.0001,t,.8);setTimeout(()=>old.stop(),4000)}
@@ -880,7 +889,7 @@ a2:{n:[41.2,46.2,55,61.7],w:'sawtooth',cut:320,v:.045,gap:[5,9],dur:4,iv:[1,1.5]
 a3:{n:[493.9,587.3,659.3,740,880],w:'sine',cut:3200,v:.016,gap:[3,7],dur:7,iv:[1,.5]},
 a4:{n:[36.7,38.9,51.9,55],w:'sawtooth',cut:240,v:.06,gap:[7,12],dur:10,iv:[1,1.06]}};
 function pad(fs,dur,w,cut,vol){const c=AU.ctx,t=c.currentTime,f=c.createBiquadFilter(),g=c.createGain();f.type='lowpass';f.frequency.value=cut;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(vol,t+dur*.4);g.gain.linearRampToValueAtTime(.0001,t+dur);f.connect(g);g.connect(AU.mus);for(const fr of fs)for(const d of [-6,6]){const o=c.createOscillator();o.type=w;o.frequency.value=fr;o.detune.value=d;o.connect(f);o.start(t);o.stop(t+dur+.1)}}
-function thud(when,v){const c=AU.ctx,t=c.currentTime+when,o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(68,t);o.frequency.exponentialRampToValueAtTime(38,t+.25);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+.38);o.connect(g);g.connect(AU.mus);o.start(t);o.stop(t+.45)}
+function mthud(when,v){const c=AU.ctx,t=c.currentTime+when,o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(68,t);o.frequency.exponentialRampToValueAtTime(38,t+.25);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+.38);o.connect(g);g.connect(AU.mus);o.start(t);o.stop(t+.45)}
 /* ---- Bossmusik (Datei) ---- */
 const BMUS={src:['mus/boss_a.mp3','mus/boss_b.mp3'],len:5188235/44100,buf:[null,null],loading:false,nodes:null,phase:0};
 function bmLoad(){if(BMUS.loading||!AU.ctx)return;BMUS.loading=true;BMUS.src.forEach((u,i)=>{try{fetch(u).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).then(a=>new Promise((res,rej)=>AU.ctx.decodeAudioData(a,res,rej))).then(b=>{BMUS.buf[i]=b}).catch(()=>{})}catch(e){}})}
@@ -914,7 +923,7 @@ function bossTick(){const c=AU.ctx;if(!AU.mus)return;const hard=E&&E.maxHp&&E.hp
   AU.bt+=sp;AU.bstep++}}
 function musTick(){const k=AU.ambKey,M=MUS[k];if(!M||!AU.mus||AU.drum)return;const n=AU.ctx.currentTime;
 if(AU.mKey!==k){AU.mKey=k;AU.mNext=n+2.5;return}
-if(M.pulse&&!AU.drum&&n>=(AU.pNext||0)){AU.pNext=n+1.75;thud(0,.11);thud(.27,.07)}
+if(M.pulse&&!AU.drum&&n>=(AU.pNext||0)){AU.pNext=n+1.75;mthud(0,.11);mthud(.27,.07)}
 if(n<AU.mNext)return;AU.mNext=n+M.gap[0]+R()*(M.gap[1]-M.gap[0]);const a=pick(M.n);pad(M.iv.map(x=>a*x),M.dur,M.w,M.cut,M.v)}
 function auTick(){if(!AU.ctx||!AU.on||(typeof document!=='undefined'&&document.hidden))return;const k=AU.ambKey;try{musTick()}catch(e){}
 if(k==='hub'&&R()<.12)nz(.02,2200+R()*1500,5,.018);
@@ -1119,7 +1128,7 @@ let g=group('Ton');btn(g,AU.on?'♪ Ton ist an':'♪ Ton ist aus',()=>sndToggle(
 g=group('Textgröße');['Klein','Normal','Groß'].forEach((n,i)=>btn(g,(CFG.size===i?'✓ ':'')+n,()=>{CFG.size=i;cfgSave()},{delay:100,cls:CFG.size===i?'rar2':''}));
 g=group('Darstellung');btn(g,CFG.anim?'Animationen: an':'Animationen: aus',()=>{CFG.anim=CFG.anim?0:1;cfgSave()},{sub:'Flackern, Zoom, Partikel und Wackeln',delay:100});
 g=group('Spielstand');btn(g,'Spielstand sichern & laden',()=>{S.screen='save';S.saveMsg='';S.loadArm=false},{sub:'Als Code oder Datei, z. B. für ein neues Handy'});
-$('#scene').insertAdjacentHTML('beforeend','<p class="dim small" style="margin-top:18px">Bossmusik: „Colossal Boss Battle Theme“ von Matthew Pablo (<a href="https://www.matthewpablo.com" target="_blank" rel="noopener">matthewpablo.com</a>), Lizenz <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">CC-BY 3.0</a>, über <a href="https://opengameart.org/content/colossal-boss-battle-theme" target="_blank" rel="noopener">OpenGameArt</a>. Unverändert, nur ins MP3-Format umgewandelt.</p>');
+$('#scene').insertAdjacentHTML('beforeend','<p class="dim small" style="margin-top:18px">Bossmusik: „Colossal Boss Battle Theme“ von Matthew Pablo (<a href="https://www.matthewpablo.com" target="_blank" rel="noopener">matthewpablo.com</a>), Lizenz <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">CC-BY 3.0</a>, über <a href="https://opengameart.org/content/colossal-boss-battle-theme" target="_blank" rel="noopener">OpenGameArt</a>. Unverändert, nur ins MP3-Format umgewandelt.<br>Geräusche: „RPG Sound Pack“ von artisticdude (<a href="https://opengameart.org/content/rpg-sound-pack" target="_blank" rel="noopener">OpenGameArt</a>), CC0.</p>');
 g=group('');btn(g,'Zurück',()=>{S.screen=S.prevScreen&&S.prevScreen!=='settings'&&S.prevScreen!=='save'?S.prevScreen:'hub'},{cls:'big',delay:120})},
 save(){const code=saveCode();
 scene(`<p class="gt">Spielstand</p><p class="dim small">Dein Fortschritt liegt nur in diesem Browser. Wenn du den Verlauf löschst oder das Handy wechselst, ist er weg. Sichere ihn hier als Code oder Datei.</p>
