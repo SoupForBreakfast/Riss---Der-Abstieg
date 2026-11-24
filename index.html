@@ -141,6 +141,7 @@ textarea.code{width:100%;box-sizing:border-box;height:84px;background:#111114;co
 .recap .rk{line-height:1.35}
 .story .sr{opacity:0;animation:srin .6s ease-out forwards}
 @keyframes srin{from{opacity:0;filter:blur(2px)}to{opacity:1;filter:none}}
+.acard{text-align:center;padding:18px 4px 6px}.acard .ac0{font-size:.8rem;letter-spacing:.25em;text-transform:uppercase;color:#8f8a80;opacity:0;animation:acin 1s .1s ease-out forwards}.acard .ac1{font-size:1.9rem;letter-spacing:.12em;color:#e2dccd;margin:10px 0 14px;opacity:0;animation:acin 1.4s .35s ease-out forwards}.acard .ac2{font-style:italic;color:#b9b2a3;line-height:1.55}@keyframes acin{from{opacity:0;transform:translateY(6px);filter:blur(2px)}to{opacity:1;transform:none;filter:none}}
 #fcard{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;pointer-events:none;z-index:60;opacity:0;background:rgba(6,6,8,.0)}
 #fcard.on{animation:fcard 1.5s ease-in-out forwards}#fcard.on.big{animation-duration:2.4s}
 #fcard .fc1{font-size:1.6rem;letter-spacing:.3em;text-transform:uppercase;color:#d8d2c4}#fcard .fc2{font-size:.95rem;letter-spacing:.2em;color:#8f8a80;margin-top:6px}
@@ -680,7 +681,10 @@ if(t!=='kampf'&&t===P.lastT)t='kampf';P.lastT=t;return t}
 function floorCard(f,n,newArea){if(typeof document==='undefined'||!CFG.anim)return;let el=document.getElementById('fcard');if(!el){el=document.createElement('div');el.id='fcard';document.body.appendChild(el)}
 el.innerHTML=`<div><div class="fc1">Etage ${f}</div><div class="fc2">${n}</div></div>`;el.className='';void el.offsetWidth;el.className=newArea?'on big':'on'}
 function advance(){sfx('step');enterDoor({t:null})}
-function enterDoor(d){S.fireOpen=false;const prev=areaOf(P.floor);P.floor++;const a=areaOf(P.floor);try{if(!P.tut)floorCard(P.floor,a.name,a!==prev)}catch(e){}
+function enterDoor(d){S.fireOpen=false;const prev=areaOf(P.floor);P.floor++;const a=areaOf(P.floor);
+if(!P.tut&&P.floor>1&&a!==prev){S.screen='acard';S.acard={t:d.t||null};try{sfx('door')}catch(e){}return}
+roomGo(d)}
+function roomGo(d){const prev=areaOf(P.floor-1),a=areaOf(P.floor);
 let t=d.t||rollRoom();
 if(P.tut){if(t==='kampf'||t==='boss')return startCombat(t,TUT_EN[P.floor]);if(t==='tresorTuer')return roomTresorTuer()}
 else{if(P.comp){P.comp.left--;if(P.comp.left<=0){const c=P.comp;P.comp=null;if(c.traitor){const g=Math.floor(P.gold*.4);P.gold-=g;log(`${c.n} ist weg, und ${g} Gold aus deinem Beutel auch. „Gefangen“ war wohl gelogen.`,'bad')}else{const g=goldAmt(1.5);P.gold+=g;log(`${c.n} bleibt an einer Abzweigung stehen. „Hier trennen sich unsere Wege. Danke.“ Zum Abschied: ${g} Gold.`,'goldt')}}}
@@ -1063,7 +1067,7 @@ return `<div class="art img${o.elite?' elite':''}${o.boss?' boss':''}${o.dead?' 
 function artFor(){const s=S.screen;
 if(s==='hub')return artImg('o1');if(s==='end'&&S.end&&S.end.recap&&S.end.recap.key)return artImg(S.end.recap.key,{elite:true,dead:true});if(s==='rite')return artImg('o1',{rite:true});if(s==='forge')return artImg('x2');if(s==='story'&&S.story&&/^bq/.test(S.story.id))return IMG.x4?artImg('x4'):'';if(s==='story'||s==='quests')return artImg('x1');
 if(!P)return'';const ai=Math.min(4,Math.max(0,AREAS.indexOf(areaOf(P.floor||1))));
-if(s==='doors'){if(S.fireOpen)return artImg('o8');const nf=P.floor+1,boss=P.tut?nf===3:nf%5===0;if(boss)return artImg('o7');return artImg('o'+(2+Math.min(4,Math.max(0,AREAS.indexOf(areaOf(nf))))))}
+if(s==='acard')return artImg('o'+(2+ai),{area:true});if(s==='doors'){if(S.fireOpen)return artImg('o8');const nf=P.floor+1,boss=P.tut?nf===3:nf%5===0;if(boss)return artImg('o7');return artImg('o'+(2+Math.min(4,Math.max(0,AREAS.indexOf(areaOf(nf))))))}
 if(s==='combat'&&E)return artImg(foeKey(E),{elite:E.type==='elite',boss:E.type==='boss',area:ai});
 if(s==='room'){if(S.roomKey==='haendler')return artImg('o9');if(S.roomKey==='rast')return artImg('o8');if(S.roomKey==='tresorTuer')return artImg('x3');if(S.roomKey==='schrein')return artImg('o3')}
 return''}
@@ -1137,6 +1141,9 @@ ${infoHTML(S.info)}
 ${S.info?'':'<div class="legend">Tippe auf Werte, Ausrüstung oder Fähigkeiten für Details.</div>'}`}
 
 const SCR={
+acard(){const a=areaOf(P.floor),ai=AREAS.indexOf(a);let si=0;const sw=t=>String(t||'').split(/(?<=[.!?…“])\s+(?=[„A-ZÄÖÜ])/).map(x=>`<span class="sr" style="animation-delay:${.9+(si++)*.5}s">${x} </span>`).join('');
+scene(`<div class="acard"><div class="ac0">${['Erstes','Zweites','Drittes','Viertes','Fünftes'][ai]||''} Gebiet · Etage ${P.floor}</div><div class="ac1">${a.name}</div><div class="ac2">${sw(a.intro)}</div></div>`);
+const g=group('');btn(g,'Weiter',()=>{const d=S.acard||{t:null};S.acard=null;roomGo(d)},{cls:'big',delay:500})},
 story(){const st=S.story,pages=STORIES[st.id].p(),last=st.i>=pages.length-1;
 let si=0;const sw=t=>t.split(/(?<=[.!?…“])\s+(?=[„A-ZÄÖÜ])/).map(x=>`<span class="sr" style="animation-delay:${(si++)*.45}s">${x} </span>`).join('');
 scene(`<div class="story">${pages[st.i].split('\n').map(l=>l.startsWith('+')?`<p class="sys">${sw(l)}</p>`:`<p>${sw(l)}</p>`).join('')}</div><p class="dim small">${st.i+1} / ${pages.length}</p>`);
@@ -1316,7 +1323,7 @@ const g=group('');btn(g,'Zurück ins Lager',()=>{P=null;S.screen='hub'},{cls:'bi
 
 function render(){
 checkQuests();
-if(P&&!['hub','end','chronik','settings','save'].includes(S.screen)){try{localStorage.setItem(RUNSAVE,JSON.stringify({v:2,P,E,S:{screen:S.screen,queue:S.queue,doors:S.doors,ptitle:S.ptitle,choices:S.choices,item:S.item,story:S.story,roomKey:S.roomKey,invSel:S.invSel,fireOpen:S.fireOpen},logs:logs.slice(0,15)}))}catch(e){}}
+if(P&&!['hub','end','chronik','settings','save'].includes(S.screen)){try{localStorage.setItem(RUNSAVE,JSON.stringify({v:2,P,E,S:{screen:S.screen,queue:S.queue,doors:S.doors,ptitle:S.ptitle,choices:S.choices,item:S.item,story:S.story,acard:S.acard,roomKey:S.roomKey,invSel:S.invSel,fireOpen:S.fireOpen},logs:logs.slice(0,15)}))}catch(e){}}
 try{rankInit();contractTick()}catch(e){}
 $('#stats').innerHTML=statsHTML();$('#actions').innerHTML='';SCR[S.screen]();
 if(P&&P.contract&&!P.tut&&S.screen==='doors'){const c=P.contract;$('#scene').insertAdjacentHTML('beforeend',`<div class="srow small contract">${c.done?'✓':'◆'} Auftrag: ${CON[c.id].t(c.n)} <span class="c-ess">${c.r} ✧</span></div>`)}
