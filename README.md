@@ -13,6 +13,10 @@ Auf dem Handy über „Zum Startbildschirm hinzufügen“ als App installieren. 
 - Lagermusik: „Medieval: The Bard’s Tale“ von RandomMind – [OpenGameArt](https://opengameart.org/content/medieval-the-bards-tale) – CC0
 - Höhlenmusik: „Cave Theme“ von Brandon75689 – OpenGameArt – CC0
 - Kryptamusik: „Dark Loop“ – OpenGameArt
+- Glutschlund-Musik: „Welcome to Com-Mecha“ von Matthew Pablo – www.matthewpablo.com
+- Gebietsboss-Musik: „Set Fire to Reality“ von ColdOneK – OpenGameArt – CC-BY 4.0
+- Finale: „Final Confrontation“ von tcarisland – https://opengameart.org/content/final-confrontation
+- Sieg-Chor: „choir_positive1“ – OpenGameArt (gekürzt)
 - Frostgruft-Musik: „Cold Sanctuary“ – Composed by Jonathan Shaw (www.jshaw.co.uk)
 - Todesmusik: „The End (Death Screen mix)“ von Avgvst, Remix von Metaruka – OpenGameArt
 - Stufenaufstieg: „Picked Coin Echo“ von NenadSimic – OpenGameArt
