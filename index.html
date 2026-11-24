@@ -137,6 +137,8 @@ h1{font-weight:normal;letter-spacing:.45em;font-size:1rem;margin:0;color:var(--d
 textarea.code{width:100%;box-sizing:border-box;height:84px;background:#111114;color:#cfcac0;border:1px solid #33333a;border-radius:6px;padding:8px;font:12px/1.35 monospace;word-break:break-all;resize:vertical}
 .filel{display:block;margin-top:8px;font-size:.85rem;color:#99958c}.filel input{display:block;margin-top:6px;color:#99958c;max-width:100%}
 .recap{border:1px solid #3a2a2a;border-radius:8px;padding:10px 12px;margin:12px 0;background:rgba(120,30,30,.08)}
+.art.img.dead .base{filter:grayscale(1) brightness(.55) contrast(1.1)}
+.recap .rk{line-height:1.35}
 .rite{text-align:center}.rite p{text-align:left}
 .rbig{font-size:64px;line-height:1;margin:6px 0 2px;animation:rin 1.6s cubic-bezier(.2,.8,.2,1) both,rglow 3s ease-in-out 1.6s infinite alternate}
 .rname{font-size:22px;letter-spacing:.3em;text-transform:uppercase;margin-bottom:14px;animation:rfade 1.2s .6s both}
@@ -789,7 +791,9 @@ try{if(!retreat&&!P.tut){const lt=logs.slice(0,7).map(l=>l.t).join(' '),tips=[];
  if(P.lvl<P.floor*.45)tips.push('„Du warst zu schnell zu tief. Kämpf ein bisschen mehr, bevor du weitergehst.“');
  if(!P.rests&&P.floor>=6)tips.push('„Kein einziges Mal am Feuer gerastet? Zunder ist zum Benutzen da.“');
  tips.push('„Rückzug ist keine Schande. Wer lebend hochkommt, bringt mehr Splitter mit.“');
- recap={killer:E?E.name:null,kt:E?E.type:null,perks:[...new Set(P.perks)].map(id=>{const p=PK(id);return p?pName(p,pCount(id)):''}).filter(Boolean),w:P.weapon?{n:P.weapon.name,r:P.weapon.r}:null,a:P.armor?{n:P.armor.name,r:P.armor.r}:null,tip:tips[0]}}}catch(e){recap=null}
+ let cause='Treffer',key=null;try{key=E?foeKey(E):null}catch(x){}
+ if(/gewaltigen Schlag/.test(lt))cause='ein gewaltiger Schlag';else if(/leidet unter Gift|Du bist vergiftet/.test(lt))cause='Gift';else if(/Feuer|brennst|Flammen/.test(lt))cause='Feuer';else if(/Leben aus dem Leib/.test(lt))cause='Lebensentzug';else if(/Eisiger Hauch/.test(lt))cause='Kälte und dann ein Treffer';else if(/Falle/.test(lt))cause='eine Falle';
+ recap={key,cause,lvl:P.lvl,hpMax:maxHp(),gear:['weapon','armor','helm','gloves','jewel'].map(k=>P[k]?{n:P[k].name,r:P[k].r,cur:!!P[k].curse}:null).filter(Boolean),killer:E?E.name:null,kt:E?E.type:null,perks:[...new Set(P.perks)].map(id=>{const p=PK(id);return p?pName(p,pCount(id)):''}).filter(Boolean),w:P.weapon?{n:P.weapon.name,r:P.weapon.r}:null,a:P.armor?{n:P.armor.name,r:P.armor.r}:null,tip:tips[0]}}}catch(e){recap=null}
 const raw=P.ess+P.floor+P.bosses*5,mult=(1+ul('seele')*.1)*(retreat?(P.lift?1.75:1.5):1)*rm('ess',1)*(hasS('tief')?1.25:1),tot=Math.round(raw*mult),goldHome=0,goldLost=P.gold;
 meta.gold=(meta.gold||0)+goldHome;const soulHome=matsToMeta(true),matsLost=Object.keys(P.mats||{}).map(k=>P.mats[k]+'× '+MATS[k].n);if(!retreat){meta.deaths=(meta.deaths||0)+1;if(!meta.scarOffer&&(meta.scars||[]).length<SCART.filter(t=>meta.deaths>=t).length){const pool=Object.keys(SCARS).filter(k=>!hasS(k));meta.scarOffer=pool.sort(()=>R()-.5).slice(0,2)}if(P.floor>=3)writeShade()}writeBoard(P.floor);if(P.vqFound){meta.vqPend='vq'+meta.vq}if(P.bqFound&&meta.bq===1)meta.bqPend=1;meta.cbest=meta.cbest||{};meta.cbest[P.cls]=Math.max(meta.cbest[P.cls]||0,P.floor);
 const oldR=rankOf(P.startBest||0);
@@ -1022,9 +1026,9 @@ if(pt){const px=d.px,n=pt==='snow'?16:pt==='embers'?12:10;for(let i=0;i<n;i++){c
  const top=pt==='snow'?'-4':pt==='embers'?(d.py!=null?d.py:96):(i*29)%90;
  h+=`<i class="pt ${pt}" style="left:${x.toFixed(1)}%;top:${top}%;animation-delay:-${dl}s;animation-duration:${du.toFixed(2)}s"></i>`}}
 if(d.fog)h+='<div class="fog"></div><div class="fog f2"></div>';
-return `<div class="art img${o.elite?' elite':''}${o.boss?' boss':''}">${h}<div class="edge"></div></div>`}
+return `<div class="art img${o.elite?' elite':''}${o.boss?' boss':''}${o.dead?' dead':''}">${h}<div class="edge"></div></div>`}
 function artFor(){const s=S.screen;
-if(s==='hub')return artImg('o1');if(s==='rite')return artImg('o1',{rite:true});if(s==='forge')return artImg('x2');if(s==='story'&&S.story&&/^bq/.test(S.story.id))return IMG.x4?artImg('x4'):'';if(s==='story'||s==='quests')return artImg('x1');
+if(s==='hub')return artImg('o1');if(s==='end'&&S.end&&S.end.recap&&S.end.recap.key)return artImg(S.end.recap.key,{elite:true,dead:true});if(s==='rite')return artImg('o1',{rite:true});if(s==='forge')return artImg('x2');if(s==='story'&&S.story&&/^bq/.test(S.story.id))return IMG.x4?artImg('x4'):'';if(s==='story'||s==='quests')return artImg('x1');
 if(!P)return'';const ai=Math.min(4,Math.max(0,AREAS.indexOf(areaOf(P.floor||1))));
 if(s==='doors'){if(S.fireOpen)return artImg('o8');const nf=P.floor+1,boss=P.tut?nf===3:nf%5===0;if(boss)return artImg('o7');return artImg('o'+(2+Math.min(4,Math.max(0,AREAS.indexOf(areaOf(nf))))))}
 if(s==='combat'&&E)return artImg(foeKey(E),{elite:E.type==='elite',boss:E.type==='boss',area:ai});
@@ -1085,7 +1089,7 @@ else if(id==='mat')h=`<b>Material</b> für Hilds Schmiede:<br>`+Object.keys(P.ma
 else if(id==='mod'){const m=RMODS[P.mod];h=`<b>${m.n}</b> – ${m.d}. Gilt für diesen ganzen Run.`}
 return h?`<div class="pinfo small">${fxc(h)}</div>`:''}
 const ck=(k,html)=>`<span class="ck${S.info===k?' on':''}" data-i="${k}">${html}</span>`;
-function statsHTML(){if(!P||['hub','end'].includes(S.screen))return `<div class="srow"><span>Ordensrang: ${rankBadge()}</span><span class="r">Tiefste Etage ${meta.best} · Runs ${meta.runs}</span></div><div class="srow small"><span class="c-ess t2">${meta.essence} ✧ Seelensplitter</span><span class="r">${meta.kills} Gegner · ${meta.bosses} Torwächter</span></div>${(meta.scars||[]).length?`<div class="chips small">${meta.scars.map(id=>`<span class="chip${S.info==='n:'+id?' on':''}" data-i="n:${id}" style="color:#c9b8ff">◈ ${SCARS[id].n}</span>`).join('')}</div>${infoHTML(S.info)}`:''}`;
+function statsHTML(){if(!P||['hub','end'].includes(S.screen))return (meta.runs?`<div class="srow"><span>${(meta.bosses||meta.rank)?`Ordensrang: ${rankBadge()}`:`Tiefste Etage ${meta.best}`}</span><span class="r">${(meta.bosses||meta.rank)?`Tiefste Etage ${meta.best} · `:''}Runs ${meta.runs}</span></div>`:'')+`<div class="srow small"><span class="c-ess t2">${meta.essence} ✧ Seelensplitter</span>${meta.runs?`<span class="r">${meta.kills} Gegner · ${meta.bosses} Torwächter</span>`:''}</div>${(meta.scars||[]).length?`<div class="chips small">${meta.scars.map(id=>`<span class="chip${S.info==='n:'+id?' on':''}" data-i="n:${id}" style="color:#c9b8ff">◈ ${SCARS[id].n}</span>`).join('')}</div>${infoHTML(S.info)}`:''}`;
 return `<div class="srow"><span><b>${CLS[P.cls].name}</b> · Stufe ${P.lvl}</span><span class="r">Etage ${P.floor} · ${areaOf(P.floor).name}</span></div>
 <div class="srow"><span>${ck('s:hp',`<span class="c-hp">LP</span> ${Math.max(0,P.hp)}/${maxHp()}`)}</span>${bar(P.hp,maxHp(),'var(--red)')}</div>
 <div class="srow"><span>${ck('s:xp',`<span class="c-xp">EP</span> ${P.xp}/${P.xpNext}`)}</span>${bar(P.xp,P.xpNext,'var(--accent)')}</div>
@@ -1153,7 +1157,10 @@ let g=group('Ton');btn(g,AU.on?'♪ Ton ist an':'♪ Ton ist aus',()=>sndToggle(
 g=group('Textgröße');['Klein','Normal','Groß'].forEach((n,i)=>btn(g,(CFG.size===i?'✓ ':'')+n,()=>{CFG.size=i;cfgSave()},{delay:100,cls:CFG.size===i?'rar2':''}));
 g=group('Darstellung');btn(g,CFG.anim?'Animationen: an':'Animationen: aus',()=>{CFG.anim=CFG.anim?0:1;cfgSave()},{sub:'Flackern, Zoom, Partikel und Wackeln',delay:100});
 g=group('Spielstand');btn(g,'Spielstand sichern & laden',()=>{S.screen='save';S.saveMsg='';S.loadArm=false},{sub:'Als Code oder Datei, z. B. für ein neues Handy'});
-$('#scene').insertAdjacentHTML('beforeend','<p class="dim small" style="margin-top:18px">Bossmusik: „Colossal Boss Battle Theme“ von Matthew Pablo (<a href="https://www.matthewpablo.com" target="_blank" rel="noopener">matthewpablo.com</a>), Lizenz <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">CC-BY 3.0</a>, über <a href="https://opengameart.org/content/colossal-boss-battle-theme" target="_blank" rel="noopener">OpenGameArt</a>. Unverändert, nur ins MP3-Format umgewandelt.<br>Kampftrommeln: „Horde War Drums loop“ von William Hector (<a href="https://opengameart.org/node/176112" target="_blank" rel="noopener">OpenGameArt</a>), CC0.<br>Lagermusik: „Medieval: The Bard’s Tale“ von RandomMind (<a href="https://opengameart.org/content/medieval-the-bards-tale" target="_blank" rel="noopener">OpenGameArt</a>), CC0.<br>Geräusche: „RPG Sound Pack“ von artisticdude (<a href="https://opengameart.org/content/rpg-sound-pack" target="_blank" rel="noopener">OpenGameArt</a>), CC0.</p>');
+if(!P){g=group('Spiel');btn(g,'Einführung',()=>storyPages('replay'),{sub:'Die Geschichte noch mal ansehen'});if(meta.tut)btn(g,'Mit Varga üben',startTutorial,{sub:'Tutorial wiederholen'});
+btn(g,resetArm?'Wirklich alles löschen?':'Spielstand löschen',()=>{if(!resetArm){resetArm=true;return}resetArm=false;meta=defMeta();saveMeta();logs=[];S.screen='hub';sys('Alles gelöscht. Du fängst von vorn an.')},{cls:'danger',sub:resetArm?'Das kann man nicht rückgängig machen':''})}
+if(S.showCred)$('#scene').insertAdjacentHTML('beforeend','<p class="dim small" style="margin-top:10px">Bossmusik: „Colossal Boss Battle Theme“ von Matthew Pablo (<a href="https://www.matthewpablo.com" target="_blank" rel="noopener">matthewpablo.com</a>), Lizenz <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">CC-BY 3.0</a>, über <a href="https://opengameart.org/content/colossal-boss-battle-theme" target="_blank" rel="noopener">OpenGameArt</a>. Unverändert, nur ins MP3-Format umgewandelt.<br>Kampftrommeln: „Horde War Drums loop“ von William Hector (<a href="https://opengameart.org/node/176112" target="_blank" rel="noopener">OpenGameArt</a>), CC0.<br>Lagermusik: „Medieval: The Bard’s Tale“ von RandomMind (<a href="https://opengameart.org/content/medieval-the-bards-tale" target="_blank" rel="noopener">OpenGameArt</a>), CC0.<br>Geräusche: „RPG Sound Pack“ von artisticdude (<a href="https://opengameart.org/content/rpg-sound-pack" target="_blank" rel="noopener">OpenGameArt</a>), CC0.</p>');
+g=group('');btn(g,S.showCred?'Credits ausblenden':'Credits',()=>{S.showCred=!S.showCred},{sub:S.showCred?'':'Musik, Geräusche und Bilder',delay:100});
 g=group('');btn(g,'Zurück',()=>{S.screen=S.prevScreen&&S.prevScreen!=='settings'&&S.prevScreen!=='save'?S.prevScreen:'hub'},{cls:'big',delay:120})},
 save(){const code=saveCode();
 scene(`<p class="gt">Spielstand</p><p class="dim small">Dein Fortschritt liegt nur in diesem Browser. Wenn du den Verlauf löschst oder das Handy wechselst, ist er weg. Sichere ihn hier als Code oder Datei.</p>
@@ -1178,40 +1185,44 @@ if(meta.rankPend&&RANG[meta.rankPend]){S.screen='rite';return SCR.rite()}
 if(!S.vline)S.vline=(meta.rank||0)>=1&&R()<.35?VRANK[meta.rank]:meta.lore.includes('ende')?'„Du warst am Grund. Und du bist trotzdem zurückgekommen. Was hast du da unten gesehen?“':pick(VARGA);
 if(!S.hubLine||!S.vlineSeen||S.vlineSeen!==S.vline){S.vlineSeen=S.vline;S.hubLine=pick(HUBL)}
 scene(`<p class="dim">${S.hubLine}</p><p class="small"><i>Varga: ${S.vline}</i></p>`);
-let g;if(!meta.tut){g=group('Zuerst');btn(g,'Mit Varga üben',startTutorial,{sub:'Tutorial: Kampf, Türen und Aufstiege',cls:'big',delay:600})}
-{const nx=RANG[(meta.rank||0)+1];g=group('Orden');
- if(nx){const ok=meta.best>=nx.f;btn(g,ok?`${S.trial?'✓ ':''}Rangprüfung zum ${nx.s} ${nx.n}`:`Nächster Rang: ${nx.s} ${nx.n}`,ok?()=>S.trial=!S.trial:()=>{},{dis:!ok,cls:'big'+(ok?(S.trial?' rar2':''):' info'),sub:ok?`Auf Etage ${nx.f} wartet ${TRIALB[(meta.rank||0)]} als Prüfer, stärker als sonst. Besiegst du ihn, nimmt Varga dich auf · ${S.trial?'aktiv für den nächsten Run':'antippen zum Annehmen'}`:`Erreiche Etage ${nx.f}, dann darfst du zur Prüfung · Danach: ${nx.un.split(':')[0]}`})}
- else btn(g,`${RANG[5].s} Grundläufer`,()=>{},{dis:true,cls:'big info',sub:'Der höchste Rang des Ordens'});
- if((meta.rank||0)>=4)btn(g,`${S.jump?'✓ ':''}Ankersprung`,()=>S.jump=!S.jump,{cls:'big'+(S.jump?' rar2':''),sub:`Start direkt auf Etage 11 mit Stufe 7 und seltener Ausrüstung · ${S.jump?'aktiv für den nächsten Run':'antippen zum Aktivieren'}`});
- btn(g,'Rangabzeichen',()=>S.screen='ranks',{sub:'Was die Ränge bedeuten und was du schon freigeschaltet hast'})}
-{const W=weekly(),done=meta.weekDone===W.k;g=group('Tiefe der Woche');btn(g,`${S.weekly?'✓ ':''}${RMODS[W.mod].n} · Ziel Etage ${W.goal}`,()=>S.weekly=!S.weekly,{sub:done?'Diese Woche schon geschafft – du kannst trotzdem spielen':`${RMODS[W.mod].d} · Belohnung ${W.reward} ✧ · ${S.weekly?'aktiv für den nächsten Run':'antippen zum Aktivieren'}`,cls:'big'+(S.weekly?' rar2':'')})}
-if(meta.vq>=1&&meta.vq<=3){const V=VQ[meta.vq-1];g=group('Vargas Liste');btn(g,'◆ '+V.t,()=>{},{dis:true,cls:'big info',sub:V.goal})}
-if(meta.bq===1||meta.bq===2){g=group('Brenns Buch');btn(g,meta.bq===1?'◆ Die Wand der Striche':'◆ Der Zählende',()=>{},{dis:true,cls:'big info',sub:meta.bq===1?'Finde die Wand voller Striche in der Vergessenen Krypta (Etage 13–19)':'Stell den Zählenden im Abgrund. Er steht auf der Kopfgeldliste.'})}
-g=group('Den Riss betreten');
-for(const id in CLS)if(meta.classes.includes(id))btn(g,'Als '+CLS[id].name,()=>startRun(id),{sub:`${(meta.cbest||{})[id]?`Rekord: Etage ${meta.cbest[id]} · `:''}${CLS[id].desc} · ${CLS[id].skill.name}: ${CLS[id].skill.desc}`,delay:700,cls:'big'});
-{const pk=meta.pack||{},pl=QM.filter(q=>pk[q.id]).map(q=>`${pk[q.id]}× ${q.n}`);
-g=group(`Quartiermeister Brenn · <span class="c-gold">${meta.gold||0} Gold</span> in der Ordenskasse`);
-for(const q of QM){const have=pk[q.id]||0,qc=Math.round(q.c*(meta.bq>=3?.8:1));btn(g,`${q.n} ${have}/${q.max}`,()=>{meta.gold-=qc;meta.pack=Object.assign({},pk,{[q.id]:have+1});unlock('brenn');saveMeta();log(`Brenn packt dir ein: ${q.n}.`,'goldt')},{sub:`${q.d} · ${qc} Gold`,dis:have>=q.max||(meta.gold||0)<qc})}
-if(pl.length)btn(g,'Gepackt: '+pl.join(', '),()=>{},{dis:true,cls:'big info',sub:'Wird beim nächsten Abstieg mitgenommen'})}
+let g;const nb=!meta.tut,bossDone=(meta.bosses||0)>=1||(meta.rank||0)>0;
+if(nb){g=group('Zuerst');btn(g,'Mit Varga üben',startTutorial,{sub:'Kurze Einführung: Kampf, Beute und Aufstiege',cls:'big',delay:600})}
+g=group(nb?'Oder gleich los':'Den Riss betreten');
+for(const id in CLS)if(meta.classes.includes(id))btn(g,'Als '+CLS[id].name,()=>startRun(id),{sub:`${(meta.cbest||{})[id]?`Rekord: Etage ${meta.cbest[id]} · `:''}${CLS[id].desc} · ${CLS[id].skill.name}: ${CLS[id].skill.desc}`,delay:700,cls:'big'+(nb?'':'')});
+if(nb)return;
+/* Ziele */
+const goals=[];
+if(bossDone){const nx=RANG[(meta.rank||0)+1];
+ if(nx){const ok=meta.best>=nx.f;goals.push(()=>btn(g,ok?`${S.trial?'✓ ':''}Rangprüfung zum ${nx.s} ${nx.n}`:`Nächster Rang: ${nx.s} ${nx.n}`,ok?()=>S.trial=!S.trial:()=>S.screen='ranks',{cls:ok?(S.trial?'rar2':''):'info',sub:ok?`Auf Etage ${nx.f} wartet ${TRIALB[(meta.rank||0)]}, stärker als sonst. Besiegst du ihn, steigst du auf · ${S.trial?'aktiv für den nächsten Run':'antippen zum Annehmen'}`:`Ab Etage ${nx.f} darfst du zur Prüfung · Antippen für alle Ränge`}))}
+ if((meta.rank||0)>=4)goals.push(()=>btn(g,`${S.jump?'✓ ':''}Ankersprung`,()=>S.jump=!S.jump,{cls:S.jump?'rar2':'',sub:`Start auf Etage 11 mit Stufe 7 und seltener Ausrüstung · ${S.jump?'aktiv':'antippen zum Aktivieren'}`}))}
+if(meta.vq>=1&&meta.vq<=3){const V=VQ[meta.vq-1];goals.push(()=>btn(g,'◆ Vargas Liste: '+V.t,()=>{},{dis:true,cls:'info',sub:V.goal}))}
+if(meta.bq===1||meta.bq===2)goals.push(()=>btn(g,meta.bq===1?'◆ Brenns Buch: Die Wand der Striche':'◆ Brenns Buch: Der Zählende',()=>{},{dis:true,cls:'info',sub:meta.bq===1?'Finde die Wand voller Striche in der Vergessenen Krypta (Etage 13–19)':'Stell den Zählenden im Abgrund. Er steht auf der Kopfgeldliste.'}));
+if(meta.runs>=3){const W=weekly(),done=meta.weekDone===W.k;goals.push(()=>btn(g,`${S.weekly?'✓ ':''}Tiefe der Woche: ${RMODS[W.mod].n}`,()=>S.weekly=!S.weekly,{sub:done?'Diese Woche schon geschafft':`Ziel Etage ${W.goal} · ${RMODS[W.mod].d} · ${W.reward} ✧ · ${S.weekly?'aktiv':'antippen zum Aktivieren'}`,cls:S.weekly?'rar2':''}))}
+if(goals.length){g=group('Ziele');goals.forEach(f=>f())}
+/* Vorbereitung */
 g=group(`Training · <span class="c-ess">${meta.essence} ✧</span>`);
 for(const u of UPG){const l=ul(u.id);if(l>=u.max){btn(g,`${u.name} ${l}/${u.max}`,()=>{},{dis:true,cls:'info',sub:'✓ Gemeistert'});continue}
 const c=u.cost(l);btn(g,`${u.name} ${l}/${u.max}`,()=>{meta.essence-=c;meta.up[u.id]=l+1;saveMeta();sys(`${u.name} gestärkt (${l+1}/${u.max}).`)},{sub:`${typeof u.desc==='function'?u.desc(l):u.desc} · ${c} ✧`,dis:meta.essence<c})}
 const lockd=Object.keys(CLS).filter(id=>!meta.classes.includes(id));
-if(lockd.length){g=group('Kampfstile lernen');for(const id of lockd){const c=CLS[id];btn(g,c.name,()=>{meta.essence-=c.cost;meta.classes.push(id);saveMeta();sys(`Neuer Kampfstil: ${c.name}.`)},{sub:`${c.desc} · ${c.cost} ✧`,dis:meta.essence<c.cost})}}
+if(lockd.length&&meta.runs>=2){g=group('Kampfstile lernen');for(const id of lockd){const c=CLS[id];btn(g,c.name,()=>{meta.essence-=c.cost;meta.classes.push(id);saveMeta();sys(`Neuer Kampfstil: ${c.name}.`)},{sub:`${c.desc} · ${c.cost} ✧`,dis:meta.essence<c.cost})}}
+{const pk=meta.pack||{},pl=QM.filter(q=>pk[q.id]).map(q=>`${pk[q.id]}× ${q.n}`);
+if((meta.gold||0)>0||pl.length){
+g=group(`Quartiermeister Brenn · <span class="c-gold">${meta.gold||0} Gold</span>`);
+for(const q of QM){const have=pk[q.id]||0,qc=Math.round(q.c*(meta.bq>=3?.8:1));btn(g,`${q.n} ${have}/${q.max}`,()=>{meta.gold-=qc;meta.pack=Object.assign({},pk,{[q.id]:have+1});unlock('brenn');saveMeta();log(`Brenn packt dir ein: ${q.n}.`,'goldt')},{sub:`${q.d} · ${qc} Gold`,dis:have>=q.max||(meta.gold||0)<qc})}
+if(pl.length)btn(g,'Gepackt: '+pl.join(', '),()=>{},{dis:true,cls:'info',sub:'Wird beim nächsten Abstieg mitgenommen'})}}
+/* Lager */
+const mats=Object.values(meta.mats||{}).some(v=>v>0);
 g=group('Lager');
-btn(g,'⚒ Schmiedin Hild',()=>{S.screen='forge';S.fSlot=S.fType=S.armSel=null},{sub:`Material zu Ausrüstung schmieden · ${meta.armory.length}/6 in der Waffenkammer`});
-btn(g,'Bestiarium',()=>S.screen='beast',{sub:'Gegner, die du kennst'});
-btn(g,'Ordensbuch',()=>{S.screen='guild';loadGuild()},{sub:'Bestenliste mit Freunden'});
-btn(g,'Spielstand sichern',()=>{S.prevScreen='hub';S.screen='save';S.saveMsg='';S.loadArm=false},{sub:'Als Code oder Datei, damit nichts verloren geht'});
-btn(g,`Kopfgeldliste ${meta.bounty.length}/${BOUNTIES.length}`,()=>S.screen='bounty',{sub:'Gesuchte Biester im Riss'});
+if(meta.runs>=2||mats||meta.armory.length)btn(g,'⚒ Schmiedin Hild',()=>{S.screen='forge';S.fSlot=S.fType=S.armSel=null},{sub:`Material zu Ausrüstung schmieden · ${meta.armory.length}/6 in der Waffenkammer`});
+if(meta.best>=3||meta.bounty.length)btn(g,`Kopfgeldliste ${meta.bounty.length}/${BOUNTIES.length}`,()=>S.screen='bounty',{sub:'Gesuchte Biester im Riss'});
 btn(g,`Aufträge ${meta.quests.length}/${QUESTS.length}`,()=>S.screen='quests',{sub:'Ziele mit Splitter-Belohnung'});
+if(meta.kills>0)btn(g,'Bestiarium',()=>S.screen='beast',{sub:'Gegner, die du kennst'});
 btn(g,`Chronik ${Object.keys(LORE).filter(k=>meta.lore.includes(k)).length}/${Object.keys(LORE).length}`,()=>S.screen='chronik',{sub:'Was du über den Riss weißt'});
-if(meta.tut)btn(g,'Mit Varga üben',startTutorial,{sub:'Tutorial wiederholen'});
-btn(g,'Einführung',()=>storyPages('replay'),{sub:'Die Geschichte erneut ansehen'});
-g=group('');btn(g,resetArm?'Wirklich alles löschen?':'Spielstand löschen',()=>{if(!resetArm){resetArm=true;return}resetArm=false;meta=defMeta();saveMeta();logs=[];sys('Alles vergessen. Ein neuer Anfang.')},{cls:'danger'})},
+if(bossDone)btn(g,'Rangabzeichen',()=>S.screen='ranks',{sub:'Die Ränge des Ordens'});
+if(typeof claude!=='undefined'&&meta.runs>=1)btn(g,'Ordensbuch',()=>{S.screen='guild';loadGuild()},{sub:'Bestenliste mit Freunden'})},
 doors(){if(resetArm)resetArm=false;
 const nf=P.floor+1,boss=P.tut?nf===3:nf%5===0;
-scene(`<p>${P.floor===0?'Der Gang liegt dunkel vor dir.':`Etage ${P.floor} liegt hinter dir.`}${boss?' Vor dir ragt ein Tor auf. Dahinter atmet etwas.':''}</p><p class="dim small">Als Nächstes: Etage ${nf} · ${areaOf(nf).name}</p>`);
+scene(`<p>${P.floor===0?'Der Gang liegt dunkel vor dir.':`Etage ${P.floor} liegt hinter dir.`}${boss?' Vor dir ragt ein Tor auf. Dahinter hörst du etwas atmen.':''}</p><p class="dim small">Als Nächstes: Etage ${nf} · ${areaOf(nf).name}</p>`);
 let g=group('');btn(g,boss?'♛ Zum Torwächter':'Weitergehen',advance,{delay:600,cls:'big'+(boss?' danger':'')});
 if(P.kindling>0){g=group(S.fireOpen?'Lagerfeuer – was willst du tun?':'Vorräte');
  if(!S.fireOpen)btn(g,'♨ Lagerfeuer anzünden',()=>S.fireOpen=true,{sub:`${P.kindling} Zunder übrig`,cls:'big'});
@@ -1259,10 +1270,13 @@ scene(`<p>Der Wächter liegt am Boden. Dahinter führt ein Schacht nach oben, je
 const g=group('');btn(g,'Tiefer hinab',next,{sub:`Etage ${P.floor+1} wartet`,delay:500});
 btn(g,'Gold & Material in den Korb',()=>{meta.gold=(meta.gold||0)+P.gold;const m=matsToMeta();saveMeta();log(`Du legst ${P.gold} Gold${m.length?' und '+m.join(', '):''} in den Korb. Oben zieht jemand daran.`,'goldt');P.gold=0},{dis:P.gold<1&&!Object.keys(P.mats||{}).length,sub:`${P.gold} Gold${Object.keys(P.mats||{}).length?' und dein Material':''} nach oben`});
 btn(g,'Hochklettern',()=>{log('Du kletterst zurück ins Lager.','good');endRun(true)},{sub:P.gold?`+50 % Splitter · ${P.gold} Gold bleiben hier`:'+50 % Splitter',delay:700})},
-end(){const x=S.end;
-scene(`<p class="${x.retreat?'good':'bad'}">${x.retreat?'Du bist lebend wieder oben.':'Du bist gestorben. Der Stein hat dich zurückgeholt.'}</p>
+end(){const x=S.end,rc=x.recap;
+scene(`${rc?`<p class="gt" style="color:var(--red)">Gestorben auf Etage ${x.floor}</p><div class="recap"><div class="rk">${rc.killer?`<span class="small dim">Getötet von</span><br><b style="color:var(--red);font-size:1.15em">${esc(rc.killer)}</b>`:'<b>Unbekannt</b>'}</div><div class="small" style="margin-top:6px">Todesursache: <b>${rc.cause||'Treffer'}</b></div>
+<div class="small" style="margin-top:8px"><span class="dim">Ausrüstung</span><br>${rc.gear&&rc.gear.length?rc.gear.map(i=>`<span style="color:${RAR[i.r||0].c}">${esc(i.n)}</span>${i.cur?' <span class="dim">(verflucht)</span>':''}`).join('<br>'):(rc.w||rc.a?[rc.w,rc.a].filter(Boolean).map(i=>`<span style="color:${RAR[i.r||0].c}">${esc(i.n)}</span>`).join('<br>'):'<span class="dim">Keine</span>')}</div>
+<div class="small" style="margin-top:8px"><span class="dim">Fähigkeiten</span><br>${rc.perks.length?rc.perks.join(' · '):'<span class="dim">Keine</span>'}</div>
+<p class="small" style="margin:10px 0 0"><i>Varga: ${rc.tip}</i></p></div>`:`<p class="${x.retreat?'good':'bad'}">${x.retreat?'Du bist lebend wieder oben.':'Du bist gestorben. Der Stein hat dich zurückgeholt.'}</p>`}
 <p class="small">${CLS[x.cls].name} · Etage ${x.floor} · Stufe ${x.lvl} · ${x.kills} Gegner</p>
-<p>${fxc(`+${x.tot} Seelensplitter`)}${x.retreat?' <span class="small dim">(inkl. Rückzugsbonus)</span>':''}</p>${x.goldHome?`<p>${fxc(`+${x.goldHome} Gold`)} <span class="small dim">für die Ordenskasse</span></p>`:''}${x.goldLost?`<p class="small dim">${fxc(`${x.goldLost} Gold`)} ${x.retreat?'hast du unten zurückgelassen. Nur was im Korb liegt, kommt in die Ordenskasse.':'liegen jetzt irgendwo da unten.'}</p>`:''}${x.soulHome&&x.soulHome.length?`<p class="small mat">Seelengebunden mitgebracht: ${x.soulHome.join(', ')}</p>`:''}${x.matsLost&&x.matsLost.length?`<p class="small dim">Unten geblieben: ${x.matsLost.join(', ')}</p>`:''}${x.recap?`<div class="recap"><b>Rückblick</b>${x.recap.killer?`<div class="small">Gestorben durch <span style="color:var(--red)">${esc(x.recap.killer)}</span> auf Etage ${x.floor}</div>`:''}${x.recap.w||x.recap.a?`<div class="small">Ausrüstung: ${[x.recap.w,x.recap.a].filter(Boolean).map(i=>`<span style="color:${RAR[i.r||0].c}">${esc(i.n)}</span>`).join(' · ')}</div>`:''}${x.recap.perks.length?`<div class="small">Fähigkeiten: ${x.recap.perks.join(' · ')}</div>`:'<div class="small dim">Keine Fähigkeiten gewählt</div>'}<p class="small" style="margin:8px 0 0"><i>Varga: ${x.recap.tip}</i></p></div>`:`<p class="small dim"><i>${x.line}</i></p>`}${x.newBest&&x.floor>0?'<p class="goldt small">Neue tiefste Etage!</p>':''}${nextGoal()}`);
+<p>${fxc(`+${x.tot} Seelensplitter`)}${x.retreat?' <span class="small dim">(inkl. Rückzugsbonus)</span>':''}</p>${x.goldHome?`<p>${fxc(`+${x.goldHome} Gold`)} <span class="small dim">für die Ordenskasse</span></p>`:''}${x.goldLost?`<p class="small dim">${fxc(`${x.goldLost} Gold`)} ${x.retreat?'hast du unten zurückgelassen. Nur was im Korb liegt, kommt in die Ordenskasse.':'liegen jetzt irgendwo da unten.'}</p>`:''}${x.soulHome&&x.soulHome.length?`<p class="small mat">Seelengebunden mitgebracht: ${x.soulHome.join(', ')}</p>`:''}${x.matsLost&&x.matsLost.length?`<p class="small dim">Unten geblieben: ${x.matsLost.join(', ')}</p>`:''}${x.recap?'':`<p class="small dim"><i>${x.line}</i></p>`}${x.newBest&&x.floor>0?'<p class="goldt small">Neue tiefste Etage!</p>':''}${nextGoal()}`);
 const g=group('');btn(g,'Zurück ins Lager',()=>{P=null;S.screen='hub'},{cls:'big',delay:600})},
 };
 
