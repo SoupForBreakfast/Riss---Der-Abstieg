@@ -537,7 +537,7 @@ const slotN=it=>SN[it.slot]||'Ausrüstung';
 /* ---------- Gegner ---------- */
 function makeEnemy(type,ov={}){const f=P.floor,a=areaOf(f);
 let hp=(22+f*5.5)*Math.pow(BAL.eh,f),at=(4+f*1.05)*Math.pow(BAL.ea,f),df=Math.floor(f*BAL.ed),name=pick(a.mobs);
-const e={type,ls:0,poison:false,stun:0,burn:0,turn:0,heavyEvery:0,base:name};hp*=rm('hp',1);at*=rm('dmg',1)*(hasS('tief')?1.08:1);if(rm('evade',0))e.evade=rm('evade',0);
+const e={type,ls:0,poison:false,stun:0,burn:0,turn:0,heavyEvery:0,base:name};if(f>30){hp*=1+(f-30)*.03;at*=1+(f-30)*.02}hp*=rm('hp',1);at*=rm('dmg',1)*(hasS('tief')?1.08:1);if(rm('evade',0))e.evade=rm('evade',0);
 const mc=type==='elite'?1:type==='kampf'?Math.min(.5,.1+f*.02):0;
 if(R()<mc){const m=pick(MODS);if(m.n)name=m.n+'-'+name;hp*=m.hp||1;at*=m.atk||1;df+=m.def||0;e.ls=m.ls||0;e.poison=!!m.poison}
 if(type==='elite'){hp*=1.7;at*=1.25;e.heavyEvery=4}
@@ -570,11 +570,12 @@ if(E.hp>0&&wp('bleed')&&R()*100<wp('bleed')){E.bleed=3;log(`${E.name} blutet.`,'
 if(E.hp>0&&c&&hasU('grimmzahn')){E.bleed=3;log(`${E.name} blutet.`,'crit')}
 if(E.hp>0&&hasU('ossa')&&R()<.25){E.burn=3;log(`${E.name} brennt.`,'crit')}
 if(E.hp>0&&hasU('ylva')&&R()<.25){E.chill=1;log(`${E.name} ist unterkühlt.`,'dim')}
-if(E.hp>0&&(wp('stun')+(hasU('schlacke')?20:0))&&R()*100<wp('stun')+(hasU('schlacke')?20:0)&&!E.stun){E.stun=1;log(`Der Hieb haut ${E.name} aus den Latschen.`)}
+if(E.hp>0&&(wp('stun')+(hasU('schlacke')?20:0))&&R()*100<wp('stun')+(hasU('schlacke')?20:0)&&!E.stun){if(stunOk())E.stun=1,log(`Der Hieb haut ${E.name} aus den Latschen.`)}
 const l=lsP();if(l>0){const h=heal(Math.ceil(d*l/100));if(h>0)log(`+${h} LP (Lebensraub)`,'good')}
 return d}
+function stunOk(){if(E&&E.type==='boss'&&R()<.3){log(`${E.name} schüttelt die Betäubung ab.`,'bad');return false}return true}
 function useSkill(){const c=P.cls;log(`» ${CLS[c].skill.name}`,'sys');
-if(c==='krieger'){dealDmg(1.25,{skill:1});if(E.hp>0){E.stun=1;log(`${E.name} ist betäubt.`)}}
+if(c==='krieger'){dealDmg(1.25,{skill:1});if(E.hp>0&&stunOk()){E.stun=1;log(`${E.name} ist betäubt.`)}}
 else if(c==='klinge'){for(let i=0;i<3&&E.hp>0;i++)dealDmg(.85,{skill:1,cb:25})}
 else if(c==='magier'){dealDmg(2.6,{pierce:1,skill:1});if(E.hp>0){E.burn=3;log(`${E.name} brennt.`,'crit')}}
 else if(c==='blut'){const d=dealDmg(2,{skill:1});const h=heal(Math.round(d*.5));if(h)log(`+${h} LP`,'good')}
@@ -808,7 +809,7 @@ try{if(!retreat&&!P.tut){const lt=logs.slice(0,7).map(l=>l.t).join(' '),tips=[];
  let cause='Treffer',key=null;try{key=E?foeKey(E):null}catch(x){}
  if(/gewaltigen Schlag/.test(lt))cause='ein gewaltiger Schlag';else if(/leidet unter Gift|Du bist vergiftet/.test(lt))cause='Gift';else if(/Feuer|brennst|Flammen/.test(lt))cause='Feuer';else if(/Leben aus dem Leib/.test(lt))cause='Lebensentzug';else if(/Eisiger Hauch/.test(lt))cause='Kälte und dann ein Treffer';else if(/Falle/.test(lt))cause='eine Falle';
  recap={key,cause,lvl:P.lvl,hpMax:maxHp(),gear:['weapon','armor','helm','gloves','jewel'].map(k=>P[k]?{n:P[k].name,r:P[k].r,cur:!!P[k].curse}:null).filter(Boolean),killer:E?E.name:null,kt:E?E.type:null,perks:[...new Set(P.perks)].map(id=>{const p=PK(id);return p?pName(p,pCount(id)):''}).filter(Boolean),w:P.weapon?{n:P.weapon.name,r:P.weapon.r}:null,a:P.armor?{n:P.armor.name,r:P.armor.r}:null,tip:tips[0]}}}catch(e){recap=null}
-const raw=P.ess+P.floor+P.bosses*5,mult=(1+ul('seele')*.1)*(retreat?(P.lift?1.75:1.5):1)*rm('ess',1)*(hasS('tief')?1.25:1),tot=Math.round(raw*mult),goldHome=0,goldLost=P.gold;
+const raw=P.ess+P.floor+P.bosses*5,mult=(1+ul('seele')*.1)*(retreat?(P.lift?1.75:1.5):1)*rm('ess',1)*(hasS('tief')?1.25:1),tot=Math.round(raw*mult*.8),goldHome=0,goldLost=P.gold;
 meta.gold=(meta.gold||0)+goldHome;const soulHome=matsToMeta(true),matsLost=Object.keys(P.mats||{}).map(k=>P.mats[k]+'× '+MATS[k].n);if(!retreat){meta.deaths=(meta.deaths||0)+1;if(!meta.scarOffer&&(meta.scars||[]).length<SCART.filter(t=>meta.deaths>=t).length){const pool=Object.keys(SCARS).filter(k=>!hasS(k));meta.scarOffer=pool.sort(()=>R()-.5).slice(0,2)}if(P.floor>=3)writeShade()}writeBoard(P.floor);if(P.vqFound){meta.vqPend='vq'+meta.vq}if(P.bqFound&&meta.bq===1)meta.bqPend=1;meta.cbest=meta.cbest||{};meta.cbest[P.cls]=Math.max(meta.cbest[P.cls]||0,P.floor);
 const oldR=rankOf(P.startBest||0);
 meta.essence+=tot;meta.best=Math.max(meta.best,P.floor);meta.runs++;meta.bosses+=P.bosses;saveMeta();
