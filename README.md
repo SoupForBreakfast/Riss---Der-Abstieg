@@ -16,7 +16,7 @@ Auf dem Handy über „Zum Startbildschirm hinzufügen“ als App installieren. 
 - Glutschlund-Musik: „Welcome to Com-Mecha“ von Matthew Pablo – www.matthewpablo.com
 - Gebietsboss-Musik: „Set Fire to Reality“ von ColdOneK – OpenGameArt – CC-BY 4.0
 - Finale: „Final Confrontation“ von tcarisland – https://opengameart.org/content/final-confrontation
-- Sieg-Chor: „choir_positive1“ – OpenGameArt (gekürzt)
+- Sieg-Chor: „Choir Positive Feedback 1“ von souljahdeshiva, CC-BY-SA 3.0 (auch GPL 2.0/3.0) – gekürzt und ausgeblendet; die bearbeitete Datei sfx/victory.mp3 steht ebenfalls unter CC-BY-SA 3.0
 - Story-Musik (Varga/Brenn): „Village In Despair“ von Tsorthan Grove, CC-BY 4.0 – https://opengameart.org/content/village-in-despair
 - Frostgruft-Musik: „Cold Sanctuary“ – Composed by Jonathan Shaw (www.jshaw.co.uk)
 - Todesmusik: „The End (Death Screen mix)“ von Avgvst, Remix von Metaruka – OpenGameArt
