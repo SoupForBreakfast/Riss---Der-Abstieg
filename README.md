@@ -26,6 +26,6 @@ Auf dem Handy über „Zum Startbildschirm hinzufügen“ als App installieren. 
 - Schritte: „Different Steps“ von kddekadenz (OpenGameArt), CC0
 - Seil, Truhe, Münzen, Schwerter, Höhlentropfen, Knarren, Wasserschritte: „Pirate Pack Vol 1“ von JC Sounds, CC-BY 4.0 – https://opengameart.org/node/180582 (Lautstärke angepasst, Ausschnitte)
 - Tresor-Schloss und Schmiedehammer: „100 CC0 metal and wood SFX“ von rubberduck, CC0 – https://opengameart.org/content/100-cc0-metal-and-wood-sfx
-- Steintür: „stone_door“ (OpenGameArt) – Urheber/Lizenz noch zu ergänzen
+- Steintür: „stone_door“ von Bonebrah (OpenGameArt), CC0
 - Ferne Monster: „Monster snarls“ von Darsycho – https://opengameart.org/content/monster-snarls (zerschnitten, mit Hall/Echo und Tiefpass bearbeitet)
 - Geräusche: „RPG Sound Pack“ von artisticdude – [OpenGameArt](https://opengameart.org/content/rpg-sound-pack) – CC0. Ins MP3-Format umgewandelt und am Anfang gekürzt.
