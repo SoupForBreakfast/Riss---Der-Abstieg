@@ -210,7 +210,7 @@ const UPG=[
 const CLS={
 krieger:{name:'Krieger',hp:70,atk:5,def:3,crit:3,cost:0,desc:'Robust und standhaft',fav:['hammer','schwert'],pass:{n:'Bollwerk',d:'Abwehren blockt 70 %, der nächste Angriff danach macht +40 %'},skill:{name:'Schildschlag',cd:3,desc:'125 % Schaden, betäubt 1 Runde'}},
 klinge:{name:'Klingentänzer',hp:45,atk:7,def:0,crit:25,cost:60,desc:'Schnell, tödliche Krits',fav:['dolch','saebel'],pass:{n:'Rhythmus',d:'Jeder Treffer in Folge +6 % Krit (bis 5×), ein Treffer gegen dich bricht die Serie · 8 % Ausweichen'},skill:{name:'Wirbelklinge',cd:3,desc:'3 Hiebe à 85 %, jeder mit +25 % Krit-Chance'}},
-magier:{name:'Runenmagier',hp:38,atk:4,def:0,crit:5,cost:150,desc:'Zerbrechlich, aber verheerend',fav:['speer','dolch'],pass:{n:'Runenschild',d:'Jeder Kampf beginnt mit einem Schild aus 20 % deiner LP · normale Angriffe laden die Fähigkeit schneller'},skill:{name:'Runenfeuer',cd:3,desc:'260 %, ignoriert Rüstung, verbrennt'}},
+magier:{name:'Runenmagier',hp:38,atk:4,def:0,crit:5,cost:150,desc:'Zerbrechlich, aber verheerend',fav:['stab','speer'],pass:{n:'Runenschild',d:'Jeder Kampf beginnt mit einem Schild aus 20 % deiner LP · normale Angriffe laden die Fähigkeit schneller'},skill:{name:'Runenfeuer',cd:3,desc:'260 %, ignoriert Rüstung, verbrennt'}},
 blut:{name:'Blutritter',hp:60,atk:6,def:1,crit:8,cost:300,desc:'Lebt vom Blut seiner Feinde',fav:['sense','axt'],pass:{n:'Blutdurst',d:'5 % Lebensraub · unter 50 % LP +25 % Schaden · Heiltränke wirken nur zu 70 %'},skill:{name:'Blutpakt',cd:4,desc:'200 % Schaden, heilt um 50 % davon'}},
 };
 const RANKS=[[45,'Grundläufer'],[30,'Ankermeister'],[20,'Tiefengänger'],[12,'Pfadgänger'],[5,'Geselle'],[0,'Novize']];
@@ -329,7 +329,8 @@ axt:{n:'Axt',m:1.15,bleed:25,d:'25 % Chance auf Blutung (3 Runden)'},
 speer:{n:'Speer',m:.95,pierce:50,d:'Ignoriert die Hälfte der gegnerischen Rüstung'},
 hammer:{n:'Kriegshammer',m:1.3,stun:15,crit:-5,d:'Sehr wuchtig, 15 % Betäubung, −5 % Krit'},
 sense:{n:'Sense',m:1,ls:8,d:'8 % Lebensraub'},
-saebel:{n:'Säbel',m:.85,dbl:25,d:'25 % Chance auf einen zweiten Hieb'}};
+saebel:{n:'Säbel',m:.85,dbl:25,d:'25 % Chance auf einen zweiten Hieb'},
+stab:{n:'Runenstab',m:.8,skill:25,d:'Schwache Hiebe, aber die Fähigkeit macht 25 % mehr Schaden'}};
 const AT={
 leder:{n:'Lederrüstung',dm:.8,hm:.9,dodge:8,d:'Leicht, 8 % Ausweichen'},
 kette:{n:'Kettenhemd',dm:1,hm:1,d:'Ausgewogen'},
@@ -552,7 +553,7 @@ function forgeItem(slot,type,t,r){const it=buildItem(slot,type,r,t*10+8,RAR[r].m
 const iName=it=>`<span style="color:${RAR[it.r].c}">${it.name}</span>`;
 const XL={atk:'Angriff',def:'Verteidigung',hp:'LP',crit:'% Krit',dodge:'% Ausweichen',ls:'% Lebensraub',luck:'Glück',gold:'% Gold',skill:'% Fähigkeitsschaden',bleed:'% Blutung',stun:'% Betäubung'};
 const xStats=it=>Object.keys(XL).filter(k=>it[k]).map(k=>`+${it[k]} ${XL[k]}`).join(' · ')+' · '+XT[it.slot][it.type].d;
-const iStats=it=>(it.set&&SETS[it.set]?`<span class="fx-stun">Set ${SETS[it.set].n} (${setN(it.set)}/3 angelegt): 2 Teile ${SETS[it.set].d2} · 3 Teile ${SETS[it.set].d3}</span> · `:'')+(it.curse?`<span class="fx-curse">Fluch: ${CURSES[it.curse].n} – ${CURSES[it.curse].d}</span> · `:'')+(XT[it.slot]?xStats(it):(it.uq?`<b>${UNIQ[it.uq].d}</b> · `:'')+(it.slot==='w'?`+${it.atk} Angriff · ${wt(it).d}`+(it.crit?` · Bonus: +${it.crit} % Krit`:'')+(it.ls?` · Bonus: ${it.ls} % Lebensraub`:''):`+${it.def} Verteidigung · +${it.hp} LP · ${at_(it).d}`));
+const iStats=it=>(it.set&&SETS[it.set]?`<span class="fx-stun">Set ${SETS[it.set].n} (${setN(it.set)}/3 angelegt): 2 Teile ${SETS[it.set].d2} · 3 Teile ${SETS[it.set].d3}</span> · `:'')+(it.curse?`<span class="fx-curse">Fluch: ${CURSES[it.curse].n} – ${CURSES[it.curse].d}</span> · `:'')+(XT[it.slot]?xStats(it):(it.uq?`<b>${UNIQ[it.uq].d}</b> · `:'')+(it.slot==='w'?`+${it.atk} Angriff · ${wt(it).d}${P&&CLS[P.cls]?((CLS[P.cls].fav||[]).includes(it.type)?` · <span class="good">Lieblingswaffe: +10 % Schaden</span>`:` · <span class="dim">Keine Lieblingswaffe (${CLS[P.cls].fav.map(t=>WT[t].n).join(', ')})</span>`):''}`+(it.crit?` · Bonus: +${it.crit} % Krit`:'')+(it.ls?` · Bonus: ${it.ls} % Lebensraub`:''):`+${it.def} Verteidigung · +${it.hp} LP · ${at_(it).d}`));
 const iValue=it=>Math.round((8+P.floor*2)*(it.r+1));
 const BAG=6;
 function equip(it){try{const sl=it.slot,ty=it.type;smp(sl==='w'?(SB.jc_equip?'wequip':'ring'):sl==='a'?(ty==='platte'||ty==='kette'?'chain':'cloth'):sl==='h'?'metal':sl==='j'?'beads':'cloth',.45)}catch(e){}const k0=SK[it.slot];if(P[k0]&&P[k0].curse&&P[k0]!==it){log(`Der Fluch lässt dich nicht los. ${P[k0].name} bleibt, wo es ist.`,'bad');return false}
@@ -587,7 +588,7 @@ log(type==='boss'?`${E.name} versperrt das Tor!`:`${E.name} stellt sich dir in d
 function dealDmg(mult,o={}){
 if(E.evade&&!hasS('stumm')&&R()<E.evade){log(`${E.name} weicht aus!`,'dim');return 0}
 if(P.bonus.exec&&E.hp/E.maxHp<.3)mult*=1+P.bonus.exec/100;
-if(o.skill)mult*=1+((P.armor?at_(P.armor).skill||0:0)+gs('skill'))/100;
+if(o.skill)mult*=1+((P.armor?at_(P.armor).skill||0:0)+(P.weapon?wt(P.weapon).skill||0:0)+gs('skill'))/100;
 if(P.frozen)mult*=.5;
 if(hasU('kaelen'))mult*=1+(1-P.hp/maxHp())*.6;
 mult*=1+bb(E.base);if(P.weapon&&(CLS[P.cls].fav||[]).includes(P.weapon.type))mult*=1.1;if(P.bulw){mult*=1.4;P.bulw=false}if(P.cls==='blut'&&P.hp<maxHp()*.5)mult*=1.25+(P.bonus.rdurst||0)/100;
