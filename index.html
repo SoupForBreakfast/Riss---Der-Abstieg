@@ -41,7 +41,7 @@ h1{font-weight:normal;letter-spacing:.45em;font-size:1rem;margin:0;color:var(--d
 .grp{margin:0 0 16px}
 .gt{font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin-bottom:7px}
 .row{display:flex;flex-wrap:wrap;gap:8px}
-.btn{position:relative;overflow:hidden;background:transparent;color:var(--fg);border:1px solid #55534e;font:inherit;padding:9px 14px;cursor:pointer;text-align:left;flex:1 1 150px;min-height:44px;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;-webkit-appearance:none;appearance:none}.btn>span,.btn>small{text-align:left;width:100%}
+.btn{position:relative;overflow:hidden;background:transparent;color:var(--fg);border:1px solid #55534e;font:inherit;padding:9px 14px;cursor:pointer;text-align:left;flex:1 1 150px;min-height:44px;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;-webkit-appearance:none;appearance:none}.btn>span,.btn>small{text-align:left;width:100%}
 .btn:hover:not(:disabled){border-color:var(--fg)}
 .btn:disabled{color:#8f8b83;border-color:#34343a;background:#18181c !important;cursor:default}
 .btn small{display:block;font-size:.75rem;color:var(--dim);margin-top:2px}
@@ -203,7 +203,7 @@ const UPG=[
 {id:'trank',name:'Alchemie',desc:'+1 Heiltrank zum Start',cost:l=>Math.round(40*Math.pow(2.2,l)),max:3},
 {id:'gier',name:'Gier',desc:'+15 % Gold',cost:l=>Math.round(15*Math.pow(1.25,l)),max:10},
 {id:'seele',name:'Seelenband',desc:'+10 % Seelensplitter',cost:l=>Math.round(35*Math.pow(1.3,l)),max:10},
-{id:'glueck',name:'Glück',desc:l=>`Beute bei Gegnern ${22+(l+1)*2} % · Selten oder besser ${Math.round(20+(l+1)*1.8)} %`,cost:l=>Math.round(25*Math.pow(1.28,l)),max:10},
+{id:'glueck',name:'Glück',desc:l=>`Beute ${22+(l+1)*2} % · Selten+ ${Math.round(20+(l+1)*1.8)} %`,cost:l=>Math.round(25*Math.pow(1.28,l)),max:10},
 {id:'wahl',name:'Weitblick',desc:'+1 Auswahl beim Aufstieg',cost:l=>250,max:1},
 ];
 const CLS={
@@ -1278,8 +1278,8 @@ btn(g,`${S.chal==='week'?'✓ ':''}Riss der Woche`,tg('week'),{sub:csub(W.mod,W.
 btn(g,'Was ist das?',()=>{S.chalHelp=!S.chalHelp},{cls:'info',sub:S.chalHelp?'Ohne Auswahl ist jeder Abstieg normal, ohne Besonderheiten. Eine Herausforderung wählst du vor dem Start, sie gilt nur für diesen einen Abstieg. Beide verändern den Riss mit einem Vor- und einem Nachteil und geben eine Belohnung, wenn du das Ziel erreichst. Beim Riss des Tages haben alle Spieler dieselben Etagen, im Ordensbuch steht, wer heute am tiefsten kam.':'Kurz erklärt'})}
 /* Vorbereitung */
 g=group(`Training · <span class="c-ess">${meta.essence} ✧</span>`);
-for(const u of UPG){const l=ul(u.id);if(l>=u.max){btn(g,`${u.name} ${l}/${u.max}`,()=>{},{dis:true,cls:'info',sub:'✓ Gemeistert'});continue}
-const c=u.cost(l);btn(g,`${u.name} ${l}/${u.max}`,()=>{meta.essence-=c;meta.up[u.id]=l+1;saveMeta();sys(`${u.name} gestärkt (${l+1}/${u.max}).`)},{sub:`${typeof u.desc==='function'?u.desc(l):u.desc} · ${c} ✧`,dis:meta.essence<c})}
+for(const u of UPG){const l=ul(u.id);if(l>=u.max){btn(g,`${u.name} ${l}/${u.max}`,()=>{},{dis:true,cls:'info',sub:`${(typeof u.desc==='function'?u.desc(l-1):u.desc).replace(/ · /g,'<br>')}<br>✓ Gemeistert`});continue}
+const c=u.cost(l);btn(g,`${u.name} ${l}/${u.max}`,()=>{meta.essence-=c;meta.up[u.id]=l+1;saveMeta();sys(`${u.name} gestärkt (${l+1}/${u.max}).`)},{sub:`${(typeof u.desc==='function'?u.desc(l):u.desc).replace(/ · /g,'<br>')}<br><span class="c-ess">${c}<b></b> ✧</span>`,dis:meta.essence<c})}
 const lockd=Object.keys(CLS).filter(id=>!meta.classes.includes(id));
 if(lockd.length&&meta.runs>=2){g=group('Kampfstile lernen');for(const id of lockd){const c=CLS[id];btn(g,c.name,()=>{meta.essence-=c.cost;meta.classes.push(id);saveMeta();sys(`Neuer Kampfstil: ${c.name}.`)},{sub:clsSub(id,`Kostet ${c.cost} ✧`),dis:meta.essence<c.cost})}}
 {const pk=meta.pack||{},pl=QM.filter(q=>pk[q.id]).map(q=>`${pk[q.id]}× ${q.n}`);
