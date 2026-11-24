@@ -20,5 +20,5 @@ Auf dem Handy über „Zum Startbildschirm hinzufügen“ als App installieren. 
 - Story-Musik (Varga/Brenn): „Village In Despair“ von Tsorthan Grove, CC-BY 4.0 – https://opengameart.org/content/village-in-despair
 - Frostgruft-Musik: „Cold Sanctuary“ – Composed by Jonathan Shaw (www.jshaw.co.uk)
 - Todesmusik: „The End (Death Screen mix)“ von Avgvst, Remix von Metaruka – OpenGameArt
-- Stufenaufstieg: „Picked Coin Echo“ von NenadSimic – OpenGameArt
+- Stufenaufstieg: „Picked Coin Echo“ von NenadSimic, CC-BY 3.0 (OpenGameArt)
 - Geräusche: „RPG Sound Pack“ von artisticdude – [OpenGameArt](https://opengameart.org/content/rpg-sound-pack) – CC0. Ins MP3-Format umgewandelt und am Anfang gekürzt.
