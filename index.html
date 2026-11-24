@@ -205,10 +205,10 @@ const UPG=[
 {id:'wahl',name:'Weitblick',desc:'+1 Auswahl beim Aufstieg',cost:l=>250,max:1},
 ];
 const CLS={
-krieger:{name:'Krieger',hp:60,atk:6,def:2,crit:5,cost:0,desc:'Robust und standhaft',skill:{name:'Schildschlag',cd:3,desc:'113 % Schaden, betäubt 1 Runde'}},
+krieger:{name:'Krieger',hp:60,atk:6,def:2,crit:5,cost:0,desc:'Robust und standhaft',skill:{name:'Schildschlag',cd:3,desc:'125 % Schaden, betäubt 1 Runde'}},
 klinge:{name:'Klingentänzer',hp:48,atk:7,def:1,crit:25,cost:60,desc:'Schnell, tödliche Krits',skill:{name:'Wirbelklinge',cd:3,desc:'3 Hiebe à 85 %, jeder mit +25 % Krit-Chance'}},
 magier:{name:'Runenmagier',hp:40,atk:5,def:0,crit:5,cost:150,desc:'Zerbrechlich, aber verheerend',skill:{name:'Runenfeuer',cd:3,desc:'260 %, ignoriert Rüstung, verbrennt'}},
-blut:{name:'Blutritter',hp:55,atk:6,def:1,crit:8,cost:300,desc:'Lebt vom Blut seiner Feinde',skill:{name:'Blutpakt',cd:4,desc:'200 % Schaden, heilt um 50 % davon'}},
+blut:{name:'Blutritter',hp:55,atk:6,def:1,crit:8,cost:300,desc:'Lebt vom Blut seiner Feinde · 5 % Lebensraub',skill:{name:'Blutpakt',cd:4,desc:'200 % Schaden, heilt um 50 % davon'}},
 };
 const RANKS=[[45,'Grundläufer'],[30,'Ankermeister'],[20,'Tiefengänger'],[12,'Pfadgänger'],[5,'Geselle'],[0,'Novize']];
 const RANG=[
@@ -460,7 +460,7 @@ const maxHp=()=>{let v=P.baseHp+P.bonus.hp+(P.armor?P.armor.hp:0)+gs('hp');if(ha
 const atk=()=>{const v=P.baseAtk+P.bonus.atk+(P.weapon?P.weapon.atk:0)+P.rageStacks+gs('atk');return hasS('schatten')?Math.round(v*.9):v};
 const def=()=>Math.max(0,P.baseDef+P.bonus.def+(P.armor?P.armor.def:0)+gs('def')-(hasS('stumm')?2:0));
 const crit=()=>Math.max(0,Math.min(75,P.baseCrit+P.bonus.crit+(P.weapon?(P.weapon.crit||0)+(wt(P.weapon).crit||0):0)+(P.armor?at_(P.armor).crit||0:0)+gs('crit')+(hasS('kalt')?10:0)));
-const lsP=()=>P.bonus.ls+(P.weapon?(P.weapon.ls||0)+(wt(P.weapon).ls||0):0)+gs('ls')+(hasS('blut')?6:0);
+const lsP=()=>P.bonus.ls+(P.weapon?(P.weapon.ls||0)+(wt(P.weapon).ls||0):0)+gs('ls')+(hasS('blut')?6:0)+(P&&P.cls==='blut'?5:0);
 const dodge=()=>Math.min(60,(P.armor?(at_(P.armor).dodge||0)+(P.armor.dodge||0):0)+(P.bonus.dodge||0)+gs('dodge')+(hasS('schatten')?8:0));
 const wp=k=>(P.weapon?wt(P.weapon)[k]||0:0)+(k==='bleed'||k==='stun'?gs(k):0);
 function heal(n){const b=P.hp;P.hp=Math.min(maxHp(),P.hp+n);return P.hp-b}
@@ -574,7 +574,7 @@ if(E.hp>0&&(wp('stun')+(hasU('schlacke')?20:0))&&R()*100<wp('stun')+(hasU('schla
 const l=lsP();if(l>0){const h=heal(Math.ceil(d*l/100));if(h>0)log(`+${h} LP (Lebensraub)`,'good')}
 return d}
 function useSkill(){const c=P.cls;log(`» ${CLS[c].skill.name}`,'sys');
-if(c==='krieger'){dealDmg(1.125,{skill:1});if(E.hp>0){E.stun=1;log(`${E.name} ist betäubt.`)}}
+if(c==='krieger'){dealDmg(1.25,{skill:1});if(E.hp>0){E.stun=1;log(`${E.name} ist betäubt.`)}}
 else if(c==='klinge'){for(let i=0;i<3&&E.hp>0;i++)dealDmg(.85,{skill:1,cb:25})}
 else if(c==='magier'){dealDmg(2.6,{pierce:1,skill:1});if(E.hp>0){E.burn=3;log(`${E.name} brennt.`,'crit')}}
 else if(c==='blut'){const d=dealDmg(2,{skill:1});const h=heal(Math.round(d*.5));if(h)log(`+${h} LP`,'good')}
