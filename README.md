@@ -21,4 +21,5 @@ Auf dem Handy über „Zum Startbildschirm hinzufügen“ als App installieren. 
 - Frostgruft-Musik: „Cold Sanctuary“ – Composed by Jonathan Shaw (www.jshaw.co.uk)
 - Todesmusik: „The End (Death Screen mix)“ von Metaruka, Remix von Avgvst – https://opengameart.org/node/10665 – Original „Game-Game“-OST von Metaruka (https://opengameart.org/content/game-game), CC-BY-SA 3.0 (unverändert übernommen)
 - Stufenaufstieg: „Picked Coin Echo“ von NenadSimic, CC-BY 3.0 (OpenGameArt)
+- Schritte: „Different Steps“ von kddekadenz (OpenGameArt), CC0
 - Geräusche: „RPG Sound Pack“ von artisticdude – [OpenGameArt](https://opengameart.org/content/rpg-sound-pack) – CC0. Ins MP3-Format umgewandelt und am Anfang gekürzt.
