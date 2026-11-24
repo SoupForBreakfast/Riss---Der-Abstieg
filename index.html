@@ -892,7 +892,7 @@ if(!key){AU.amb=null;return}const A=AMB[key],g=c.createGain();g.gain.value=.0001
 const lp=c.createBiquadFilter();lp.type='lowpass';lp.frequency.value=A.cut;lp.connect(g);const lfo=c.createOscillator(),lg=c.createGain();lfo.frequency.value=.07;lg.gain.value=A.cut*.4;lfo.connect(lg);lg.connect(lp.frequency);lfo.start();
 const nodes=[lfo];A.f.forEach((f,i)=>{for(const d of [-4,4]){const o=c.createOscillator();o.type=i?'triangle':'sine';o.frequency.value=f;o.detune.value=d;const og=c.createGain();og.gain.value=i?.045:.085;o.connect(og);og.connect(lp);o.start();nodes.push(o)}});
 const ns=c.createBufferSource();ns.buffer=AU.noise;ns.loop=true;const nf=c.createBiquadFilter();nf.type='lowpass';nf.frequency.value=A.bp;nf.Q.value=.3;const ng=c.createGain();ng.gain.value=A.wind;ns.connect(nf);nf.connect(ng);ng.connect(g);ns.start();nodes.push(ns);
-g.gain.setTargetAtTime(key==='hub'?.4:.8,t,2);AU.amb={g,key,stop:()=>nodes.forEach(n=>{try{n.stop()}catch(e){}})}}
+g.gain.setTargetAtTime(key==='hub'?.0001:.8,t,2);AU.amb={g,key,stop:()=>nodes.forEach(n=>{try{n.stop()}catch(e){}})}}
 const MUS={hub:{n:[110,130.8,146.8,164.8,196],w:'triangle',cut:900,v:.05,gap:[6,10],dur:5,iv:[1,1.5]},
 a0:{n:[55,65.4,73.4,82.4,98],w:'triangle',cut:520,v:.07,gap:[5,9],dur:6,iv:[1,1.5]},
 a1:{n:[73.4,87.3,98,110],w:'sawtooth',cut:480,v:.03,gap:[7,11],dur:8,iv:[1,1.189,1.498]},
@@ -936,7 +936,7 @@ const FIRE={buf:null,raw:null,loading:false,node:null,len:1290522/44100};
 try{fetch('mus/fire.mp3').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).then(a=>{FIRE.raw=a}).catch(()=>{})}catch(e){}
 function fireTick(){const want=AU.ambKey==='hub'&&!AU.drum;if(!want){if(FIRE.node){const t=AU.ctx.currentTime,n=FIRE.node;FIRE.node=null;n.g.gain.setTargetAtTime(.0001,t,.5);try{n.s.stop(t+3)}catch(e){}}return}
  if(FIRE.node)return;if(!FIRE.buf){if(FIRE.raw&&!FIRE.loading){FIRE.loading=true;AU.ctx.decodeAudioData(FIRE.raw.slice(0),b=>{FIRE.buf=b},()=>{FIRE.loading=false})}return}
- const c=AU.ctx,t=c.currentTime+.05,s=c.createBufferSource(),g=c.createGain();s.buffer=FIRE.buf;s.loop=true;s.loopEnd=Math.min(FIRE.buf.duration,FIRE.len);g.gain.setValueAtTime(.0001,t);g.gain.setTargetAtTime(1.1,t,1);s.connect(g);g.connect(AU.fx);s.start(t,R()*20);FIRE.node={s,g}}
+ const c=AU.ctx,t=c.currentTime+.05,s=c.createBufferSource(),g=c.createGain();s.buffer=FIRE.buf;s.loop=true;s.loopEnd=Math.min(FIRE.buf.duration,FIRE.len);g.gain.setValueAtTime(.0001,t);g.gain.setTargetAtTime(2.8,t,1);s.connect(g);g.connect(AU.fx);s.start(t,R()*20);FIRE.node={s,g}}
 function cmTick(){try{fireTick()}catch(e){}const want=AU.ambKey==='hub'&&!AU.drum;if(!want){if(CMUS.node){const t=AU.ctx.currentTime,n=CMUS.node;CMUS.node=null;n.g.gain.cancelScheduledValues(t);n.g.gain.setTargetAtTime(.0001,t,.6);try{n.s.stop(t+3)}catch(e){}}return}
  if(CMUS.node)return;if(!CMUS.buf){cmLoad();return}const c=AU.ctx,t=c.currentTime+.05,s=c.createBufferSource(),g=c.createGain();s.buffer=CMUS.buf;s.loop=true;s.loopEnd=Math.min(CMUS.buf.duration,CMUS.len);g.gain.setValueAtTime(.0001,t);g.gain.setTargetAtTime(.1,t,1.2);s.connect(g);g.connect(AU.mus);s.start(t);CMUS.node={s,g}}
 function fightTick(){if(!FMUS.buf)fmLoad();if(fmStart(E&&E.type==='elite'))return;if(FMUS.raw||!AU.fbWait||Date.now()-AU.fbWait<4000){AU.fbWait=AU.fbWait||Date.now();return}const c=AU.ctx;if(!AU.mus)return;const el=E&&E.type==='elite',bpm=el?118:104,sp=60/bpm/4;
@@ -954,7 +954,7 @@ function bossTick(){const c=AU.ctx;if(!AU.mus)return;const hard=E&&E.maxHp&&E.hp
   if(hard&&i%2===1)bHat(t,i%4===3?.05:.03);
   if(i%32===0)bBoom(t,root/2,sp*32);
   AU.bt+=sp;AU.bstep++}}
-function musTick(){const k=AU.ambKey,M=MUS[k];if(!M||!AU.mus||AU.drum||(k==='hub'&&CMUS.node))return;const n=AU.ctx.currentTime;
+function musTick(){const k=AU.ambKey,M=MUS[k];if(!M||!AU.mus||AU.drum||k==='hub')return;const n=AU.ctx.currentTime;
 if(AU.mKey!==k){AU.mKey=k;AU.mNext=n+2.5;return}
 if(M.pulse&&!AU.drum&&n>=(AU.pNext||0)){AU.pNext=n+1.75;mthud(0,.11);mthud(.27,.07)}
 if(n<AU.mNext)return;AU.mNext=n+M.gap[0]+R()*(M.gap[1]-M.gap[0]);const a=pick(M.n);pad(M.iv.map(x=>a*x),M.dur,M.w,M.cut,M.v)}
@@ -965,7 +965,7 @@ if(AU.drum==='fight'){try{fightTick()}catch(e){}}else if(AU.drum){try{if(!BMUS.n
 function audioScene(){if(!AU.ctx||!AU.on)return;const menu=['hub','end','forge','beast','guild','bounty','quests','chronik','scar'];
 const key=(!P||menu.includes(S.screen))?'hub':'a'+Math.min(4,AREAS.indexOf(areaOf(Math.max(1,P.floor))));ambSet(key);const inC=S.screen==='combat'&&E,bm=inC&&(E.type==='boss'||E.bounty)&&!(P&&P.tut&&E.type!=='boss')?'boss':inC?'fight':false;
 if(P&&!P.tut&&(P.floor%5>=3||bm))bmLoad();
-if(bm!==AU.drum){const was=AU.drum;AU.drum=bm;const t=AU.ctx.currentTime;if(bm!=='boss')bmStop();if(bm!=='fight')fmStop();if(bm==='fight'){AU.fbWait=0;if(!was){AU.bt=t+.08;AU.bstep=0}if(AU.amb)AU.amb.g.gain.setTargetAtTime(.45,t,.4)}if(bm==='boss'){bmLoad();bmStart();AU.bt=t+.08;AU.bstep=0;AU.broot=[73.4,69.3,65.4,77.8,61.7][Math.min(4,Math.max(0,AREAS.indexOf(areaOf(Math.max(1,P.floor)))))];if(AU.amb)AU.amb.g.gain.setTargetAtTime(.22,t,.4)}if(!bm&&AU.amb)AU.amb.g.gain.setTargetAtTime(AU.amb.key==='hub'?.4:.8,t,1.2)}}
+if(bm!==AU.drum){const was=AU.drum;AU.drum=bm;const t=AU.ctx.currentTime;if(bm!=='boss')bmStop();if(bm!=='fight')fmStop();if(bm==='fight'){AU.fbWait=0;if(!was){AU.bt=t+.08;AU.bstep=0}if(AU.amb)AU.amb.g.gain.setTargetAtTime(.45,t,.4)}if(bm==='boss'){bmLoad();bmStart();AU.bt=t+.08;AU.bstep=0;AU.broot=[73.4,69.3,65.4,77.8,61.7][Math.min(4,Math.max(0,AREAS.indexOf(areaOf(Math.max(1,P.floor)))))];if(AU.amb)AU.amb.g.gain.setTargetAtTime(.22,t,.4)}if(!bm&&AU.amb)AU.amb.g.gain.setTargetAtTime(AU.amb.key==='hub'?.0001:.8,t,1.2)}}
 function sndToggle(){AU.on=!AU.on;try{localStorage.setItem('riss_snd',AU.on?'1':'0')}catch(e){}if(AU.on){auInit();if(AU.ctx){AU.master.gain.setTargetAtTime(.9,AU.ctx.currentTime,.1);AU.ambKey=null;audioScene()}}else if(AU.ctx){AU.master.gain.setTargetAtTime(.0001,AU.ctx.currentTime,.1)}sndLabel()}
 function sndLabel(){const b=$('#snd');if(b)b.textContent=AU.on?'♪ Ton an':'♪ Ton aus'}
 
