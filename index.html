@@ -859,7 +859,7 @@ S.screen='end';S.queue=[];E=null}
 
 function nextGoal(){const o=UPG.filter(u=>ul(u.id)<u.max).map(u=>({n:u.name,c:u.cost(ul(u.id))})).concat(Object.keys(CLS).filter(id=>!meta.classes.includes(id)).map(id=>({n:'Kampfstil '+CLS[id].name,c:CLS[id].cost}))).sort((a,b)=>a.c-b.c);
 if(!o.length)return'';const a=o.filter(x=>x.c<=meta.essence);
-if(a.length)return `<p class="good small">${a.length===1?`Deine Splitter reichen für ${a[0].n}.`:`Deine Splitter reichen für ${a.length} Verbesserungen im Training.`}</p>`;
+if(a.length)return'';
 return `<p class="small">Noch <b class="c-ess">${o[0].c-meta.essence} ✧</b> bis ${o[0].n}.</p>`}
 const FXRE=/(Kritische[rn]? Treffer!?|Krit-Chance|Krits?|Blutung|blutet|Gift|giftig|vergiftet|Lebensraub|saugt Leben|Betäubung|betäubt|benommen|aus den Latschen|Ausweichen|weichst aus|weicht aus|brennt|verbrennt|Raserei|rasend|regeneriert|Dornen|Rückwurf)/g;
 function fxClass(w){if(/^Krit/.test(w))return'crit';if(/lut/.test(w))return'bleed';if(/ift/.test(w))return'poison';if(/Lebensraub|saugt/.test(w))return'ls';if(/etäub|benommen|Latschen/.test(w))return'stun';if(/weich/.test(w))return'dodge';if(/brenn/.test(w))return'burn';if(/aserei|rasend/.test(w))return'rage';if(/regen/.test(w))return'regen';return'thorn'}
