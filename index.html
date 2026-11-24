@@ -144,6 +144,7 @@ textarea.code{width:100%;box-sizing:border-box;height:84px;background:#111114;co
 .acard{text-align:center;padding:18px 4px 6px}.acard .ac0{font-size:.8rem;letter-spacing:.25em;text-transform:uppercase;color:#8f8a80;opacity:0;animation:acin 1s .1s ease-out forwards}.acard .ac1{font-size:1.9rem;letter-spacing:.12em;color:#e2dccd;margin:10px 0 14px;opacity:0;animation:acin 1.4s .35s ease-out forwards}.acard .ac2{font-style:italic;color:#b9b2a3;line-height:1.55}@keyframes acin{from{opacity:0;transform:translateY(6px);filter:blur(2px)}to{opacity:1;transform:none;filter:none}}
 .bst{overflow:hidden}.bst .bth{float:left;width:96px;height:54px;object-fit:cover;border-radius:4px;margin:2px 10px 4px 0;filter:contrast(1.05);cursor:pointer}#lbox{position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .25s;cursor:pointer}#lbox.on{opacity:1}#lbox img{max-width:96vw;max-height:90vh;border-radius:6px;transform:scale(.96);transition:transform .25s}#lbox.on img{transform:none}.bst .unk{display:flex;align-items:center;justify-content:center;background:#141416;color:#444;font-size:1.4rem;border:1px solid #222}
 .btn.chal{display:flex;flex-direction:column;justify-content:flex-start;align-items:flex-start;text-align:left;border:1px solid rgba(201,143,92,.45);border-left:3px solid #c98f5c;background:linear-gradient(90deg,rgba(201,143,92,.14),rgba(201,143,92,.02) 70%)}.btn.chal.on{border-color:#e6c34a;border-left-color:#e6c34a;background:linear-gradient(90deg,rgba(230,195,74,.24),rgba(230,195,74,.04) 70%);box-shadow:0 0 12px rgba(230,195,74,.18)}
+[class^="fx-"],[class*=" fx-"],small [class^="c-"],small [class*=" c-"]{white-space:nowrap}
 #fcard{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;pointer-events:none;z-index:60;opacity:0;background:rgba(6,6,8,.0)}
 #fcard.on{animation:fcard 1.5s ease-in-out forwards}#fcard.on.big{animation-duration:2.4s}
 #fcard .fc1{font-size:1.6rem;letter-spacing:.3em;text-transform:uppercase;color:#d8d2c4}#fcard .fc2{font-size:.95rem;letter-spacing:.2em;color:#8f8a80;margin-top:6px}
@@ -857,7 +858,8 @@ const NUMC={Gold:'gold',LP:'hp',EP:'xp',Seelensplitter:'ess','✧':'ess',Angriff
 const NUMT={ess:[10,40,120],atk:[3,6,12],def:[3,6,12],key:[2,3,5],fire:[2,3,5],pot:[2,3,5],def0:[25,100,400]};
 function tier(c,v){const t=NUMT[c]||NUMT.def0;v=Math.abs(v);return v<t[0]?'':v<t[1]?' t2':v<t[2]?' t3':' t4'}
 function numc(t){return t.replace(NUMRE,(m,n,pc,mx,w)=>{let c=NUMC[w];const v=parseInt(n.replace('−','-'));if(c==='hp')c=/^[−-]/.test(n)?'hp':/^\+/.test(n)?'heal':'hp';return `<span class="c-${c}${pc?'':tier(c,v)}">${m}</span>`})}
-const fxc=t=>t==null?t:numc(String(t)).replace(FXRE,w=>`<span class="fx-${fxClass(w)}">${w}</span>`);
+const FXN=new RegExp('((?:[+−-]?\\d+(?:[.,]\\d+)?\\s?%?\\s)?)('+FXRE.source+')','g');
+const fxc=t=>t==null?t:numc(String(t).replace(FXN,(m,n,w)=>`<span class="fx-${fxClass(w)}">${m}</span>`));
 /* ---------- Klang ---------- */
 const CFG=(()=>{const c={mus:70,fx:80,anim:1,size:1,vib:1};try{Object.assign(c,JSON.parse(localStorage.getItem('riss_cfg')||'{}'))}catch(e){}return c})();
 function cfgSave(){try{localStorage.setItem('riss_cfg',JSON.stringify(CFG))}catch(e){}cfgApply()}
@@ -1281,11 +1283,11 @@ g=group(`Training · <span class="c-ess">${meta.essence} ✧</span>`);
 for(const u of UPG){const l=ul(u.id);if(l>=u.max){btn(g,`${u.name} ${l}/${u.max}`,()=>{},{dis:true,cls:'info',sub:`${(typeof u.desc==='function'?u.desc(l-1):u.desc).replace(/ · /g,'<br>')}<br>✓ Gemeistert`});continue}
 const c=u.cost(l);btn(g,`${u.name} ${l}/${u.max}`,()=>{meta.essence-=c;meta.up[u.id]=l+1;saveMeta();sys(`${u.name} gestärkt (${l+1}/${u.max}).`)},{sub:`${(typeof u.desc==='function'?u.desc(l):u.desc).replace(/ · /g,'<br>')}<br><span class="c-ess">${c}<b></b> ✧</span>`,dis:meta.essence<c})}
 const lockd=Object.keys(CLS).filter(id=>!meta.classes.includes(id));
-if(lockd.length&&meta.runs>=2){g=group('Kampfstile lernen');for(const id of lockd){const c=CLS[id];btn(g,c.name,()=>{meta.essence-=c.cost;meta.classes.push(id);saveMeta();sys(`Neuer Kampfstil: ${c.name}.`)},{sub:clsSub(id,`Kostet ${c.cost} ✧`),dis:meta.essence<c.cost})}}
+if(lockd.length&&meta.runs>=2){g=group('Kampfstile lernen');for(const id of lockd){const c=CLS[id];btn(g,c.name,()=>{meta.essence-=c.cost;meta.classes.push(id);saveMeta();sys(`Neuer Kampfstil: ${c.name}.`)},{sub:clsSub(id,`<span class="c-ess">${c.cost}<b></b> ✧</span>`),dis:meta.essence<c.cost})}}
 {const pk=meta.pack||{},pl=QM.filter(q=>pk[q.id]).map(q=>`${pk[q.id]}× ${q.n}`);
 if((meta.gold||0)>0||pl.length){
 g=group(`Quartiermeister Brenn · <span class="c-gold">${meta.gold||0} Gold</span>`);
-for(const q of QM){const have=pk[q.id]||0,qc=Math.round(q.c*(meta.bq>=3?.8:1));btn(g,`${q.n} ${have}/${q.max}`,()=>{meta.gold-=qc;meta.pack=Object.assign({},pk,{[q.id]:have+1});unlock('brenn');saveMeta();log(`Brenn packt dir ein: ${q.n}.`,'goldt')},{sub:`${q.d} · ${qc} Gold`,dis:have>=q.max||(meta.gold||0)<qc})}
+for(const q of QM){const have=pk[q.id]||0,qc=Math.round(q.c*(meta.bq>=3?.8:1));btn(g,`${q.n} ${have}/${q.max}`,()=>{meta.gold-=qc;meta.pack=Object.assign({},pk,{[q.id]:have+1});unlock('brenn');saveMeta();log(`Brenn packt dir ein: ${q.n}.`,'goldt')},{sub:`${q.d}<br><span class="c-gold">${qc}<b></b> Gold</span>`,dis:have>=q.max||(meta.gold||0)<qc})}
 if(pl.length)btn(g,'Gepackt: '+pl.join(', '),()=>{},{dis:true,cls:'info',sub:'Wird beim nächsten Abstieg mitgenommen'})}}
 /* Lager */
 const mats=Object.values(meta.mats||{}).some(v=>v>0);
