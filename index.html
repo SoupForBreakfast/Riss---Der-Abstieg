@@ -1389,7 +1389,7 @@ if(run&&run.P){try{P=run.P;P.bag=P.bag||[];for(const k of ['kindling','keys']){i
  if(run.v===2){E=run.E;Object.assign(S,run.S);S.queue=S.queue||[];
   if(S.screen==='combat'&&!E)S.screen='doors';
   if(S.screen==='room'){const k=S.roomKey||'',m=k.match(/^ev(\d+)$/);
-   if(k==='rast')roomRast();else if(k==='tresorTuer')roomTresorTuer();else if(k==='haendler')roomHaendler();else if(k==='schrein')roomSchrein();else if(k==='bquest')roomBquest();else if(m&&EVENTS[+m[1]]){EVENTS[+m[1]]();S.roomKey=k}
+   if(k==='rast')roomRast();else if(k==='tresorTuer')roomTresorTuer();else if(k==='haendler')roomHaendler();else if(k==='schrein')roomSchrein();else if(k==='bquest')roomBquest();else if(k==='schatz')room('Eine verlassene Schatzkammer. Die meisten Truhen sind offen und voller Spinnweben, aber ein paar sind noch zu.',()=>[{l:'Weitergehen',fn:next}],'schatz');else if(m&&EVENTS[+m[1]]){EVENTS[+m[1]]();S.roomKey=k}
    else room('Der Raum ist leer. Du gehst weiter.',()=>[{l:'Weitergehen',fn:next}])}
   if(S.screen==='doors'&&!S.doors)goDoors();
  }else{S.doors=run.doors;S.screen='doors';S.queue=[]}
