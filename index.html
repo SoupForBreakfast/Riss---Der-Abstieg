@@ -205,7 +205,7 @@ const UPG=[
 {id:'wahl',name:'Weitblick',desc:'+1 Auswahl beim Aufstieg',cost:l=>250,max:1},
 ];
 const CLS={
-krieger:{name:'Krieger',hp:60,atk:6,def:2,crit:5,cost:0,desc:'Robust und standhaft',skill:{name:'Schildschlag',cd:3,desc:'150 % Schaden, betäubt 1 Runde'}},
+krieger:{name:'Krieger',hp:60,atk:6,def:2,crit:5,cost:0,desc:'Robust und standhaft',skill:{name:'Schildschlag',cd:3,desc:'113 % Schaden, betäubt 1 Runde'}},
 klinge:{name:'Klingentänzer',hp:48,atk:7,def:1,crit:25,cost:60,desc:'Schnell, tödliche Krits',skill:{name:'Wirbelklinge',cd:3,desc:'3 Hiebe à 85 %, jeder mit +25 % Krit-Chance'}},
 magier:{name:'Runenmagier',hp:40,atk:5,def:0,crit:5,cost:150,desc:'Zerbrechlich, aber verheerend',skill:{name:'Runenfeuer',cd:3,desc:'260 %, ignoriert Rüstung, verbrennt'}},
 blut:{name:'Blutritter',hp:55,atk:6,def:1,crit:8,cost:300,desc:'Lebt vom Blut seiner Feinde',skill:{name:'Blutpakt',cd:4,desc:'200 % Schaden, heilt um 50 % davon'}},
@@ -571,10 +571,10 @@ if(E.hp>0&&c&&hasU('grimmzahn')){E.bleed=3;log(`${E.name} blutet.`,'crit')}
 if(E.hp>0&&hasU('ossa')&&R()<.25){E.burn=3;log(`${E.name} brennt.`,'crit')}
 if(E.hp>0&&hasU('ylva')&&R()<.25){E.chill=1;log(`${E.name} ist unterkühlt.`,'dim')}
 if(E.hp>0&&(wp('stun')+(hasU('schlacke')?20:0))&&R()*100<wp('stun')+(hasU('schlacke')?20:0)&&!E.stun){E.stun=1;log(`Der Hieb haut ${E.name} aus den Latschen.`)}
-const l=lsP();if(l>0){const h=heal(Math.round(d*l/100));if(h>0)log(`+${h} LP (Lebensraub)`,'good')}
+const l=lsP();if(l>0){const h=heal(Math.ceil(d*l/100));if(h>0)log(`+${h} LP (Lebensraub)`,'good')}
 return d}
 function useSkill(){const c=P.cls;log(`» ${CLS[c].skill.name}`,'sys');
-if(c==='krieger'){dealDmg(1.5,{skill:1});if(E.hp>0){E.stun=1;log(`${E.name} ist betäubt.`)}}
+if(c==='krieger'){dealDmg(1.125,{skill:1});if(E.hp>0){E.stun=1;log(`${E.name} ist betäubt.`)}}
 else if(c==='klinge'){for(let i=0;i<3&&E.hp>0;i++)dealDmg(.85,{skill:1,cb:25})}
 else if(c==='magier'){dealDmg(2.6,{pierce:1,skill:1});if(E.hp>0){E.burn=3;log(`${E.name} brennt.`,'crit')}}
 else if(c==='blut'){const d=dealDmg(2,{skill:1});const h=heal(Math.round(d*.5));if(h)log(`+${h} LP`,'good')}
