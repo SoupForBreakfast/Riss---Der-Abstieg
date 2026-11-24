@@ -1,4 +1,4 @@
-const V='riss-1795539654';
+const V='riss-1795539832';
 const CORE=['./','index.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png','img/b1.webp','img/b2.webp','img/b3.webp','img/b4.webp','img/b5.webp','img/g1.webp','img/g10.webp','img/g11.webp','img/g12.webp','img/g13.webp','img/g14.webp','img/g2.webp','img/g3.webp','img/g4.webp','img/g5.webp','img/g6.webp','img/g7.webp','img/g8.webp','img/g9.webp','img/k1.webp','img/k10.webp','img/k2.webp','img/k3.webp','img/k4.webp','img/k5.webp','img/k6.webp','img/k7.webp','img/k8.webp','img/k9.webp','img/o1.webp','img/o2.webp','img/o3.webp','img/o4.webp','img/o5.webp','img/o6.webp','img/o7.webp','img/o8.webp','img/o9.webp','img/t1.webp','img/t2.webp','img/t3.webp','img/t4.webp','img/t5.webp','img/x1.webp','img/x2.webp','img/x3.webp','img/x4.webp','mus/fight.mp3','mus/camp.mp3','mus/fire.mp3'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==V).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});

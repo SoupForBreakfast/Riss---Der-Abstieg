@@ -13,6 +13,7 @@ Auf dem Handy über „Zum Startbildschirm hinzufügen“ als App installieren. 
 - Lagermusik: „Medieval: The Bard’s Tale“ von RandomMind – [OpenGameArt](https://opengameart.org/content/medieval-the-bards-tale) – CC0
 - Höhlenmusik: „Cave Theme“ von Brandon75689 – OpenGameArt – CC0
 - Kryptamusik: „Dark Loop“ – OpenGameArt
+- Frostgruft-Musik: „Cold Sanctuary“ – Composed by Jonathan Shaw (www.jshaw.co.uk)
 - Todesmusik: „The End (Death Screen mix)“ von Avgvst, Remix von Metaruka – OpenGameArt
 - Stufenaufstieg: „Picked Coin Echo“ von NenadSimic – OpenGameArt
 - Geräusche: „RPG Sound Pack“ von artisticdude – [OpenGameArt](https://opengameart.org/content/rpg-sound-pack) – CC0. Ins MP3-Format umgewandelt und am Anfang gekürzt.
