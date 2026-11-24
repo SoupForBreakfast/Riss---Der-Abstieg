@@ -142,6 +142,7 @@ textarea.code{width:100%;box-sizing:border-box;height:84px;background:#111114;co
 .story .sr{opacity:0;animation:srin .6s ease-out forwards}
 @keyframes srin{from{opacity:0;filter:blur(2px)}to{opacity:1;filter:none}}
 .acard{text-align:center;padding:18px 4px 6px}.acard .ac0{font-size:.8rem;letter-spacing:.25em;text-transform:uppercase;color:#8f8a80;opacity:0;animation:acin 1s .1s ease-out forwards}.acard .ac1{font-size:1.9rem;letter-spacing:.12em;color:#e2dccd;margin:10px 0 14px;opacity:0;animation:acin 1.4s .35s ease-out forwards}.acard .ac2{font-style:italic;color:#b9b2a3;line-height:1.55}@keyframes acin{from{opacity:0;transform:translateY(6px);filter:blur(2px)}to{opacity:1;transform:none;filter:none}}
+.bst{overflow:hidden}.bst .bth{float:left;width:96px;height:54px;object-fit:cover;border-radius:4px;margin:2px 10px 4px 0;filter:contrast(1.05);cursor:pointer;transition:all .25s}.bst .bth.big{float:none;display:block;width:100%;height:auto;margin:6px 0}.bst .unk{display:flex;align-items:center;justify-content:center;background:#141416;color:#444;font-size:1.4rem;border:1px solid #222}
 #fcard{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;pointer-events:none;z-index:60;opacity:0;background:rgba(6,6,8,.0)}
 #fcard.on{animation:fcard 1.5s ease-in-out forwards}#fcard.on.big{animation-duration:2.4s}
 #fcard .fc1{font-size:1.6rem;letter-spacing:.3em;text-transform:uppercase;color:#d8d2c4}#fcard .fc2{font-size:.95rem;letter-spacing:.2em;color:#8f8a80;margin-top:6px}
@@ -182,7 +183,7 @@ body.lowhp #stage{animation:lowhp 1s ease-in-out infinite}
 </div>
 <script>
 const $=s=>document.querySelector(s);
-const R=Math.random, ri=(a,b)=>Math.floor(R()*(b-a+1))+a, pick=a=>a[Math.floor(R()*a.length)];
+let _rng=Math.random;const R=()=>_rng(), ri=(a,b)=>Math.floor(R()*(b-a+1))+a, pick=a=>a[Math.floor(R()*a.length)];
 const BAL={xpB:16,xpE:1.4,lh:3,laEvery:1,ia:.55,id:.25,ih:1.6,eh:1.042,ea:1.031,ed:.4,bb:3.6,bs:2.8};
 const SAVE='riss_meta_v1', RUNSAVE='riss_run_v1';
 
@@ -205,10 +206,10 @@ const UPG=[
 {id:'wahl',name:'Weitblick',desc:'+1 Auswahl beim Aufstieg',cost:l=>250,max:1},
 ];
 const CLS={
-krieger:{name:'Krieger',hp:60,atk:6,def:2,crit:5,cost:0,desc:'Robust und standhaft',skill:{name:'Schildschlag',cd:3,desc:'125 % Schaden, betäubt 1 Runde'}},
-klinge:{name:'Klingentänzer',hp:48,atk:7,def:1,crit:25,cost:60,desc:'Schnell, tödliche Krits',skill:{name:'Wirbelklinge',cd:3,desc:'3 Hiebe à 85 %, jeder mit +25 % Krit-Chance'}},
-magier:{name:'Runenmagier',hp:40,atk:5,def:0,crit:5,cost:150,desc:'Zerbrechlich, aber verheerend',skill:{name:'Runenfeuer',cd:3,desc:'260 %, ignoriert Rüstung, verbrennt'}},
-blut:{name:'Blutritter',hp:55,atk:6,def:1,crit:8,cost:300,desc:'Lebt vom Blut seiner Feinde · 5 % Lebensraub',skill:{name:'Blutpakt',cd:4,desc:'200 % Schaden, heilt um 50 % davon'}},
+krieger:{name:'Krieger',hp:70,atk:5,def:3,crit:3,cost:0,desc:'Robust und standhaft',fav:['hammer','schwert'],pass:{n:'Bollwerk',d:'Abwehren blockt 70 %, der nächste Angriff danach macht +40 %'},skill:{name:'Schildschlag',cd:3,desc:'125 % Schaden, betäubt 1 Runde'}},
+klinge:{name:'Klingentänzer',hp:45,atk:7,def:0,crit:25,cost:60,desc:'Schnell, tödliche Krits',fav:['dolch','saebel'],pass:{n:'Rhythmus',d:'Jeder Treffer in Folge +6 % Krit (bis 5×), ein Treffer gegen dich bricht die Serie · 8 % Ausweichen'},skill:{name:'Wirbelklinge',cd:3,desc:'3 Hiebe à 85 %, jeder mit +25 % Krit-Chance'}},
+magier:{name:'Runenmagier',hp:38,atk:4,def:0,crit:5,cost:150,desc:'Zerbrechlich, aber verheerend',fav:['speer','dolch'],pass:{n:'Runenschild',d:'Jeder Kampf beginnt mit einem Schild aus 20 % deiner LP · normale Angriffe laden die Fähigkeit schneller'},skill:{name:'Runenfeuer',cd:3,desc:'260 %, ignoriert Rüstung, verbrennt'}},
+blut:{name:'Blutritter',hp:60,atk:6,def:1,crit:8,cost:300,desc:'Lebt vom Blut seiner Feinde',fav:['sense','axt'],pass:{n:'Blutdurst',d:'5 % Lebensraub · unter 50 % LP +25 % Schaden · Heiltränke wirken nur zu 70 %'},skill:{name:'Blutpakt',cd:4,desc:'200 % Schaden, heilt um 50 % davon'}},
 };
 const RANKS=[[45,'Grundläufer'],[30,'Ankermeister'],[20,'Tiefengänger'],[12,'Pfadgänger'],[5,'Geselle'],[0,'Novize']];
 const RANG=[
@@ -293,6 +294,10 @@ vq0:['Varga setzt sich zu dir ans Feuer. Das macht sie sonst nie.\n„Ich muss d
 vq1:['Du legst Varga das Abzeichen in die Hand. Sie dreht es lange hin und her.\n„Das ist seins.“','„Aber da ist kein Blut dran. Keine Kratzer. Als hätte er es einfach … abgelegt.“\nSie schluckt. „Er hat immer Tagebuch geschrieben. Wenn er weitergegangen ist, dann Richtung Glutschlund.“\n+30 Seelensplitter · Neuer Auftrag: Das Tagebuch'],
 vq2:['Varga liest im Tagebuch. Sehr lange. Irgendwann klappt sie es zu.','„Er schreibt, dass der Stein ihn nach unten ruft und dass er nicht mehr zurückwill.“\nSie sieht dich an. „Wenn er noch da unten ist, dann ist er nicht mehr der Kaelen von damals. Dann musst du es beenden.“\n+50 Seelensplitter · Kaelen steht jetzt auf der Kopfgeldliste'],
 kaelen:['Du erzählst Varga von Kaelen, von seiner Klinge und wie er dich am Ende angesehen hat.','Sie sagt lange nichts. Dann steht sie auf, geht zum Stein und legt das Abzeichen daneben.\n„Danke“, sagt sie. „Jetzt kann ich ihn von meiner Liste streichen.“','„Hier. Das hat er mir mal geschenkt, für Notfälle. Ich glaub, du brauchst es mehr als ich.“\n+Vargas Talisman: dauerhaft +10 % max. LP · +100 Seelensplitter']};
+function dayKey(){const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()}
+function hstr(k){return [...k].reduce((a,c)=>Math.imul(a^c.charCodeAt(0),16777619)>>>0,2166136261)}
+function seedRng(k){let a=hstr(k);_rng=()=>{a=a+0x6D2B79F5>>>0;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
+function daily(){const k=dayKey(),h=hstr('riss'+k),mods=Object.keys(RMODS).filter(x=>x!=='ruhig');return{k,mod:mods[h%mods.length],goal:10,reward:30}}
 function weekKey(){const d=new Date(),o=new Date(d.getFullYear(),0,1),w=Math.ceil(((d-o)/864e5+o.getDay()+1)/7);return d.getFullYear()+'-'+w}
 function weekly(){const k=weekKey(),h=[...k].reduce((a,c)=>a*31+c.charCodeAt(0)>>>0,7),mods=Object.keys(RMODS).filter(x=>x!=='ruhig');return{k,mod:mods[h%mods.length],goal:12+(h%3)*4,reward:80}}
 const MATS={m0:{n:'Rosteisen',area:0},m1:{n:'Grabsilber',area:1},m2:{n:'Glutstein',area:2},m3:{n:'Ewiges Eis',area:3,soul:1},m4:{n:'Leerenkristall',area:4,soul:1},kern:{n:'Wächterkern',soul:1}};
@@ -334,7 +339,13 @@ const GT={leder:{n:'Lederhandschuhe',crit:4,d:'Sichere Griffe'},panzer:{n:'Panze
 const JT={blut:{n:'Blutamulett',ls:4,d:'Trinkt mit'},glueck:{n:'Glücksring',luck:2,d:'Mehr und bessere Beute'},kraft:{n:'Kraftring',atk:1.2,d:'Mehr Kraft'},leben:{n:'Lebensamulett',hp:1,d:'Mehr Leben'},fokus:{n:'Fokusring',skill:20,d:'Stärkt deine Fähigkeit'}};
 const SK={w:'weapon',a:'armor',h:'helm',g:'gloves',j:'jewel'},SN={w:'Waffe',a:'Rüstung',h:'Helm',g:'Handschuhe',j:'Schmuck'},XT={h:HT,g:GT,j:JT};
 const wt=it=>WT[it&&it.type]||WT.schwert, at_=it=>AT[it&&it.type]||AT.kette;
-const gs=k=>{let v=0;for(const sl of ['helm','gloves','jewel']){const it=P&&P[sl];if(it&&it[k])v+=it[k]}return v};
+const SETS={torbern:{n:'Torberns Wacht',t:'aus Torberns Nachlass',b2:{def:3},b3:{hp:25},d2:'+3 Verteidigung',d3:'+25 LP'},
+mirela:{n:'Mirelas Schatten',t:'aus Mirelas Nachlass',b2:{dodge:6},b3:{crit:8},d2:'+6 % Ausweichen',d3:'+8 % Krit'},
+isgard:{n:'Isgards Glut',t:'aus Isgards Nachlass',b2:{skill:20},b3:{atk:4},d2:'+20 % Fähigkeitsschaden',d3:'+4 Angriff'},
+varos:{n:'Varos’ Hunger',t:'aus Varos’ Nachlass',b2:{ls:5},b3:{atk:3},d2:'+5 % Lebensraub',d3:'+3 Angriff'}};
+const setN=id=>P?['weapon','armor','helm','gloves','jewel'].filter(sl=>P[sl]&&P[sl].set===id).length:0;
+const setB=k=>{let v=0;for(const id in SETS){const n=setN(id);if(n>=2)v+=SETS[id].b2[k]||0;if(n>=3)v+=SETS[id].b3[k]||0}return v};
+const gs=k=>{let v=0;for(const sl of ['helm','gloves','jewel']){const it=P&&P[sl];if(it&&it[k])v+=it[k]}return v+setB(k)};
 const SUF=['der Asche','des Wolfes','der Tiefe','des Wanderers','der Stille','des Sturms','aus Mondstahl','aus Drachenbein','der Gefallenen','des Abgrunds','der Morgenröte','aus Schwarzeisen'];
 
 /* ---------- Geschichte ---------- */
@@ -459,9 +470,9 @@ P.hp=maxHp()}
 const maxHp=()=>{let v=P.baseHp+P.bonus.hp+(P.armor?P.armor.hp:0)+gs('hp');if(hasS('kalt'))v-=10;if(hasS('schwer'))v=Math.round(v*1.15);return Math.max(1,v)};
 const atk=()=>{const v=P.baseAtk+P.bonus.atk+(P.weapon?P.weapon.atk:0)+P.rageStacks+gs('atk');return hasS('schatten')?Math.round(v*.9):v};
 const def=()=>Math.max(0,P.baseDef+P.bonus.def+(P.armor?P.armor.def:0)+gs('def')-(hasS('stumm')?2:0));
-const crit=()=>Math.max(0,Math.min(75,P.baseCrit+P.bonus.crit+(P.weapon?(P.weapon.crit||0)+(wt(P.weapon).crit||0):0)+(P.armor?at_(P.armor).crit||0:0)+gs('crit')+(hasS('kalt')?10:0)));
+const crit=()=>Math.max(0,Math.min(75,P.baseCrit+P.bonus.crit+(P.weapon?(P.weapon.crit||0)+(wt(P.weapon).crit||0):0)+(P.armor?at_(P.armor).crit||0:0)+gs('crit')+(hasS('kalt')?10:0)+(P.cls==='klinge'?(P.rhy||0)*(6+(P.bonus.brhy||0)):0)));
 const lsP=()=>P.bonus.ls+(P.weapon?(P.weapon.ls||0)+(wt(P.weapon).ls||0):0)+gs('ls')+(hasS('blut')?6:0)+(P&&P.cls==='blut'?5:0);
-const dodge=()=>Math.min(60,(P.armor?(at_(P.armor).dodge||0)+(P.armor.dodge||0):0)+(P.bonus.dodge||0)+gs('dodge')+(hasS('schatten')?8:0));
+const dodge=()=>Math.min(60,(P.armor?(at_(P.armor).dodge||0)+(P.armor.dodge||0):0)+(P.bonus.dodge||0)+gs('dodge')+(hasS('schatten')?8:0)+(P.cls==='klinge'?8:0));
 const wp=k=>(P.weapon?wt(P.weapon)[k]||0:0)+(k==='bleed'||k==='stun'?gs(k):0);
 function heal(n){const b=P.hp;P.hp=Math.min(maxHp(),P.hp+n);return P.hp-b}
 const goldAmt=m=>Math.round((ri(3,7)+P.floor*1.5)*m*rm('gold',1)*(hasS('gier')?1.3:1)*(hasC('armut')?.85:1)*(1+(ul('gier')*15+P.bonus.gold+gs('gold'))/100));
@@ -471,7 +482,7 @@ const gBonus=()=>ul('gier')*15+P.bonus.gold+gs('gold');
 const luckV=(x=0)=>ul('glueck')+P.bonus.luck+rm('luck',0)+gs('luck')+x;
 const dropPct=(x=0)=>Math.min(100,Math.round((.22+luckV(x)*.02)*100));
 const rarePct=(x=0)=>Math.min(100,Math.round(20+luckV(x)*1.8));
-const potHeal=(x=0)=>Math.round(maxHp()*.4*(1+(P.bonus.potion+x)/100)*(hasS('schwer')?.8:1)*(hasC('bruch')?.7:1));
+const potHeal=(x=0)=>Math.round(maxHp()*.4*(1+(P.bonus.potion+x)/100)*(hasS('schwer')?.8:1)*(hasC('bruch')?.7:1)*(P.cls==='blut'?.7:1));
 const cdNow=(x=0)=>Math.max(1,CLS[P.cls].skill.cd-P.bonus.cdr-x+(hasS('wach')?1:0)+(hasC('unrast')?1:0));
 const PR=[{n:'Gewöhnlich',m:1},{n:'Selten',m:1.5},{n:'Episch',m:2},{n:'Legendär',m:3}];
 const rnd=v=>Math.max(1,Math.round(v));
@@ -493,7 +504,19 @@ const PERKS=[
 {id:'berserk',n:'Berserkerblut',minR:2,max:1,d:'Viel mehr Schaden, solange du unter 50 % LP bist',f:m=>P.bonus.berserk=rnd(20*m),pv:m=>`+${rnd(20*m)} % Schaden unter halben LP`,cur:()=>`+${P.bonus.berserk||0} % Schaden unter halben LP`},
 {id:'reflex',n:'Reflexe',minR:2,d:'Du weichst öfter aus',f:m=>P.bonus.dodge=(P.bonus.dodge||0)+rnd(5*m),pv:m=>`Ausweichen ${dodge()} % → ${dodge()+rnd(5*m)} %`,cur:()=>`Ausweichen jetzt ${dodge()} %`},
 {id:'twin',n:'Zwillingsklinge',minR:3,max:1,d:'Jeder normale Angriff trifft ein zweites Mal',f:m=>P.bonus.twin=50,pv:()=>'Zweiter Treffer mit 50 % Schaden',cur:()=>'Zweiter Treffer mit 50 % Schaden'},
-{id:'harvest',n:'Seelenernte',minR:3,max:1,d:'Jeder Sieg bringt zusätzliche Seelensplitter',f:m=>P.bonus.harvest=2,pv:()=>'+2 Seelensplitter pro Sieg',cur:()=>`+2 Seelensplitter pro Sieg`},
+{id:'k_erd',cls:'krieger',n:'Erdstoß',d:'Dein Schildschlag trifft härter',f:m=>P.bonus.kskill=(P.bonus.kskill||0)+rnd(30*m),pv:m=>`Schildschlag +${(P.bonus.kskill||0)} % → +${(P.bonus.kskill||0)+rnd(30*m)} %`,cur:()=>`Schildschlag +${P.bonus.kskill||0} %`},
+{id:'k_guard',cls:'krieger',n:'Standhaft',d:'Abwehren heilt dich',f:m=>P.bonus.kguard=(P.bonus.kguard||0)+rnd(4*m),pv:m=>`Heilung beim Abwehren ${(P.bonus.kguard||0)} % → ${(P.bonus.kguard||0)+rnd(4*m)} % der max. LP`,cur:()=>`Abwehren heilt ${P.bonus.kguard||0} % der max. LP`},
+{id:'k_counter',cls:'krieger',n:'Gegenschlag',minR:2,max:1,d:'Wirst du beim Abwehren getroffen, schlägst du sofort zurück',f:m=>P.bonus.kcounter=1,pv:()=>'Gegenschlag mit 60 % Schaden',cur:()=>'Gegenschlag beim Abwehren'},
+{id:'b_flow',cls:'klinge',n:'Fließende Klinge',d:'Rhythmus gibt mehr Krit pro Stufe',f:m=>P.bonus.brhy=(P.bonus.brhy||0)+(m>=2?2:1),pv:m=>`Rhythmus ${6+(P.bonus.brhy||0)} % → ${6+(P.bonus.brhy||0)+(m>=2?2:1)} % pro Stufe`,cur:()=>`Rhythmus ${6+(P.bonus.brhy||0)} % pro Stufe`},
+{id:'b_step',cls:'klinge',n:'Schattenschritt',d:'Mehr Ausweichen, und Ausweichen hält deinen Rhythmus',f:m=>{P.bonus.dodge=(P.bonus.dodge||0)+rnd(4*m);P.bonus.bstep=1},pv:m=>`Ausweichen ${dodge()} % → ${dodge()+rnd(4*m)} % · Ausweichen gibt +1 Rhythmus`,cur:()=>`Ausweichen ${dodge()} %`},
+{id:'b_cut',cls:'klinge',n:'Feine Schnitte',minR:2,max:1,d:'Kritische Treffer lassen den Gegner bluten',f:m=>P.bonus.bcut=1,pv:()=>'Jeder Krit verursacht Blutung',cur:()=>'Krits verursachen Blutung'},
+{id:'m_wall',cls:'magier',n:'Runenwall',d:'Dein Runenschild wird stärker',f:m=>P.bonus.mshield=(P.bonus.mshield||0)+rnd(10*m),pv:m=>`Runenschild ${20+(P.bonus.mshield||0)} % → ${20+(P.bonus.mshield||0)+rnd(10*m)} % der LP`,cur:()=>`Runenschild ${20+(P.bonus.mshield||0)} % der LP`},
+{id:'m_glut',cls:'magier',n:'Glutrunen',d:'Brennende Gegner nehmen mehr Schaden',f:m=>P.bonus.mburn=(P.bonus.mburn||0)+rnd(40*m),pv:m=>`Brandschaden +${P.bonus.mburn||0} % → +${(P.bonus.mburn||0)+rnd(40*m)} %`,cur:()=>`Brandschaden +${P.bonus.mburn||0} %`},
+{id:'m_echo',cls:'magier',n:'Runenecho',minR:2,max:1,d:'Runenfeuer hallt nach und trifft ein zweites Mal',f:m=>P.bonus.mecho=1,pv:()=>'Zweiter Treffer mit 50 % Schaden',cur:()=>'Runenfeuer trifft zweimal'},
+{id:'r_pakt',cls:'blut',n:'Tiefer Pakt',d:'Dein Blutpakt heilt mehr',f:m=>P.bonus.rpakt=(P.bonus.rpakt||0)+rnd(20*m),pv:m=>`Blutpakt heilt ${50+(P.bonus.rpakt||0)} % → ${50+(P.bonus.rpakt||0)+rnd(20*m)} % des Schadens`,cur:()=>`Blutpakt heilt ${50+(P.bonus.rpakt||0)} %`},
+{id:'r_durst',cls:'blut',n:'Rasender Durst',d:'Blutdurst macht noch mehr Schaden',f:m=>P.bonus.rdurst=(P.bonus.rdurst||0)+rnd(12*m),pv:m=>`Blutdurst +${25+(P.bonus.rdurst||0)} % → +${25+(P.bonus.rdurst||0)+rnd(12*m)} %`,cur:()=>`Blutdurst +${25+(P.bonus.rdurst||0)} %`},
+{id:'r_last',cls:'blut',n:'Todesverachtung',minR:2,max:1,d:'Einmal pro Kampf überlebst du einen tödlichen Schlag mit 1 LP',f:m=>P.bonus.rlast=1,pv:()=>'Einmal pro Kampf unsterblich',cur:()=>'Einmal pro Kampf unsterblich'},{id:'harvest',n:'Seelenernte',minR:3,max:1,
+d:'Jeder Sieg bringt zusätzliche Seelensplitter',f:m=>P.bonus.harvest=2,pv:()=>'+2 Seelensplitter pro Sieg',cur:()=>`+2 Seelensplitter pro Sieg`},
 ];
 const ROM=['','I','II','III','IV','V','VI','VII','VIII','IX','X'];
 const PK=id=>PERKS.find(p=>p.id===id);
@@ -515,12 +538,12 @@ const m=RAR[r].m*(.9+R()*.2);
 const sw=[['w',30],['a',22],['h',16],['g',16],['j',16]].filter(x=>!not.includes(x[0]));
 let slot=src&&R()<.7?pick(['w','a'].filter(x=>src[x]&&!not.includes(x)))||wpick(sw):wpick(sw);if(!slot)slot=wpick(sw);
 const type=slot==='w'?(src&&src.w?pick(src.w):pick(Object.keys(WT))):slot==='a'?(src&&src.a?pick(src.a):pick(Object.keys(AT))):pick(Object.keys(XT[slot]));
-const it=buildItem(slot,type,r,f,m);if(r>=1&&!P.tut&&R()<.07)curseItem(it);return it}
+const it=buildItem(slot,type,r,f,m);if(r>=1&&!P.tut&&R()<.07)curseItem(it);else if(r>=1&&!P.tut&&f>=4&&R()<.12){const sid=pick(Object.keys(SETS));it.set=sid;it.name+=' '+SETS[sid].t}return it}
 function forgeItem(slot,type,t,r){const it=buildItem(slot,type,r,t*10+8,RAR[r].m);const T=slot==='w'?WT[type]:slot==='a'?AT[type]:XT[slot][type];it.name=T.n+' aus '+MATS['m'+t].n;it.forged=true;it.src='Hild';it.aid='a'+Date.now().toString(36)+ri(0,999);return it}
 const iName=it=>`<span style="color:${RAR[it.r].c}">${it.name}</span>`;
 const XL={atk:'Angriff',def:'Verteidigung',hp:'LP',crit:'% Krit',dodge:'% Ausweichen',ls:'% Lebensraub',luck:'Glück',gold:'% Gold',skill:'% Fähigkeitsschaden',bleed:'% Blutung',stun:'% Betäubung'};
 const xStats=it=>Object.keys(XL).filter(k=>it[k]).map(k=>`+${it[k]} ${XL[k]}`).join(' · ')+' · '+XT[it.slot][it.type].d;
-const iStats=it=>(it.curse?`<span class="fx-curse">Fluch: ${CURSES[it.curse].n} – ${CURSES[it.curse].d}</span> · `:'')+(XT[it.slot]?xStats(it):(it.uq?`<b>${UNIQ[it.uq].d}</b> · `:'')+(it.slot==='w'?`+${it.atk} Angriff · ${wt(it).d}`+(it.crit?` · Bonus: +${it.crit} % Krit`:'')+(it.ls?` · Bonus: ${it.ls} % Lebensraub`:''):`+${it.def} Verteidigung · +${it.hp} LP · ${at_(it).d}`));
+const iStats=it=>(it.set&&SETS[it.set]?`<span class="fx-stun">Set ${SETS[it.set].n} (${setN(it.set)}/3 angelegt): 2 Teile ${SETS[it.set].d2} · 3 Teile ${SETS[it.set].d3}</span> · `:'')+(it.curse?`<span class="fx-curse">Fluch: ${CURSES[it.curse].n} – ${CURSES[it.curse].d}</span> · `:'')+(XT[it.slot]?xStats(it):(it.uq?`<b>${UNIQ[it.uq].d}</b> · `:'')+(it.slot==='w'?`+${it.atk} Angriff · ${wt(it).d}`+(it.crit?` · Bonus: +${it.crit} % Krit`:'')+(it.ls?` · Bonus: ${it.ls} % Lebensraub`:''):`+${it.def} Verteidigung · +${it.hp} LP · ${at_(it).d}`));
 const iValue=it=>Math.round((8+P.floor*2)*(it.r+1));
 const BAG=6;
 function equip(it){try{const sl=it.slot,ty=it.type;smp(sl==='w'?(SB.jc_equip?'wequip':'ring'):sl==='a'?(ty==='platte'||ty==='kette'?'chain':'cloth'):sl==='h'?'metal':sl==='j'?'beads':'cloth',.45)}catch(e){}const k0=SK[it.slot];if(P[k0]&&P[k0].curse&&P[k0]!==it){log(`Der Fluch lässt dich nicht los. ${P[k0].name} bleibt, wo es ist.`,'bad');return false}
@@ -550,7 +573,7 @@ Object.assign(e,{name,hp:Math.round(hp),maxHp:Math.round(hp),atk:Math.round(at),
 if(ov.name)e.maxHp=e.hp;return e}
 
 /* ---------- Kampf ---------- */
-function startCombat(type,ov){E=makeEnemy(type,ov);try{voice(E,0)}catch(e){}S.screen='combat';P.cd=0;P.defending=false;P.uBlock=hasU('aldric');P.hits=0;P.wach=hasS('wach');
+function startCombat(type,ov){E=makeEnemy(type,ov);try{voice(E,0)}catch(e){}S.screen='combat';P.cd=0;P.defending=false;P.uBlock=hasU('aldric');P.hits=0;P.wach=hasS('wach');P.rhy=0;P.bulw=false;P.rsh=P.cls==='magier'?Math.round(maxHp()*(.2+(P.bonus.mshield||0)/100)):0;P.rlastU=false;
 log(type==='boss'?`${E.name} versperrt das Tor!`:`${E.name} stellt sich dir in den Weg.`,type==='kampf'?'':'bad')}
 function dealDmg(mult,o={}){
 if(E.evade&&!hasS('stumm')&&R()<E.evade){log(`${E.name} weicht aus!`,'dim');return 0}
@@ -558,16 +581,17 @@ if(P.bonus.exec&&E.hp/E.maxHp<.3)mult*=1+P.bonus.exec/100;
 if(o.skill)mult*=1+((P.armor?at_(P.armor).skill||0:0)+gs('skill'))/100;
 if(P.frozen)mult*=.5;
 if(hasU('kaelen'))mult*=1+(1-P.hp/maxHp())*.6;
-mult*=1+bb(E.base);
+mult*=1+bb(E.base);if(P.weapon&&(CLS[P.cls].fav||[]).includes(P.weapon.type))mult*=1.1;if(P.bulw){mult*=1.4;P.bulw=false}if(P.cls==='blut'&&P.hp<maxHp()*.5)mult*=1.25+(P.bonus.rdurst||0)/100;
 if(P.bonus.berserk&&P.hp<maxHp()*.5)mult*=1+P.bonus.berserk/100;
 P.hits=(P.hits||0)+1;if(hasU('zaehlende')&&P.hits%5===0){mult*=3;log('Der fünfte Schnitt!','crit')}
 let b=atk()*mult*(.85+R()*.3);const c=R()*100<crit()+(o.cb||0);if(c)b*=2;
 const ed=o.pierce?0:E.def*(1-wp('pierce')/100);
+if(P.cls==='klinge')P.rhy=Math.min(5,(P.rhy||0)+1);
 let d=Math.max(1,Math.round(b-ed));if(E.shield){d=Math.max(1,Math.round(d*.25));log('Der Schild fängt den Großteil ab.','dim')}E.hp-=d;
 if(E.mirror){const r=Math.max(1,Math.round(d*.6));P.hp-=r;log(`Der Spiegel wirft ${r} Schaden zurück. −${r} LP`,'bad')}
 log(c?`Kritischer Treffer! ${d} Schaden.`:`Du triffst ${E.name}: ${d} Schaden.`,c?'crit':'');
 if(E.hp>0&&wp('bleed')&&R()*100<wp('bleed')){E.bleed=3;log(`${E.name} blutet.`,'crit')}
-if(E.hp>0&&c&&hasU('grimmzahn')){E.bleed=3;log(`${E.name} blutet.`,'crit')}
+if(E.hp>0&&c&&(hasU('grimmzahn')||P.bonus.bcut)){E.bleed=3;log(`${E.name} blutet.`,'crit')}
 if(E.hp>0&&hasU('ossa')&&R()<.25){E.burn=3;log(`${E.name} brennt.`,'crit')}
 if(E.hp>0&&hasU('ylva')&&R()<.25){E.chill=1;log(`${E.name} ist unterkühlt.`,'dim')}
 if(E.hp>0&&(wp('stun')+(hasU('schlacke')?20:0))&&R()*100<wp('stun')+(hasU('schlacke')?20:0)&&!E.stun){if(stunOk())E.stun=1,log(`Der Hieb haut ${E.name} aus den Latschen.`)}
@@ -575,15 +599,15 @@ const l=lsP();if(l>0){const h=heal(Math.ceil(d*l/100));if(h>0)log(`+${h} LP (Leb
 return d}
 function stunOk(){if(E&&E.type==='boss'&&R()<.3){log(`${E.name} schüttelt die Betäubung ab.`,'bad');return false}return true}
 function useSkill(){const c=P.cls;log(`» ${CLS[c].skill.name}`,'sys');
-if(c==='krieger'){dealDmg(1.25,{skill:1});if(E.hp>0&&stunOk()){E.stun=1;log(`${E.name} ist betäubt.`)}}
+if(c==='krieger'){dealDmg(1.25*(1+(P.bonus.kskill||0)/100),{skill:1});if(E.hp>0&&stunOk()){E.stun=1;log(`${E.name} ist betäubt.`)}}
 else if(c==='klinge'){for(let i=0;i<3&&E.hp>0;i++)dealDmg(.85,{skill:1,cb:25})}
-else if(c==='magier'){dealDmg(2.6,{pierce:1,skill:1});if(E.hp>0){E.burn=3;log(`${E.name} brennt.`,'crit')}}
-else if(c==='blut'){const d=dealDmg(2,{skill:1});const h=heal(Math.round(d*.5));if(h)log(`+${h} LP`,'good')}
+else if(c==='magier'){dealDmg(2.6,{pierce:1,skill:1});if(E.hp>0&&P.bonus.mecho){log('Runenecho!','crit');dealDmg(1.3,{pierce:1,skill:1})}if(E.hp>0){E.burn=3;log(`${E.name} brennt.`,'crit')}}
+else if(c==='blut'){const d=dealDmg(2,{skill:1});const h=heal(Math.round(d*(.5+(P.bonus.rpakt||0)/100)));if(h)log(`+${h} LP`,'good')}
 if(hasU('weinende')&&E.hp>0){E.pdot=3;log(`${E.name} ist vergiftet.`,'dim')}
 P.cd=cdNow()+1}
-function drink(){P.potions--;try{if(smp('drink',.5))smp('bubble',.4,1,.3)}catch(e){}const h=heal(Math.round(maxHp()*.4*(1+P.bonus.potion/100)));log(`Du trinkst einen Heiltrank. +${h} LP`,'good')}
+function drink(){P.potions--;try{if(smp('drink',.5))smp('bubble',.4,1,.3)}catch(e){}const h=heal(potHeal());log(`Du trinkst einen Heiltrank. +${h} LP`,'good')}
 function enemyTurn(){
-if(E.burn>0){const d=Math.max(1,Math.round(atk()*.4));E.hp-=d;E.burn--;log(`${E.name} brennt: ${d} Schaden.`,'crit');if(E.hp<=0)return}
+if(E.burn>0){const d=Math.max(1,Math.round(atk()*.4*(1+(P.bonus.mburn||0)/100)));E.hp-=d;E.burn--;log(`${E.name} brennt: ${d} Schaden.`,'crit');if(E.hp<=0)return}
 if(E.pdot>0){const d=Math.max(1,Math.round(E.maxHp*.05));E.hp-=d;E.pdot--;log(`${E.name} leidet unter Gift: ${d} Schaden.`,'dim');if(E.hp<=0)return}
 if(E.bleed>0){const d=Math.max(1,Math.round(atk()*.3));E.hp-=d;E.bleed--;log(`${E.name} blutet: ${d} Schaden.`,'crit');if(E.hp<=0)return}
 if(E.regen&&E.hp<E.maxHp){const h=Math.round(E.maxHp*E.regen);E.hp=Math.min(E.maxHp,E.hp+h);log(`${E.name} regeneriert ${h} LP.`,'dim')}
@@ -595,10 +619,10 @@ const heavy=E.mechs?mech==='heavy':E.heavyEvery&&E.turn%E.heavyEvery===0,hits=E.
 for(let i=0;i<hits;i++){
 if(P.comp&&R()<.3){const d=Math.max(1,Math.round(E.atk*(heavy?1.6:1)*(.85+R()*.3)-2));P.comp.hp-=d;log(`${E.name} trifft ${P.comp.n}. −${d} LP`,'dim');if(P.comp.hp<=0){log(`${P.comp.n} geht zu Boden und rührt sich nicht mehr.`,'bad');P.comp=null}continue}
 if(P.uBlock){P.uBlock=false;log('Aldrics Wachpanzer fängt den ersten Schlag ab.','good');continue}
-if(dodge()&&R()*100<dodge()){log('Du weichst aus!','good');if(hasU('weissfell')&&E.hp>0){const d=Math.max(1,Math.round(atk()*.5-E.def));E.hp-=d;log(`Gegenangriff: ${d} Schaden.`,'good')}continue}
+if(dodge()&&R()*100<dodge()){log('Du weichst aus!','good');if(P.bonus.bstep&&P.cls==='klinge')P.rhy=Math.min(5,(P.rhy||0)+1);if(hasU('weissfell')&&E.hp>0){const d=Math.max(1,Math.round(atk()*.5-E.def));E.hp-=d;log(`Gegenangriff: ${d} Schaden.`,'good')}continue}
 let d=E.atk*(heavy?2.2:hits>1?.65:1)*(E.chill?.6:1)*(hasC('zorn')?1.15:1)*(P.wach?.5:1)*(.85+R()*.3)-def();if(P.wach){P.wach=false}
-if(P.defending)d*=heavy?.25:.4;
-d=Math.max(1,Math.round(d));P.hp-=d;
+if(P.defending)d*=P.cls==='krieger'?(heavy?.2:.3):(heavy?.25:.4);
+d=Math.max(1,Math.round(d));if(P.rsh>0){const a=Math.min(P.rsh,d);P.rsh-=a;d-=a;log(a>=d+a?`Der Runenschild fängt den Schlag ab.`:`Der Runenschild fängt ${a} ab.`,'dim');if(P.rsh<=0)log('Der Runenschild zerbricht.','dim')}if(d>0&&P.rhy){P.rhy=0}if(P.bonus.rlast&&!P.rlastU&&P.hp-d<=0&&P.hp>1){P.rlastU=true;d=P.hp-1;log('Todesverachtung! Du bleibst stehen.','crit')}P.hp-=d;if(P.defending&&P.bonus.kcounter&&E.hp>0){const c2=Math.max(1,Math.round(atk()*.6-E.def));E.hp-=c2;log(`Gegenschlag: ${c2} Schaden.`,'good');if(E.hp<=0)return}
 log(heavy?`${E.name} entfesselt einen gewaltigen Schlag! −${d} LP`:`${E.name} trifft dich${hits>1?(i?' noch mal':' blitzschnell'):''}. −${d} LP`,'bad');
 if(P.bonus.thorns){const t=Math.max(1,Math.round(d*P.bonus.thorns/100));E.hp-=t;log(`Dornen: ${t} Schaden zurück.`)}
 if(E.ls){E.hp=Math.min(E.maxHp,E.hp+Math.round(d*E.ls))}
@@ -616,9 +640,9 @@ if(P.tut){P.hp=maxHp();log('Varga packt dich am Kragen und zieht dich raus. „N
 if(P.revive){P.revive=false;P.hp=Math.round(maxHp()*(P.revivePct||40)/100);sys('Du kommst noch mal hoch. Der zweite Atem hat dich gerettet.');return false}
 log('Alles wird schwarz. Dann zieht etwas an deiner Hand, und der Stein holt dich zurück.','bad');endRun(false);return true}
 function act(kind){P.defending=false;
-if(kind==='atk'){dealDmg(1);if(E.hp>0&&P.bonus.twin){dealDmg(P.bonus.twin/100)}if(E.hp>0&&wp('dbl')&&R()*100<wp('dbl')){log('Zweiter Hieb!','crit');dealDmg(.7)}}
+if(kind==='atk'){if(P.cls==='magier'&&P.cd>1)P.cd--;dealDmg(1);if(E.hp>0&&P.bonus.twin){dealDmg(P.bonus.twin/100)}if(E.hp>0&&wp('dbl')&&R()*100<wp('dbl')){log('Zweiter Hieb!','crit');dealDmg(.7)}}
 else if(kind==='skill')useSkill();
-else if(kind==='def'){P.defending=true;log('Du gehst in Deckung.')}
+else if(kind==='def'){P.defending=true;if(P.cls==='krieger')P.bulw=true;if(P.bonus.kguard){const h=heal(Math.round(maxHp()*P.bonus.kguard/100));if(h)log(`Standhaft: +${h} LP`,'good')}log('Du gehst in Deckung.')}
 else if(kind==='potion')drink();
 else if(kind==='flee'){if(R()<.55){log('Du entkommst durch einen Seitengang.');E=null;goDoors();return}log('Flucht misslungen!','bad')}
 P.frozen=0;if(P.hp<=0&&checkDeath())return;
@@ -685,12 +709,13 @@ function advance(){sfx('step');enterDoor({t:null})}
 function enterDoor(d){S.fireOpen=false;const prev=areaOf(P.floor);P.floor++;const a=areaOf(P.floor);
 if(!P.tut&&P.floor>1&&a!==prev){S.screen='acard';S.acard={t:d.t||null};try{if(!smp('stone',.55,.8))sfx('door')}catch(e){}return}
 roomGo(d)}
-function roomGo(d){const prev=areaOf(P.floor-1),a=areaOf(P.floor);
+function roomGo(d){const prev=areaOf(P.floor-1),a=areaOf(P.floor);if(P.daily)seedRng(P.daily+'#'+P.floor+'#'+(d.t||''));else _rng=Math.random;
 let t=d.t||rollRoom();
 if(P.tut){if(t==='kampf'||t==='boss')return startCombat(t,TUT_EN[P.floor]);if(t==='tresorTuer')return roomTresorTuer()}
 else{if(P.comp){P.comp.left--;if(P.comp.left<=0){const c=P.comp;P.comp=null;if(c.traitor){const g=Math.floor(P.gold*.4);P.gold-=g;log(`${c.n} ist weg, und ${g} Gold aus deinem Beutel auch. „Gefangen“ war wohl gelogen.`,'bad')}else{const g=goldAmt(1.5);P.gold+=g;log(`${c.n} bleibt an einer Abzweigung stehen. „Hier trennen sich unsere Wege. Danke.“ Zum Abschied: ${g} Gold.`,'goldt')}}}
 wallMsg(P.floor);
 if(a!==prev||P.floor===1){log(`— ${a.name} —`,'sys');log(a.intro,'dim');unlock('a'+AREAS.indexOf(a))}if(P.floor>meta.best){meta.best=P.floor;saveMeta()}
+if(P.daily){const D=daily();if(P.daily===D.k){if(!meta.dayBest||meta.dayBest.k!==D.k||meta.dayBest.f<P.floor){meta.dayBest={k:D.k,f:P.floor,c:P.cls};saveMeta()}if(meta.dayDone!==D.k&&P.floor>=D.goal){meta.dayDone=D.k;meta.essence+=D.reward;saveMeta();sys(`Riss des Tages: Etage ${D.goal} erreicht! +${D.reward} ✧`)}}}
 if(P.weekly){const W=weekly();if(P.weekly===W.k&&meta.weekDone!==W.k&&P.floor>=W.goal){meta.weekDone=W.k;meta.essence+=W.reward;meta.weeks=(meta.weeks||0)+1;saveMeta();sys(`Tiefe der Woche geschafft! +${W.reward} ✧`)}}}
 ({shade:()=>{const sh=P.shadeNow;P.shadeNow=null;room(`Eine Gestalt aus Schatten steht im Gang. Sie trägt ${esc(sh.cls)}-Kluft, und auf ihrer Hand glänzt eine schwarze Narbe. Der Schatten von ${esc(sh.nm)}, gefallen auf Etage ${sh.floor}.`,()=>[{l:'Kämpfen',sub:'Besiegst du ihn, birgst du seine Ausrüstung',fn:()=>{startCombat('elite',{name:'Schatten von '+esc(sh.nm),base:'Schatten',shade:sh.id,ess:6});E.shadeItem=sh.item}},{l:'Vorbeischleichen',fn:next}],'x')},bquest:roomBquest,vquest:()=>{const V=VQ[meta.vq-1];room(V.find,()=>[{l:`${V.item} mitnehmen`,fn:()=>{P.vqFound=true;log(`${V.item} ist seelengebunden wie die Splitter. Es kommt mit zurück, auch wenn du stirbst.`,'sys');next()}}],'vquest')},tresorTuer:roomTresorTuer,tresor:roomTresor,kampf:()=>{const ec=P.floor>=3?Math.min(.28,.12+P.floor*.005)*rm('elite',1):0;if(R()<ec){const ai=AREAS.indexOf(a),pool=BOUNTIES.filter(b=>b.area===ai),open=pool.filter(b=>!meta.bounty.includes(b.id));
  const pool2=pool.filter(b=>b.id!=='kaelen'||meta.vq>=3);pool.length=0;pool.push(...pool2);const open2=open.filter(b=>b.id!=='kaelen'||meta.vq>=3);open.length=0;open.push(...open2);
@@ -779,19 +804,19 @@ const EVENTS=[
 ];
 
 function rollPR(){const L=luckV()*.4,x=R()*100;return x<2+L*.3?3:x<9+L?2:x<28+L*1.5?1:0}
-function showPerks(title){const ch=[];for(let i=0;i<3+ul('wahl');i++){let r=rollPR();const pool=PERKS.filter(p=>(!p.max||pCount(p.id)<p.max)&&(!p.minR||p.minR<=r)&&!ch.some(c=>c.id===p.id));if(!pool.length)break;
- const ex=pool.filter(p=>p.minR),p=ex.length&&R()<.5?pick(ex):pick(pool);ch.push({id:p.id,r:Math.max(r,p.minR||0)})}
+function showPerks(title){const ch=[];for(let i=0;i<3+ul('wahl');i++){let r=rollPR();const pool=PERKS.filter(p=>(!p.cls||p.cls===P.cls)&&(!p.max||pCount(p.id)<p.max)&&(!p.minR||p.minR<=r)&&!ch.some(c=>c.id===p.id));if(!pool.length)break;
+ const own=pool.filter(p=>p.cls),ex=pool.filter(p=>p.minR),p=own.length&&R()<.3?pick(own):ex.length&&R()<.5?pick(ex):pick(pool);ch.push({id:p.id,r:Math.max(r,p.minR||0)})}
 S.screen='perks';S.ptitle=title;S.choices=ch}
 function showLoot(it){S.screen='loot';S.item=it;if(!(!it.src&&smp('chest',.5)))sfx(it.src&&it.src!=='Hild'?'rustle':'creak');if(it.r===3&&!P.tut){meta.legend++;saveMeta()}}
 function showGate(){S.screen='gate';try{if(!smp('stone',.75,.95,.4))sfx('door')}catch(e){}}
 
 function startRun(id){newRun(id);S.queue=[];logs=[];
-P.mod=R()<.35?'ruhig':pick(Object.keys(RMODS).filter(k=>k!=='ruhig'));if(S.weekly){const W=weekly();P.mod=W.mod;P.weekly=W.k;log(`Tiefe der Woche: ${RMODS[W.mod].n}. Ziel: Etage ${W.goal}.`,'sys')}
+_rng=Math.random;P.mod='ruhig';if(S.chal==='week'){const W=weekly();P.mod=W.mod;P.weekly=W.k;log(`Herausforderung · Tiefe der Woche: ${RMODS[W.mod].n} (${RMODS[W.mod].d}). Ziel: Etage ${W.goal}.`,'sys')}else if(S.chal==='day'){const D=daily();P.mod=D.mod;P.daily=D.k;log(`Herausforderung · Riss des Tages: ${RMODS[D.mod].n} (${RMODS[D.mod].d}). Heute sind die Etagen für alle gleich.`,'sys')}S.chal=null;
 const pk=meta.pack||{},got=[];if(pk.pot){P.potions+=pk.pot;got.push(pk.pot+' Heiltrank')}if(pk.fire){P.kindling+=pk.fire;got.push(pk.fire+' Zunder')}if(pk.key){P.keys+=pk.key;got.push('1 Schlüssel')}if(pk.bell){P.bells+=pk.bell;got.push('1 Händlerglocke')}
 if(pk.weapon){P.floor=2;const w=genItem(0,1,{w:Object.keys(WT)},['a','h','g','j']);P.floor=0;P.weapon=w;got.push(w.name)}
 const tk=(meta.take||[]).map(a=>meta.armory.find(i=>i.aid===a)).filter(Boolean);for(const it of tk){const k=SK[it.slot];if(P[k]&&P.bag.length<BAG)P.bag.push(P[k]);P[k]=it;got.push(it.name);meta.armory=meta.armory.filter(i=>i!==it)}if(tk.length){meta.take=[];P.hp=maxHp()}
 if(got.length){meta.pack={};saveMeta();log('Brenn hat dir ein Paket geschnürt: '+got.join(', ')+'.','goldt')}
-if(P.mod!=='ruhig')log(`Der Riss ist heute anders. ${RMODS[P.mod].n}: ${RMODS[P.mod].d}.`,'sys');
+
 if(S.trial&&RANG[(meta.rank||0)+1]){P.trial=(meta.rank||0)+1;log(`Rangprüfung zum ${RANG[P.trial].n}: Auf Etage ${RANG[P.trial].f} wartet ${TRIALB[P.trial-1]} als Prüfer des Ordens. Er ist stärker als sonst.`,'sys')}S.trial=false;
 if((meta.rank||0)>=1){const id=pick(Object.keys(CON)),n=CON[id].n();P.contract={id,n,r:CON[id].r(n)};log(`Ordensauftrag von Varga: ${CON[id].t(n)}. Belohnung ${P.contract.r} ✧.`,'sys')}
 if(S.jump&&(meta.rank||0)>=4){S.jump=false;P.jumped=1;P.floor=10;P.weapon=genItem(0,1,{w:Object.keys(WT)},['a','h','g','j']);P.armor=genItem(0,1,{a:Object.keys(AT)},['w','h','g','j']);while(P.lvl<7)gainXp(P.xpNext-P.xp);P.hp=maxHp();S.queue=S.queue.filter(q=>q.k!=='perks');for(let i=0;i<3;i++)S.queue.push({k:'perks',t:'Ankersprung – Fähigkeit '+(i+1)+' von 3'});log('Du springst. Die Seile fliegen an dir vorbei, dann schlägst du hart auf. Etage 10. Du lebst.','sys')}
@@ -887,7 +912,7 @@ function smpLoad(){if(smpLoading||!AU.ctx)return;smpLoading=true;const all=[...n
 function smp(g,vol=.6,rate=1,when=0,bus){if(!AU.ctx||!AU.on||!AU.fx)return false;const ok=(SMG[g]||[]).filter(n=>SB[n]);if(!ok.length)return false;const c=AU.ctx,t=c.currentTime+when,s=c.createBufferSource(),gn=c.createGain();s.buffer=SB[pick(ok)];s.playbackRate.value=bus?1:rate*(.95+R()*.1);gn.gain.value=vol;s.connect(gn);gn.connect(bus||AU.fx);s.start(t);return true}
 const VOX={g15:['beast',1.45],g16:['beast',1.3],g18:['giant',.75],g22:['shade',1.05],g23:['shade',.8],g24:['shade',.6],g25:['shade',.55],g1:['beast',1.35],g2:['shade',.75],g3:['beast',.95],g4:['shade',1.1],g5:['beast',.85],g6:['giant',.85],g7:['shade',1],g8:['bite',1.2],g9:['slime',1],g10:['giant',.7],g11:['slime',.75],g12:['ogre',.8],b1:['ogre',1],b2:['shade',.65],b3:['giant',.75],b4:['giant',.9],b5:['shade',.55],t1:['ogre',.9],t2:['shade',.85],t3:['beast',.7],t5:['shade',.7],k1:['bite',.8],k2:['slime',.6],k3:['shade',.8],k4:['shade',1.2],k6:['giant',.7],k7:['wolf',.9],k9:['shade',.5]};
 function voxOf(e){if(!e)return null;if(e.base==='Riesenratte')return['bite',.9];if(/hund|wolf/i.test(e.base||''))return['wolf',(e.base==='Knochenhund'?1.1:.95)];if(e.base==='Feuerimp')return['beast',1.5];let k='';try{k=foeKey(e)}catch(x){}return VOX[k]||null}
-function voice(e,mode=0){const v=voxOf(e);if(!v)return;AU.lastVox=v;const big=e.type==='boss'||e.type==='elite'||e.bounty;smp(v[0],big?.75:.55,v[1]*(mode===2?.85:1)*(big&&mode!==2?.92:1),mode===0?.25:0)}
+function voice(e,mode=0){const v=voxOf(e);if(!v)return;AU.lastVox=v;const big=e.type==='boss'||e.type==='elite'||e.bounty;smp(v[0],(big?.75:.55)*(v[0]==='ogre'?.5:1),v[1]*(mode===2?.85:1)*(big&&mode!==2?.92:1),mode===0?.25:0)}
 function weaponSfx(crit){if(!AU.ctx||!AU.on)return;const n=Date.now();if(AU.last.w&&n-AU.last.w<70)return;AU.last.w=n;
 {const ty=P&&P.weapon?(P.weapon.type||'schwert'):'none',rt=ty==='hammer'||ty==='axt'?.78:ty==='dolch'?1.25:ty==='saebel'?1.1:1;if(smp('swing',.5,rt)){try{if(ty==='hammer'||ty==='axt'||ty==='none')thud(62,.22,.22,.1);if(crit){smp('clash',.42,ty==='hammer'?.8:1,.1);thud(62,.32,.3,.14)}}catch(e){}return}}
 const ty=P&&P.weapon?(P.weapon.type||'schwert'):'none';try{(WSND[ty]||WSND.schwert)();if(crit){const d=ty==='hammer'||ty==='axt'?.24:.18;thud(62,.32,.34,d);nz(.14,650,.7,.2,d,'lowpass');if(['schwert','saebel','sense','dolch','speer'].includes(ty))ring(1900+Math.random()*600,.35,.05,d-.02)}}catch(e){}}
@@ -962,7 +987,7 @@ function isFinal(){try{return !!(E&&E.type==='boss'&&foeKey(E)==='b5')}catch(e){
 function isBigBoss(){try{return !!(E&&E.type==='boss'&&/^b/.test(foeKey(E)))}catch(e){return false}}
 function sadStory(){return S.screen==='story'&&S.story&&/^(vq|bq|narbe)/.test(S.story.id)}
 function ambLayers(){const k=AU.ambKey,dead=S.screen==='end';
-if(/^a\d$/.test(k)&&!AU.drum&&!dead&&S.screen!=='story'){const n=AU.ctx.currentTime;if(!AU.farNext)AU.farNext=n+15+R()*25;if(n>=AU.farNext){AU.farNext=n+35+R()*55;const ok=SMG.far.filter(x=>SB[x]);if(ok.length){const c=AU.ctx,t=n+.05,src=c.createBufferSource(),g=c.createGain(),pn=c.createStereoPanner?c.createStereoPanner():null;src.buffer=SB[pick(ok)];src.playbackRate.value=(k==='a4'?.62:k==='a3'?.75:.8)+R()*.2;g.gain.value=(.1+R()*.07)*(k==='a4'?1.25:1);src.connect(g);if(pn){pn.pan.value=(R()<.5?-1:1)*(.35+R()*.55);g.connect(pn);pn.connect(AU.fx)}else g.connect(AU.fx);src.start(t)}}}else if(AU.drum)AU.farNext=0;const D=AMB2.drops;if(k==='a0'&&!dead){const L=trkLoad('drops','sfx/jc_drops.mp3');if(!L.node&&L.buf){trkStart(L,AU.drum?.25:.5,true,3);if(L.node){L.node.g.disconnect();L.node.g.connect(AU.fx)}}}else if(D&&D.node)trkStop(D,2);
+if(/^a\d$/.test(k)&&!AU.drum&&!dead&&S.screen!=='story'){const n=AU.ctx.currentTime;if(!AU.farNext)AU.farNext=n+15+R()*25;if(n>=AU.farNext){AU.farNext=n+35+R()*55;const ok=SMG.far.filter(x=>SB[x]);if(ok.length){const c=AU.ctx,t=n+.05,src=c.createBufferSource(),g=c.createGain(),pn=c.createStereoPanner?c.createStereoPanner():null;src.buffer=SB[pick(ok)];src.playbackRate.value=(k==='a4'?.62:k==='a3'?.75:.8)+R()*.2;g.gain.value=(.1+R()*.07)*(k==='a4'?1.25:1);src.connect(g);if(pn){pn.pan.value=(R()<.5?-1:1)*(.35+R()*.55);g.connect(pn);pn.connect(AU.fx)}else g.connect(AU.fx);src.start(t)}}}else if(AU.drum)AU.farNext=0;const D=AMB2.drops,bossF=S.screen==='combat'&&E&&(E.type==='boss'||E.bounty);if(k==='a0'&&!dead&&!bossF){const L=trkLoad('drops','sfx/jc_drops.mp3');if(!L.node&&L.buf){trkStart(L,AU.drum?.25:.5,true,3);if(L.node){L.node.g.disconnect();L.node.g.connect(AU.fx)}}}else if(D&&D.node)trkStop(D,2);
 if(['a0','a1','a2'].includes(k)&&!AU.drum&&!dead){const n=AU.ctx.currentTime;if(!AU.crNext)AU.crNext=n+25+R()*30;if(n>=AU.crNext){AU.crNext=n+40+R()*60;const C=trkLoad('creaks','sfx/jc_creaks.mp3');if(C.buf){const c=AU.ctx,t=n+.05,s=c.createBufferSource(),g=c.createGain(),d=3+R()*2.5,o=R()*(C.buf.duration-d);s.buffer=C.buf;s.playbackRate.value=k==='a1'?.85:.95+R()*.1;g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(.22,t+.6);g.gain.setValueAtTime(.22,t+d-.8);g.gain.exponentialRampToValueAtTime(.0001,t+d);s.connect(g);g.connect(AU.fx);s.start(t,o,d+.1)}}}else AU.crNext=0}
 function areaMusTick(){try{ambLayers()}catch(e){}const RT=AMB2.rite;if(S.screen==='rite'){const L=trkLoad('rite','mus/rite.mp3');if(!L.node&&!L.played&&L.buf){trkStart(L,.42,false,.3);L.played=true}}else if(RT){RT.played=false;if(RT.node)trkStop(RT,1.5)}const sd=sadStory()||S.screen==='rite',ST=AMB2.story;if(sadStory()){const L=trkLoad('story','mus/story.mp3');trkStart(L,.3,true,2)}else if(ST&&ST.node)trkStop(ST,2.5);if(AMB2.boss2&&AMB2.boss2.node&&!(AU.drum==='boss'&&isBigBoss()&&!isFinal()))trkStop(AMB2.boss2,1.5);if(AMB2.final&&AMB2.final.node&&!(AU.drum==='boss'&&isFinal()))trkStop(AMB2.final,2);const k=AU.ambKey,dead=S.screen==='end'&&S.end&&!S.end.retreat;
  for(const a in AMUSF){const T=AMB2[a];const want=k===a&&!AU.drum&&!dead&&!sd;if(want){const L=trkLoad(a,AMUSF[a].u);trkStart(L,AMUSF[a].v,true,2,AMUSF[a].ls,AMUSF[a].le)}else if(T&&T.node)trkStop(T,2)}
@@ -1091,7 +1116,7 @@ function pickShade(f){if(!NET.shades.length||f%5===0||R()>.18)return null;P.shad
  return{id:x.id,nm:x.uid===NET.uid?'dir selbst':(NET.names[x.uid]||'einem Ankerträger'),cls:CLS[x.cls]?CLS[x.cls].name:'Ankerträger',floor:x.floor,item:safeItem(x.item)}}
 function claimShade(id){const x=NET.shades.find(s=>s.id===id);if(x)x.claimed=true;if(!NET.db)return;try{NET.db.doc('shades/'+id).update({claimed:true,by:NET.uid||''}).catch(()=>{})}catch(e){}}
 function writeShade(){if(!NET.db||P.tut)return;const it=P.weapon||P.armor;try{NET.db.collection('shades').add({uid:NET.uid||'',floor:P.floor,cls:P.cls,lvl:P.lvl,item:it?JSON.parse(JSON.stringify(it)):null,claimed:false,ts:Date.now()}).catch(()=>{})}catch(e){}}
-function writeBoard(f){if(!NET.db||!NET.uid||P.tut)return;try{NET.db.doc('board/'+NET.uid).set({uid:NET.uid,best:Math.max(meta.best,f),runs:meta.runs+1,bounties:meta.bounty.length,ts:Date.now()}).catch(()=>{})}catch(e){}}
+function writeBoard(f){if(!NET.db||!NET.uid||P.tut)return;try{NET.db.doc('board/'+NET.uid).set({uid:NET.uid,best:Math.max(meta.best,f),runs:meta.runs+1,bounties:meta.bounty.length,day:meta.dayBest||null,ts:Date.now()}).catch(()=>{})}catch(e){}}
 async function loadGuild(){S.guild=null;if(!NET.db){S.guild=[];return}try{const q=await NET.db.collection('board').orderBy('best','desc').limit(25).get();const rows=q.docs.map(d=>d.data()).filter(x=>x&&typeof x.best==='number');await resolveNames(rows.map(r=>r.uid));S.guild=rows}catch(e){S.guild=[]}if(S.screen==='guild')render()}
 function forgeDo(t,r){try{for(let i=0;i<3;i++)smp('hammer',.5*(i===2?1.15:1),.92+R()*.12,i*.55);smp('ring',.25,1,1.15)}catch(e){}const c=60*(t+1)*(r===3?4:r===2?2:1);meta.mats['m'+t]-=r===3?8:4;if(r>=2)meta.mats.kern-=r===3?2:1;meta.gold-=c;const it=forgeItem(S.fSlot,S.fType,t,r);it.tier=t;meta.armory.push(it);saveMeta();sys(`Hild hat ${it.name} geschmiedet. Es liegt in der Waffenkammer.`);S.fSlot=null;S.fType=null}
 /* ---------- Darstellung ---------- */
@@ -1124,7 +1149,7 @@ else if(id==='fire')h=`<b>Zunder</b> – damit zündest du im Gang ein Lagerfeue
 else if(id==='bell')h=`<b>Händlerglocke</b> – läutest du im Gang, kommt ein Händler zu dir. Praktisch in der Tiefe, wo es kaum Händler gibt.`;
 else if(id==='comp'&&P.comp)h=`<b>${esc(P.comp.n)}</b> – kämpft an deiner Seite und trifft nach dir für etwa ${P.comp.atk} Schaden. Gegner greifen manchmal ${esc(P.comp.n)} statt dich an. Bleibt noch etwa ${P.comp.left} Etagen.`;
 else if(id==='mat')h=`<b>Material</b> für Hilds Schmiede:<br>`+Object.keys(P.mats||{}).map(k=>`${P.mats[k]}× ${MATS[k].n} – ${MATS[k].soul?'seelengebunden, kommt immer mit':'kommt nur über einen Korb nach oben'}`).join('<br>');
-else if(id==='mod'){const m=RMODS[P.mod];h=`<b>${m.n}</b> – ${m.d}. Gilt für diesen ganzen Run.`}
+else if(id==='mod'){const m=RMODS[P.mod];h=`<b>${m.n}</b> – ${m.d}. Gilt für diesen ganzen Abstieg, weil du ${P.daily?'den Riss des Tages':'die Tiefe der Woche'} gewählt hast.`}
 return h?`<div class="pinfo small">${fxc(h)}</div>`:''}
 const ck=(k,html)=>`<span class="ck${S.info===k?' on':''}" data-i="${k}">${html}</span>`;
 function statsHTML(){if(!P||['hub','end'].includes(S.screen))return (meta.runs?`<div class="srow"><span>${(meta.bosses||meta.rank)?`Ordensrang: ${rankBadge()}`:`Tiefste Etage ${meta.best}`}</span><span class="r">${(meta.bosses||meta.rank)?`Tiefste Etage ${meta.best} · `:''}Runs ${meta.runs}</span></div>`:'')+`<div class="srow small"><span class="c-ess t2">${meta.essence} ✧ Seelensplitter</span>${meta.runs?`<span class="r">${meta.kills} Gegner · ${meta.bosses} Torwächter</span>`:''}</div>${(meta.scars||[]).length?`<div class="chips small">${meta.scars.map(id=>`<span class="chip${S.info==='n:'+id?' on':''}" data-i="n:${id}" style="color:#c9b8ff">◈ ${SCARS[id].n}</span>`).join('')}</div>${infoHTML(S.info)}`:''}`;
@@ -1134,7 +1159,7 @@ return `<div class="srow"><span><b>${CLS[P.cls].name}</b> · Stufe ${P.lvl}</spa
 <div class="srow small">${ck('s:atk',`<span class="c-atk">⚔ ${atk()}</span>`)} · ${ck('s:def',`<span class="c-def">⛨ ${def()}</span>`)} · ${ck('s:crit',`<span class="fx-crit">✦ ${crit()} %</span>`)}${dodge()?` · ${ck('s:dodge',`<span class="fx-dodge">↷ ${dodge()} %</span>`)}`:''} · ${ck('s:gold',`<span class="c-gold">${P.gold} Gold</span>`)} · ${ck('s:ess',`<span class="c-ess">${P.ess} ✧</span>`)}</div>
 <div class="srow small">${ck('s:pot',`<span class="c-pot">${P.potions} Tränke</span>`)} · ${ck('s:key',`<span class="c-key">${P.keys||0} Schlüssel</span>`)} · ${ck('s:fire',`<span class="c-fire">${P.kindling||0} Zunder</span>`)}${P.bells?` · ${ck('s:bell',`<span class="c-key">${P.bells} Glocke</span>`)}`:''}</div>
 ${P.comp?`<div class="srow small">${ck('s:comp',`Begleiter: <b>${esc(P.comp.n)}</b> ${Math.max(0,P.comp.hp)}/${P.comp.max} LP`)}</div>`:''}${Object.keys(P.mats||{}).length?`<div class="srow small">${ck('s:mat',`<span class="mat">Material: ${Object.values(P.mats).reduce((a,b)=>a+b,0)}</span>`)}</div>`:''}
-${P.mod&&P.mod!=='ruhig'&&RMODS[P.mod]?`<div class="srow small dim">Riss heute: ${ck('s:mod',`<b>${RMODS[P.mod].n}</b>`)}</div>`:''}
+${P.mod&&P.mod!=='ruhig'&&RMODS[P.mod]?`<div class="srow small dim">${P.daily?'Riss des Tages':P.weekly?'Tiefe der Woche':'Besonderheit'}: ${ck('s:mod',`<b>${RMODS[P.mod].n}</b>`)}</div>`:''}
 <div class="chips small">${['weapon','armor','helm','gloves','jewel'].map(k=>P[k]?`<span class="chip${S.info==='e:'+k?' on':''}" data-i="e:${k}" style="color:${RAR[P[k].r].c}">${P[k].name}</span>`:'').join('')}${!P.weapon&&!P.armor&&!P.helm&&!P.gloves&&!P.jewel?'<span class="dim">Keine Ausrüstung</span>':''}</div>
 ${P.perks.length?`<div class="chips small">${[...new Set(P.perks)].map(id=>`<span class="chip${S.info==='p:'+id?' on':''}" data-i="p:${id}" style="${(P.perkR||{})[id]?'color:'+RAR[P.perkR[id]].c:''}">${pName(PK(id),pCount(id))}</span>`).join('')}</div>`:''}
 ${(meta.scars||[]).length?`<div class="chips small">${meta.scars.map(id=>`<span class="chip${S.info==='n:'+id?' on':''}" data-i="n:${id}" style="color:#c9b8ff">◈ ${SCARS[id].n}</span>`).join('')}</div>`:''}
@@ -1169,8 +1194,8 @@ if(S.armSel){const it=meta.armory.find(i=>i.aid===S.armSel);if(it){const on=meta
  btn(g,on?'Doch nicht mitnehmen':'Mitnehmen',()=>{if(on)meta.take=meta.take.filter(a=>a!==it.aid);else{meta.take=meta.take.filter(a=>{const o=meta.armory.find(i=>i.aid===a);return o&&o.slot!==it.slot});meta.take.push(it.aid)}saveMeta()},{sub:on?'':'Wird beim nächsten Abstieg angelegt. Stirbst du oder kletterst du hoch, ist es weg.'});
  btn(g,'Einschmelzen',()=>{meta.armory=meta.armory.filter(i=>i!==it);meta.take=meta.take.filter(a=>a!==it.aid);const mk=it.uq?'kern':'m'+(it.tier||0);meta.mats[mk]=(meta.mats[mk]||0)+2;S.armSel=null;saveMeta();sys(`Eingeschmolzen: ${it.name}. +2 ${MATS[mk].n}`)},{cls:'danger',sub:'Gibt 2 Material zurück'})}}
 btn(group(''),'Zurück ins Lager',()=>{S.screen='hub';S.fSlot=S.fType=S.armSel=null},{cls:'big'})},
-beast(){const B=meta.beast||{};let h=`<p class="gt">Bestiarium</p><p class="dim small">Ab 10, 30 und 75 Siegen gegen eine Art machst du +5, +10 und +15 % Schaden gegen sie.</p>`;
-AREAS.forEach((a,ai)=>{h+=`<p class="gt" style="margin-top:14px">${a.name}</p>`;for(const n of [...a.mobs,TW[ai].n,a.boss]){const k=B[n]||0;if(!k){h+=`<div class="srow small dim">???</div>`;continue}const nx=[10,30,75].find(t=>k<t);h+=`<div class="lore"><b>${n}</b> <span class="small dim">· ${k} besiegt${bb(n)?` · <span class="good">+${Math.round(bb(n)*100)} % Schaden</span>`:''}${nx?` · nächste Stufe ab ${nx}`:' · gemeistert'}</span><p class="small">${BDESC[n]||''}</p></div>`}});
+beast(){const B=meta.beast||{};let h=`<p class="gt">Bestiarium</p><p class="dim small">Ab 10, 30 und 75 Siegen gegen eine Art machst du +5, +10 und +15 % Schaden gegen sie. Tipp aufs Bild vergrößert es.</p>`;
+AREAS.forEach((a,ai)=>{h+=`<p class="gt" style="margin-top:14px">${a.name}</p>`;for(const n of [...a.mobs,TW[ai].n,a.boss]){const k=B[n]||0;if(!k){h+=`<div class="lore bst dim"><div class="bth unk">?</div><b>???</b><p class="small">Noch nicht besiegt.</p></div>`;continue}const nx=[10,30,75].find(t=>k<t),ik=n==='Kobold'?'g15':foeKey({base:n,name:n,type:'kampf'});h+=`<div class="lore bst">${IMG[ik]?`<img class="bth" src="img/${ik}.webp" alt="" loading="lazy" onclick="this.classList.toggle('big')">`:''}<b>${n}</b> <span class="small dim">· ${k} besiegt${bb(n)?` · <span class="good">+${Math.round(bb(n)*100)} % Schaden</span>`:''}${nx?` · nächste Stufe ab ${nx}`:' · gemeistert'}</span><p class="small">${BDESC[n]||''}</p></div>`}});
 scene(h);btn(group(''),'Zurück ins Lager',()=>S.screen='hub',{cls:'big'})},
 scar(){const o=meta.scarOffer;if(!o){S.screen='hub';return SCR.hub()}
 scene(`<p>Die Narbe auf deiner Hand ist gewachsen. Sie pocht, als hätte sie einen eigenen Herzschlag.</p><p class="dim small">Der Stein nimmt dir etwas und gibt dir etwas dafür. Diese Narbe bleibt für immer.</p>`);
@@ -1180,6 +1205,7 @@ if(!NET.ready)h+=`<p class="small">Das Ordensbuch ist hier gerade nicht erreichb
 else if(!S.guild)h+=`<p class="small dim">Wird geladen …</p>`;
 else if(!S.guild.length)h+=`<p class="small">Noch keine Einträge. Beende einen Run, dann stehst du hier drin.</p>`;
 else h+=S.guild.map((r,i)=>`<div class="srow${r.uid===NET.uid?' sys':''}"><span>${i+1}. ${esc(r.uid===NET.uid?'Du':(NET.names[r.uid]||'Ankerträger'))}</span><span class="r">Etage ${r.best|0} · ${rankOf(r.best|0)} · ${r.bounties|0} Kopfgelder</span></div>`).join('');
+if(S.guild&&S.guild.length){const dk=dayKey(),D=daily(),td=S.guild.filter(r=>r.day&&r.day.k===dk).sort((a,b)=>b.day.f-a.day.f);h+=`<p class="gt" style="margin-top:14px">Riss des Tages · ${RMODS[D.mod].n}</p>`+(td.length?td.map((r,i)=>`<div class="srow${r.uid===NET.uid?' sys':''}"><span>${i+1}. ${esc(r.uid===NET.uid?'Du':(NET.names[r.uid]||'Ankerträger'))}</span><span class="r">Etage ${r.day.f|0} · ${esc((CLS[r.day.c]||{}).name||'')}</span></div>`).join(''):'<p class="small dim">Heute hat noch keiner den Riss des Tages gewagt.</p>')}
 h+=`<p class="small dim" style="margin-top:12px">Freunde einladen: Teile das Spiel über claude.ai und gib ihnen die Stufe „Mitwirkender“. Dann sehen sie deine Botschaften und deinen Schatten – und du ihre.</p>`;
 scene(h);btn(group(''),'Zurück ins Lager',()=>S.screen='hub',{cls:'big'})},
 bounty(){scene(`<p class="gt">Kopfgeldliste · ${meta.bounty.length}/${BOUNTIES.length} erledigt</p><p class="dim small">Varga zahlt für jeden Kopf einmal. Die Biester tauchen erst auf, wenn du den Boss ihres Gebiets einmal besiegt hast – dann zufällig in ihrem Gebiet.</p>`+BOUNTIES.map(b=>{const seen=meta.best>=b.area*10+1,done=meta.bounty.includes(b.id);
@@ -1230,7 +1256,7 @@ scene(`<p class="dim">${S.hubLine}</p><p class="small"><i>Varga: ${S.vline}</i><
 let g;const nb=!meta.tut,bossDone=(meta.bosses||0)>=1||(meta.rank||0)>0;
 if(nb){g=group('Zuerst');btn(g,'Mit Varga üben',startTutorial,{sub:'Kurze Einführung: Kampf, Beute und Aufstiege',cls:'big',delay:600})}
 g=group(nb?'Oder gleich los':'Den Riss betreten');
-for(const id in CLS)if(meta.classes.includes(id))btn(g,'Als '+CLS[id].name,()=>startRun(id),{sub:`${(meta.cbest||{})[id]?`Rekord: Etage ${meta.cbest[id]} · `:''}${CLS[id].desc} · ${CLS[id].skill.name}: ${CLS[id].skill.desc}`,delay:700,cls:'big'+(nb?'':'')});
+for(const id in CLS)if(meta.classes.includes(id))btn(g,'Als '+CLS[id].name,()=>startRun(id),{sub:`${(meta.cbest||{})[id]?`Rekord: Etage ${meta.cbest[id]} · `:''}${CLS[id].desc} · ${CLS[id].skill.name}: ${CLS[id].skill.desc} · ${CLS[id].pass.n}: ${CLS[id].pass.d} · Lieblingswaffen: ${CLS[id].fav.map(t=>WT[t].n).join(', ')} (+10 %)`,delay:700,cls:'big'+(nb?'':'')});
 if(nb)return;
 /* Ziele */
 const goals=[];
@@ -1239,14 +1265,19 @@ if(bossDone){const nx=RANG[(meta.rank||0)+1];
  if((meta.rank||0)>=4)goals.push(()=>btn(g,`${S.jump?'✓ ':''}Ankersprung`,()=>S.jump=!S.jump,{cls:S.jump?'rar2':'',sub:`Start auf Etage 11 mit Stufe 7 und seltener Ausrüstung · ${S.jump?'aktiv':'antippen zum Aktivieren'}`}))}
 if(meta.vq>=1&&meta.vq<=3){const V=VQ[meta.vq-1];goals.push(()=>btn(g,'◆ Vargas Liste: '+V.t,()=>{},{dis:true,cls:'info',sub:V.goal}))}
 if(meta.bq===1||meta.bq===2)goals.push(()=>btn(g,meta.bq===1?'◆ Brenns Buch: Die Wand der Striche':'◆ Brenns Buch: Der Zählende',()=>{},{dis:true,cls:'info',sub:meta.bq===1?'Finde die Wand voller Striche in der Vergessenen Krypta (Etage 13–19)':'Stell den Zählenden im Abgrund. Er steht auf der Kopfgeldliste.'}));
-if(meta.runs>=3){const W=weekly(),done=meta.weekDone===W.k;goals.push(()=>btn(g,`${S.weekly?'✓ ':''}Tiefe der Woche: ${RMODS[W.mod].n}`,()=>S.weekly=!S.weekly,{sub:done?'Diese Woche schon geschafft':`Ziel Etage ${W.goal} · ${RMODS[W.mod].d} · ${W.reward} ✧ · ${S.weekly?'aktiv':'antippen zum Aktivieren'}`,cls:S.weekly?'rar2':''}))}
 if(goals.length){g=group('Ziele');goals.forEach(f=>f())}
+if(meta.runs>=3){const W=weekly(),D=daily(),wd=meta.weekDone===W.k,dd=meta.dayDone===D.k,db=meta.dayBest&&meta.dayBest.k===D.k?meta.dayBest.f:0;
+g=group('Herausforderungen · freiwillig');
+const tg=k=>()=>{S.chal=S.chal===k?null:k};
+btn(g,`${S.chal==='day'?'✓ ':''}Riss des Tages: ${RMODS[D.mod].n}`,tg('day'),{sub:`${RMODS[D.mod].d} · Heute für alle dieselben Etagen und Räume · ${dd?'Belohnung heute schon geholt':`Etage ${D.goal} erreichen: +${D.reward} ✧`}${db?` · dein Bestes heute: Etage ${db}`:''} · ${S.chal==='day'?'gilt für den nächsten Abstieg':'antippen zum Auswählen'}`,cls:S.chal==='day'?'rar2':''});
+btn(g,`${S.chal==='week'?'✓ ':''}Tiefe der Woche: ${RMODS[W.mod].n}`,tg('week'),{sub:`${RMODS[W.mod].d} · ${wd?'Diese Woche schon geschafft':`Etage ${W.goal} erreichen: +${W.reward} ✧`} · ${S.chal==='week'?'gilt für den nächsten Abstieg':'antippen zum Auswählen'}`,cls:S.chal==='week'?'rar2':''});
+btn(g,'Was ist das?',()=>{S.chalHelp=!S.chalHelp},{cls:'info',sub:S.chalHelp?'Ohne Auswahl ist jeder Abstieg normal, ohne Besonderheiten. Eine Herausforderung wählst du vor dem Start, sie gilt nur für diesen einen Abstieg. Beide verändern den Riss mit einem Vor- und einem Nachteil und geben eine Belohnung, wenn du das Ziel erreichst. Beim Riss des Tages haben alle Spieler dieselben Etagen, im Ordensbuch steht, wer heute am tiefsten kam.':'Kurz erklärt'})}
 /* Vorbereitung */
 g=group(`Training · <span class="c-ess">${meta.essence} ✧</span>`);
 for(const u of UPG){const l=ul(u.id);if(l>=u.max){btn(g,`${u.name} ${l}/${u.max}`,()=>{},{dis:true,cls:'info',sub:'✓ Gemeistert'});continue}
 const c=u.cost(l);btn(g,`${u.name} ${l}/${u.max}`,()=>{meta.essence-=c;meta.up[u.id]=l+1;saveMeta();sys(`${u.name} gestärkt (${l+1}/${u.max}).`)},{sub:`${typeof u.desc==='function'?u.desc(l):u.desc} · ${c} ✧`,dis:meta.essence<c})}
 const lockd=Object.keys(CLS).filter(id=>!meta.classes.includes(id));
-if(lockd.length&&meta.runs>=2){g=group('Kampfstile lernen');for(const id of lockd){const c=CLS[id];btn(g,c.name,()=>{meta.essence-=c.cost;meta.classes.push(id);saveMeta();sys(`Neuer Kampfstil: ${c.name}.`)},{sub:`${c.desc} · ${c.cost} ✧`,dis:meta.essence<c.cost})}}
+if(lockd.length&&meta.runs>=2){g=group('Kampfstile lernen');for(const id of lockd){const c=CLS[id];btn(g,c.name,()=>{meta.essence-=c.cost;meta.classes.push(id);saveMeta();sys(`Neuer Kampfstil: ${c.name}.`)},{sub:`${c.desc} · ${c.pass.n}: ${c.pass.d} · ${c.cost} ✧`,dis:meta.essence<c.cost})}}
 {const pk=meta.pack||{},pl=QM.filter(q=>pk[q.id]).map(q=>`${pk[q.id]}× ${q.n}`);
 if((meta.gold||0)>0||pl.length){
 g=group(`Quartiermeister Brenn · <span class="c-gold">${meta.gold||0} Gold</span>`);
@@ -1280,7 +1311,7 @@ combat(){const e=E,nm=e.mechs&&e.mechEvery&&(e.turn+1)%e.mechEvery===0?e.mechs[(
 const col=e.type==='boss'||e.bounty?'var(--orange)':e.type==='elite'?'var(--red)':'var(--fg)';
 scene(`<div class="enemy"><div class="nm" style="color:${col}">${e.bounty?'<span class="small">KOPFGELD · </span>':e.type==='elite'?'<span class="small">ELITE · </span>':''}${e.name}</div><div class="srow small"><span>LP ${Math.max(0,e.hp)}/${e.maxHp}</span>${bar(e.hp,e.maxHp,col)}</div>
 <div class="srow small dim">⚔ ${e.atk} · ⛨ ${e.def}${fxc(`${e.stun?' · betäubt':''}`)}${fxc(`${e.burn?' · brennt':''}${e.bleed?' · blutet':''}${e.poison?' · giftig':''}${e.ls?' · saugt Leben':''}${e.regen?' · regeneriert':''}${e.double?' · schlägt doppelt':''}${e.evade?` · weicht aus (${Math.round(e.evade*100)} %)`:''}${e.enrage?(e.raged?' · <span class="bad">rasend</span>':' · wird rasend'):''}`)}</div>
-<div class="intent ${warn?'warn':''}">${e.stun?'Ist betäubt.':e.shield?'Verschanzt sich hinter dem Schild.':e.mirror?'Spiegelt jeden Treffer.':nm?TELE[nm]:warn?TELE.heavy:'Lauert auf eine Lücke.'}</div></div>${P.poison?'<p class="small"><span class="fx-poison">Du bist vergiftet.</span></p>':''}${P.burn?'<p class="small"><span class="fx-burn">Du brennst.</span></p>':''}${P.frozen?'<p class="small"><span class="fx-stun">Deine Hände sind steif vor Kälte.</span></p>':''}`);
+<div class="intent ${warn?'warn':''}">${e.stun?'Ist betäubt.':e.shield?'Verschanzt sich hinter dem Schild.':e.mirror?'Spiegelt jeden Treffer.':nm?TELE[nm]:warn?TELE.heavy:'Lauert auf eine Lücke.'}</div></div>${P.poison?'<p class="small"><span class="fx-poison">Du bist vergiftet.</span></p>':''}${P.burn?'<p class="small"><span class="fx-burn">Du brennst.</span></p>':''}${P.frozen?'<p class="small"><span class="fx-stun">Deine Hände sind steif vor Kälte.</span></p>':''}${P.rsh>0?`<p class="small"><span class="fx-dodge">Runenschild: ${P.rsh}</span></p>`:''}${P.rhy?`<p class="small"><span class="fx-crit">Rhythmus ×${P.rhy} · +${P.rhy*(6+(P.bonus.brhy||0))} % Krit</span></p>`:''}${P.bulw?'<p class="small"><span class="fx-stun">Bollwerk: nächster Angriff +40 %</span></p>':''}${P.cls==='blut'&&P.hp<maxHp()*.5?`<p class="small"><span class="fx-rage">Blutdurst: +${25+(P.bonus.rdurst||0)} % Schaden</span></p>`:''}`);
 const sk=CLS[P.cls].skill;let g=group('');
 btn(g,'Angriff',()=>act('atk'),{delay:450,sub:`~${Math.max(1,Math.round(atk()-e.def*(1-wp('pierce')/100)))} Schaden`});
 btn(g,sk.name,()=>act('skill'),{delay:450,dis:P.cd>0,sub:P.cd>0?`Lädt … ${P.cd}`:sk.desc});
