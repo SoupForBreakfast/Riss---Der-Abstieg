@@ -702,7 +702,7 @@ if(nf>=2&&R()<.22)a.push({t:'tresor',s:pick(FLAV.tresor)});return a}
 const FLAV={kampf:['Knurren hinter der Tür','Frische Kratzspuren am Boden','Es riecht nach nassem Fell','Schritte, die plötzlich innehalten'],elite:['Ein tiefes, langsames Atmen','Abgenagte Knochen vor der Schwelle','Die Luft ist schwer und still','Etwas Großes bewegt sich'],schatz:['Ein Schimmer im Türspalt','Rostige Truhenbeschläge','Goldstaub auf den Steinen'],rast:['Wärme dringt heraus','Rauch und Holzgeruch','Leises Knistern'],haendler:['Klirrende Glöckchen','Eine Laterne flackert','Jemand summt eine Melodie'],ereignis:['Ein seltsames Flüstern','Blaues Licht unter der Tür','Das Holz ist warm','Runen glimmen im Rahmen','Es riecht nach Weihrauch'],boss:['Die Erde bebt'],tresor:['Sieben Siegel aus Eisen','Ein Schloss, so groß wie eine Faust','Goldene Runen im Holz']};
 function goDoors(){S.screen='doors';S.doors=[]}
 function rollRoom(){const f=P.floor;if(P.tut)return f===1?'kampf':f===2?'tresorTuer':'boss';if(f%5===0)return'boss';
-if(f<=4&&(P.kills||0)<f-1){P.lastT='kampf';return'kampf'}
+if(f<=4&&(P.kills||0)<(f>=4?2:f>=2?1:0)){P.lastT='kampf';return'kampf'}
 const sh=pickShade(f);if(sh){P.shadeNow=sh;return'shade'}
 if(meta.bq===1&&!meta.bqPend&&!P.bqFound&&f>=13&&f<=19&&R()<(f>=17?.5:.15))return'bquest';
 const V=VQ[(meta.vq||0)-1];if(V&&V.lo&&!P.vqFound&&f>=V.lo&&f<=V.hi&&R()<(f>=V.hi-2?.6:.2))return'vquest';
