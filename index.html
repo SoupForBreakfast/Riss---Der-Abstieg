@@ -925,6 +925,11 @@ FMUS.raw=null;try{fetch('mus/fight.mp3').then(r=>{if(!r.ok)throw 0;return r.arra
 function fmLoad(){if(FMUS.loading||!AU.ctx||!FMUS.raw)return;FMUS.loading=true;AU.ctx.decodeAudioData(FMUS.raw.slice(0),b=>{FMUS.buf=b},()=>{FMUS.loading=false})}
 function fmStart(el){if(FMUS.node||!FMUS.buf||!AU.mus)return!!FMUS.node;const c=AU.ctx,t=c.currentTime+.05,s=c.createBufferSource(),g=c.createGain();s.buffer=FMUS.buf;s.loop=true;s.loopEnd=Math.min(FMUS.buf.duration,FMUS.len);s.playbackRate.value=el?1.06:1;g.gain.setValueAtTime(.0001,t);g.gain.setTargetAtTime(el?.36:.28,t,.35);s.connect(g);g.connect(AU.mus);s.start(t,R()*4);FMUS.node={s,g};return true}
 function fmStop(){if(!FMUS.node)return;const t=AU.ctx.currentTime,n=FMUS.node;FMUS.node=null;n.g.gain.cancelScheduledValues(t);n.g.gain.setTargetAtTime(.0001,t,.4);try{n.s.stop(t+2)}catch(e){}}
+const CMUS={buf:null,raw:null,loading:false,node:null,len:2545887/44100};
+try{fetch('mus/camp.mp3').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).then(a=>{CMUS.raw=a;if(AU.ctx)cmLoad()}).catch(()=>{})}catch(e){}
+function cmLoad(){if(CMUS.loading||!AU.ctx||!CMUS.raw)return;CMUS.loading=true;AU.ctx.decodeAudioData(CMUS.raw.slice(0),b=>{CMUS.buf=b},()=>{CMUS.loading=false})}
+function cmTick(){const want=AU.ambKey==='hub'&&!AU.drum;if(!want){if(CMUS.node){const t=AU.ctx.currentTime,n=CMUS.node;CMUS.node=null;n.g.gain.cancelScheduledValues(t);n.g.gain.setTargetAtTime(.0001,t,.6);try{n.s.stop(t+3)}catch(e){}}return}
+ if(CMUS.node)return;if(!CMUS.buf){cmLoad();return}const c=AU.ctx,t=c.currentTime+.05,s=c.createBufferSource(),g=c.createGain();s.buffer=CMUS.buf;s.loop=true;s.loopEnd=Math.min(CMUS.buf.duration,CMUS.len);g.gain.setValueAtTime(.0001,t);g.gain.setTargetAtTime(.13,t,1.2);s.connect(g);g.connect(AU.mus);s.start(t);CMUS.node={s,g}}
 function fightTick(){if(!FMUS.buf)fmLoad();if(fmStart(E&&E.type==='elite'))return;if(FMUS.raw||!AU.fbWait||Date.now()-AU.fbWait<4000){AU.fbWait=AU.fbWait||Date.now();return}const c=AU.ctx;if(!AU.mus)return;const el=E&&E.type==='elite',bpm=el?118:104,sp=60/bpm/4;
  if(AU.bt<c.currentTime)AU.bt=c.currentTime+.03;
  while(AU.bt<c.currentTime+.45){const i=AU.bstep%32,t=AU.bt,b=i%16;
@@ -940,11 +945,11 @@ function bossTick(){const c=AU.ctx;if(!AU.mus)return;const hard=E&&E.maxHp&&E.hp
   if(hard&&i%2===1)bHat(t,i%4===3?.05:.03);
   if(i%32===0)bBoom(t,root/2,sp*32);
   AU.bt+=sp;AU.bstep++}}
-function musTick(){const k=AU.ambKey,M=MUS[k];if(!M||!AU.mus||AU.drum)return;const n=AU.ctx.currentTime;
+function musTick(){const k=AU.ambKey,M=MUS[k];if(!M||!AU.mus||AU.drum||(k==='hub'&&CMUS.node))return;const n=AU.ctx.currentTime;
 if(AU.mKey!==k){AU.mKey=k;AU.mNext=n+2.5;return}
 if(M.pulse&&!AU.drum&&n>=(AU.pNext||0)){AU.pNext=n+1.75;mthud(0,.11);mthud(.27,.07)}
 if(n<AU.mNext)return;AU.mNext=n+M.gap[0]+R()*(M.gap[1]-M.gap[0]);const a=pick(M.n);pad(M.iv.map(x=>a*x),M.dur,M.w,M.cut,M.v)}
-function auTick(){if(!AU.ctx||!AU.on||(typeof document!=='undefined'&&document.hidden))return;const k=AU.ambKey;try{musTick()}catch(e){}
+function auTick(){if(!AU.ctx||!AU.on||(typeof document!=='undefined'&&document.hidden))return;const k=AU.ambKey;try{cmTick()}catch(e){}try{musTick()}catch(e){}
 if(k==='hub'&&R()<.12)nz(.02,2200+R()*1500,5,.018);
 
 if(AU.drum==='fight'){try{fightTick()}catch(e){}}else if(AU.drum){try{if(!BMUS.nodes)bmStart();if(BMUS.nodes)bmPhase(E&&E.maxHp&&E.hp/E.maxHp<.5?1:0);else bossTick()}catch(e){}}}
@@ -1148,7 +1153,7 @@ let g=group('Ton');btn(g,AU.on?'♪ Ton ist an':'♪ Ton ist aus',()=>sndToggle(
 g=group('Textgröße');['Klein','Normal','Groß'].forEach((n,i)=>btn(g,(CFG.size===i?'✓ ':'')+n,()=>{CFG.size=i;cfgSave()},{delay:100,cls:CFG.size===i?'rar2':''}));
 g=group('Darstellung');btn(g,CFG.anim?'Animationen: an':'Animationen: aus',()=>{CFG.anim=CFG.anim?0:1;cfgSave()},{sub:'Flackern, Zoom, Partikel und Wackeln',delay:100});
 g=group('Spielstand');btn(g,'Spielstand sichern & laden',()=>{S.screen='save';S.saveMsg='';S.loadArm=false},{sub:'Als Code oder Datei, z. B. für ein neues Handy'});
-$('#scene').insertAdjacentHTML('beforeend','<p class="dim small" style="margin-top:18px">Bossmusik: „Colossal Boss Battle Theme“ von Matthew Pablo (<a href="https://www.matthewpablo.com" target="_blank" rel="noopener">matthewpablo.com</a>), Lizenz <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">CC-BY 3.0</a>, über <a href="https://opengameart.org/content/colossal-boss-battle-theme" target="_blank" rel="noopener">OpenGameArt</a>. Unverändert, nur ins MP3-Format umgewandelt.<br>Kampftrommeln: „Horde War Drums loop“ von William Hector (<a href="https://opengameart.org/node/176112" target="_blank" rel="noopener">OpenGameArt</a>), CC0.<br>Geräusche: „RPG Sound Pack“ von artisticdude (<a href="https://opengameart.org/content/rpg-sound-pack" target="_blank" rel="noopener">OpenGameArt</a>), CC0.</p>');
+$('#scene').insertAdjacentHTML('beforeend','<p class="dim small" style="margin-top:18px">Bossmusik: „Colossal Boss Battle Theme“ von Matthew Pablo (<a href="https://www.matthewpablo.com" target="_blank" rel="noopener">matthewpablo.com</a>), Lizenz <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">CC-BY 3.0</a>, über <a href="https://opengameart.org/content/colossal-boss-battle-theme" target="_blank" rel="noopener">OpenGameArt</a>. Unverändert, nur ins MP3-Format umgewandelt.<br>Kampftrommeln: „Horde War Drums loop“ von William Hector (<a href="https://opengameart.org/node/176112" target="_blank" rel="noopener">OpenGameArt</a>), CC0.<br>Lagermusik: „Medieval: The Bard’s Tale“ von RandomMind (<a href="https://opengameart.org/content/medieval-the-bards-tale" target="_blank" rel="noopener">OpenGameArt</a>), CC0.<br>Geräusche: „RPG Sound Pack“ von artisticdude (<a href="https://opengameart.org/content/rpg-sound-pack" target="_blank" rel="noopener">OpenGameArt</a>), CC0.</p>');
 g=group('');btn(g,'Zurück',()=>{S.screen=S.prevScreen&&S.prevScreen!=='settings'&&S.prevScreen!=='save'?S.prevScreen:'hub'},{cls:'big',delay:120})},
 save(){const code=saveCode();
 scene(`<p class="gt">Spielstand</p><p class="dim small">Dein Fortschritt liegt nur in diesem Browser. Wenn du den Verlauf löschst oder das Handy wechselst, ist er weg. Sichere ihn hier als Code oder Datei.</p>
