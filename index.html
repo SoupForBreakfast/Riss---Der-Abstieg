@@ -143,7 +143,7 @@ textarea.code{width:100%;box-sizing:border-box;height:84px;background:#111114;co
 @keyframes srin{from{opacity:0;filter:blur(2px)}to{opacity:1;filter:none}}
 .acard{text-align:center;padding:18px 4px 6px}.acard .ac0{font-size:.8rem;letter-spacing:.25em;text-transform:uppercase;color:#8f8a80;opacity:0;animation:acin 1s .1s ease-out forwards}.acard .ac1{font-size:1.9rem;letter-spacing:.12em;color:#e2dccd;margin:10px 0 14px;opacity:0;animation:acin 1.4s .35s ease-out forwards}.acard .ac2{font-style:italic;color:#b9b2a3;line-height:1.55}@keyframes acin{from{opacity:0;transform:translateY(6px);filter:blur(2px)}to{opacity:1;transform:none;filter:none}}
 .bst{overflow:hidden}.bst .bth{float:left;width:96px;height:54px;object-fit:cover;border-radius:4px;margin:2px 10px 4px 0;filter:contrast(1.05);cursor:pointer}#lbox{position:fixed;inset:0;z-index:99;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .25s;cursor:pointer}#lbox.on{opacity:1}#lbox img{max-width:96vw;max-height:90vh;border-radius:6px;transform:scale(.96);transition:transform .25s}#lbox.on img{transform:none}.bst .unk{display:flex;align-items:center;justify-content:center;background:#141416;color:#444;font-size:1.4rem;border:1px solid #222}
-.btn.chal{border:1px solid rgba(201,143,92,.45);border-left:3px solid #c98f5c;background:linear-gradient(90deg,rgba(201,143,92,.14),rgba(201,143,92,.02) 70%)}.btn.chal.on{border-color:#e6c34a;border-left-color:#e6c34a;background:linear-gradient(90deg,rgba(230,195,74,.24),rgba(230,195,74,.04) 70%);box-shadow:0 0 12px rgba(230,195,74,.18)}
+.btn.chal{display:flex;flex-direction:column;justify-content:flex-start;align-items:flex-start;text-align:left;border:1px solid rgba(201,143,92,.45);border-left:3px solid #c98f5c;background:linear-gradient(90deg,rgba(201,143,92,.14),rgba(201,143,92,.02) 70%)}.btn.chal.on{border-color:#e6c34a;border-left-color:#e6c34a;background:linear-gradient(90deg,rgba(230,195,74,.24),rgba(230,195,74,.04) 70%);box-shadow:0 0 12px rgba(230,195,74,.18)}
 #fcard{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;pointer-events:none;z-index:60;opacity:0;background:rgba(6,6,8,.0)}
 #fcard.on{animation:fcard 1.5s ease-in-out forwards}#fcard.on.big{animation-duration:2.4s}
 #fcard .fc1{font-size:1.6rem;letter-spacing:.3em;text-transform:uppercase;color:#d8d2c4}#fcard .fc2{font-size:.95rem;letter-spacing:.2em;color:#8f8a80;margin-top:6px}
@@ -341,6 +341,7 @@ const JT={blut:{n:'Blutamulett',ls:4,d:'Trinkt mit'},glueck:{n:'Glücksring',luc
 const SK={w:'weapon',a:'armor',h:'helm',g:'gloves',j:'jewel'},SN={w:'Waffe',a:'Rüstung',h:'Helm',g:'Handschuhe',j:'Schmuck'},XT={h:HT,g:GT,j:JT};
 const wt=it=>WT[it&&it.type]||WT.schwert, at_=it=>AT[it&&it.type]||AT.kette;
 function bigImg(src){let b=document.getElementById('lbox');if(b)b.remove();b=document.createElement('div');b.id='lbox';b.innerHTML=`<img src="${src}" alt="">`;b.onclick=()=>{b.classList.remove('on');setTimeout(()=>b.remove(),250)};document.body.appendChild(b);requestAnimationFrame(()=>b.classList.add('on'))}
+function clsSub(id,last){const c=CLS[id];return `<i>${c.desc}</i><br><b>Fähigkeit</b> · ${c.skill.name}: ${c.skill.desc}<br><b>Eigenschaft</b> · ${c.pass.n}: ${c.pass.d}<br><b>Waffen</b> · ${c.fav.map(t=>WT[t].n).join(', ')} (+10 % Schaden)<br><span class="dim">${last}</span>`}
 const SETS={torbern:{n:'Torberns Wacht',t:'aus Torberns Nachlass',b2:{def:3},b3:{hp:25},d2:'+3 Verteidigung',d3:'+25 LP'},
 mirela:{n:'Mirelas Schatten',t:'aus Mirelas Nachlass',b2:{dodge:6},b3:{crit:8},d2:'+6 % Ausweichen',d3:'+8 % Krit'},
 isgard:{n:'Isgards Glut',t:'aus Isgards Nachlass',b2:{skill:20},b3:{atk:4},d2:'+20 % Fähigkeitsschaden',d3:'+4 Angriff'},
@@ -1258,7 +1259,7 @@ scene(`<p class="dim">${S.hubLine}</p><p class="small"><i>Varga: ${S.vline}</i><
 let g;const nb=!meta.tut,bossDone=(meta.bosses||0)>=1||(meta.rank||0)>0;
 if(nb){g=group('Zuerst');btn(g,'Mit Varga üben',startTutorial,{sub:'Kurze Einführung: Kampf, Beute und Aufstiege',cls:'big',delay:600})}
 g=group(nb?'Oder gleich los':'Den Riss betreten');
-for(const id in CLS)if(meta.classes.includes(id))btn(g,'Als '+CLS[id].name,()=>startRun(id),{sub:`${(meta.cbest||{})[id]?`Rekord: Etage ${meta.cbest[id]} · `:''}${CLS[id].desc} · ${CLS[id].skill.name}: ${CLS[id].skill.desc} · ${CLS[id].pass.n}: ${CLS[id].pass.d} · Lieblingswaffen: ${CLS[id].fav.map(t=>WT[t].n).join(', ')} (+10 %)`,delay:700,cls:'big'+(nb?'':'')});
+for(const id in CLS)if(meta.classes.includes(id))btn(g,CLS[id].name,()=>startRun(id),{sub:clsSub(id,`Rekord: ${(meta.cbest||{})[id]?'Etage '+meta.cbest[id]:'noch keiner'}`),delay:700,cls:'big'+(nb?'':'')});
 if(nb)return;
 /* Ziele */
 const goals=[];
@@ -1271,15 +1272,16 @@ if(goals.length){g=group('Ziele');goals.forEach(f=>f())}
 if(meta.runs>=3){const W=weekly(),D=daily(),wd=meta.weekDone===W.k,dd=meta.dayDone===D.k,db=meta.dayBest&&meta.dayBest.k===D.k?meta.dayBest.f:0;
 g=group('Herausforderungen');
 const tg=k=>()=>{S.chal=S.chal===k?null:k};
-btn(g,`${S.chal==='day'?'✓ ':''}Riss des Tages`,tg('day'),{sub:`${RMODS[D.mod].n}: ${RMODS[D.mod].d} · Heute für alle dieselben Etagen und Räume · ${dd?'Belohnung heute schon geholt':`Etage ${D.goal} erreichen: +${D.reward} ✧`}${db?` · dein Bestes heute: Etage ${db}`:''} · ${S.chal==='day'?'gilt für den nächsten Abstieg':'antippen zum Auswählen'}`,cls:'chal'+(S.chal==='day'?' on':'')});
-btn(g,`${S.chal==='week'?'✓ ':''}Riss der Woche`,tg('week'),{sub:`${RMODS[W.mod].n}: ${RMODS[W.mod].d} · ${wd?'Diese Woche schon geschafft':`Etage ${W.goal} erreichen: +${W.reward} ✧`} · ${S.chal==='week'?'gilt für den nächsten Abstieg':'antippen zum Auswählen'}`,cls:'chal'+(S.chal==='week'?' on':'')});
+const csub=(m,goal,rw,done,extra,on)=>`<b>${RMODS[m].n}</b><br>${RMODS[m].d}<br>${done?'Belohnung schon geholt':`Etage ${goal}: +${rw} ✧`}${extra?'<br>'+extra:''}${on?'<br><span class="good">Gilt für den nächsten Abstieg</span>':''}`;
+btn(g,`${S.chal==='day'?'✓ ':''}Riss des Tages`,tg('day'),{sub:csub(D.mod,D.goal,D.reward,dd,db?`Dein Bestes heute: Etage ${db}`:'Für alle dieselben Etagen',S.chal==='day'),cls:'chal'+(S.chal==='day'?' on':'')});
+btn(g,`${S.chal==='week'?'✓ ':''}Riss der Woche`,tg('week'),{sub:csub(W.mod,W.goal,W.reward,wd,'',S.chal==='week'),cls:'chal'+(S.chal==='week'?' on':'')});
 btn(g,'Was ist das?',()=>{S.chalHelp=!S.chalHelp},{cls:'info',sub:S.chalHelp?'Ohne Auswahl ist jeder Abstieg normal, ohne Besonderheiten. Eine Herausforderung wählst du vor dem Start, sie gilt nur für diesen einen Abstieg. Beide verändern den Riss mit einem Vor- und einem Nachteil und geben eine Belohnung, wenn du das Ziel erreichst. Beim Riss des Tages haben alle Spieler dieselben Etagen, im Ordensbuch steht, wer heute am tiefsten kam.':'Kurz erklärt'})}
 /* Vorbereitung */
 g=group(`Training · <span class="c-ess">${meta.essence} ✧</span>`);
 for(const u of UPG){const l=ul(u.id);if(l>=u.max){btn(g,`${u.name} ${l}/${u.max}`,()=>{},{dis:true,cls:'info',sub:'✓ Gemeistert'});continue}
 const c=u.cost(l);btn(g,`${u.name} ${l}/${u.max}`,()=>{meta.essence-=c;meta.up[u.id]=l+1;saveMeta();sys(`${u.name} gestärkt (${l+1}/${u.max}).`)},{sub:`${typeof u.desc==='function'?u.desc(l):u.desc} · ${c} ✧`,dis:meta.essence<c})}
 const lockd=Object.keys(CLS).filter(id=>!meta.classes.includes(id));
-if(lockd.length&&meta.runs>=2){g=group('Kampfstile lernen');for(const id of lockd){const c=CLS[id];btn(g,c.name,()=>{meta.essence-=c.cost;meta.classes.push(id);saveMeta();sys(`Neuer Kampfstil: ${c.name}.`)},{sub:`${c.desc} · ${c.pass.n}: ${c.pass.d} · ${c.cost} ✧`,dis:meta.essence<c.cost})}}
+if(lockd.length&&meta.runs>=2){g=group('Kampfstile lernen');for(const id of lockd){const c=CLS[id];btn(g,c.name,()=>{meta.essence-=c.cost;meta.classes.push(id);saveMeta();sys(`Neuer Kampfstil: ${c.name}.`)},{sub:clsSub(id,`Kostet ${c.cost} ✧`),dis:meta.essence<c.cost})}}
 {const pk=meta.pack||{},pl=QM.filter(q=>pk[q.id]).map(q=>`${pk[q.id]}× ${q.n}`);
 if((meta.gold||0)>0||pl.length){
 g=group(`Quartiermeister Brenn · <span class="c-gold">${meta.gold||0} Gold</span>`);
