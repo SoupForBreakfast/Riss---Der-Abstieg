@@ -19,6 +19,6 @@ Auf dem Handy über „Zum Startbildschirm hinzufügen“ als App installieren. 
 - Sieg-Chor: „Choir Positive Feedback 1“ von souljahdeshiva, CC-BY-SA 3.0 (auch GPL 2.0/3.0) – gekürzt und ausgeblendet; die bearbeitete Datei sfx/victory.mp3 steht ebenfalls unter CC-BY-SA 3.0
 - Story-Musik (Varga/Brenn): „Village In Despair“ von Tsorthan Grove, CC-BY 4.0 – https://opengameart.org/content/village-in-despair
 - Frostgruft-Musik: „Cold Sanctuary“ – Composed by Jonathan Shaw (www.jshaw.co.uk)
-- Todesmusik: „The End (Death Screen mix)“, Remix von Avgvst (AVGVSTA) nach Metaruka – https://opengameart.org/node/10665 (Lizenz auf der Seite nicht angegeben)
+- Todesmusik: „The End (Death Screen mix)“ von Metaruka, Remix von Avgvst – https://opengameart.org/node/10665 – Original „Game-Game“-OST von Metaruka (https://opengameart.org/content/game-game), CC-BY-SA 3.0; die bearbeitete Datei mus/death.mp3 steht ebenfalls unter CC-BY-SA 3.0
 - Stufenaufstieg: „Picked Coin Echo“ von NenadSimic, CC-BY 3.0 (OpenGameArt)
 - Geräusche: „RPG Sound Pack“ von artisticdude – [OpenGameArt](https://opengameart.org/content/rpg-sound-pack) – CC0. Ins MP3-Format umgewandelt und am Anfang gekürzt.
