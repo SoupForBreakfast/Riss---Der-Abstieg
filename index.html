@@ -323,6 +323,9 @@ Leerenwandler:'Wer ihm begegnet, vergisst danach manchmal den eigenen Namen.',Ab
 const hasS=id=>(meta.scars||[]).includes(id);
 const hasC=id=>P&&['weapon','armor','helm','gloves','jewel'].some(k=>P[k]&&P[k].curse===id);
 const bb=base=>{const k=(meta.beast||{})[base]||0;return k>=75?.15:k>=30?.1:k>=10?.05:0};
+const CAMP=[{n:'Palisade',c:800,e:'Ein Holzzaun und mehr Zelte. Brenn hat von jeder Ware einen Platz mehr.',q:'Endlich ein Zaun. Nicht gegen das, was unten ist. Gegen den Wind.'},{n:'Kräuterzelt',c:2000,e:'Nell, die Kräuterfrau, zieht ins Lager und verkauft Mittel für den nächsten Abstieg.',q:'Nell war zwanzig Jahre unten. Jetzt sammelt sie Kräuter. Hör auf sie.'},{n:'Wachturm',c:4000,e:'Ein Turm über dem Abgrund. Du trägst einen Rucksackplatz mehr.',q:'Von da oben sieht man das Seil bis weit nach unten. Und wer zurückkommt.'},{n:'Ordenshalle',c:8000,e:'Eine Halle aus Stein am Monolith. Einmal pro Abstieg rettet dich der Orden vor dem Tod (du stehst mit 35 % LP wieder auf). Dazu +10 % Seelensplitter.',q:'Das hier steht noch, wenn keiner von uns mehr da ist. Danke dir.'}];
+const NELL=[{id:'nell1',n:'Starker Trank',c:250,d:'Tränke heilen im nächsten Abstieg +25 %'},{id:'nell2',n:'Eisenkraut',c:300,d:'+5 Verteidigung im nächsten Abstieg'},{id:'nell3',n:'Blutwurz',c:350,d:'+3 % Lebensraub im nächsten Abstieg'}];
+const NELLQ=['Kau es langsam. Schmeckt furchtbar, wirkt aber.','Nicht alles auf einmal. Das Kraut will Zeit.','Ich war zwanzig Jahre unten. Glaub mir, du brauchst das.','Bring mir was Grünes mit, falls du da unten je was Grünes siehst.'];
 const QM=[{id:'pot',n:'Heiltrank',c:40,max:3,d:'+1 Trank zum Start'},{id:'fire',n:'Zunder',c:60,max:2,d:'+1 Zunder zum Start'},{id:'key',n:'Schlüssel',c:150,max:2,d:'+1 Schlüssel zum Start'},{id:'bell',n:'Händlerglocke',c:180,max:2,d:'Ruft unten einen Händler herbei'},{id:'weapon',n:'Gute Waffe',c:250,max:1,d:'Startet mit einer seltenen Waffe'},{id:'stone',n:'Schleifstein',c:350,max:1,d:'+3 Angriff im nächsten Abstieg'},{id:'segen',n:'Segen des Ordens',c:400,max:1,d:'+10 % max. LP im nächsten Abstieg'}];
 const areaOf=f=>AREAS[Math.min(AREAS.length-1,Math.floor((Math.max(1,f)-1)/10))];
 const MODS=[{n:'Berserker',atk:1.3},{n:'Panzer',def:3},{n:'',hp:1.5},{n:'Blut',ls:.3},{n:'Gift',poison:1},{n:'Ur',hp:1.25,atk:1.15}];
@@ -564,7 +567,7 @@ const XL={atk:'Angriff',def:'Verteidigung',hp:'LP',crit:'% Krit',dodge:'% Auswei
 const xStats=it=>Object.keys(XL).filter(k=>it[k]).map(k=>`+${it[k]} ${XL[k]}`).join(' · ')+' · '+XT[it.slot][it.type].d;
 const iStats=it=>(it.set&&SETS[it.set]?`<span class="setl"><b>Set ${SETS[it.set].n}</b> (${setN(it.set)}/3 angelegt)<br>2 Teile: ${SETS[it.set].d2}<br>3 Teile: ${SETS[it.set].d3}</span>`:'')+(it.curse?`<span class="fx-curse">Fluch: ${CURSES[it.curse].n} – ${CURSES[it.curse].d}</span> · `:'')+(XT[it.slot]?xStats(it):(it.uq?`<b>${UNIQ[it.uq].d}</b> · `:'')+(it.slot==='w'?`+${it.atk} Angriff · ${wt(it).d}${P&&CLS[P.cls]?((CLS[P.cls].fav||[]).includes(it.type)?` · <span class="good">Lieblingswaffe: +10 % Schaden</span>`:` · <span class="dim">Keine Lieblingswaffe (${CLS[P.cls].fav.map(t=>WT[t].n).join(', ')})</span>`):''}`+(it.crit?` · Bonus: +${it.crit} % Krit`:'')+(it.ls?` · Bonus: ${it.ls} % Lebensraub`:'')+(it.stun?` · Bonus: ${it.stun} % Betäubung`:''):`+${it.def} Verteidigung · +${it.hp} LP · ${at_(it).d}`));
 const iValue=it=>Math.round((8+P.floor*2)*(it.r+1));
-const BAG=6;
+const BAG0=6;let BAG=6;
 function equip(it){try{const sl=it.slot,ty=it.type;smp(sl==='w'?(SB.jc_equip?'wequip':'ring'):sl==='a'?(ty==='platte'||ty==='kette'?'chain':'cloth'):sl==='h'?'metal':sl==='j'?'beads':'cloth',.45)}catch(e){}const k0=SK[it.slot];if(P[k0]&&P[k0].curse&&P[k0]!==it){log(`Der Fluch lässt dich nicht los. ${P[k0].name} bleibt, wo es ist.`,'bad');return false}
 const k=SK[it.slot],old=P[k],b=maxHp();P[k]=it;const d=maxHp()-b;P.hp=Math.max(1,Math.min(maxHp(),P.hp+Math.max(0,d)));
 if(old){if(P.bag.length<BAG){P.bag.push(old);log(`${old.name} kommt in den Rucksack.`,'dim')}else log(`Rucksack voll – ${old.name} bleibt liegen.`,'dim')}
@@ -657,7 +660,7 @@ return false}
 function checkDeath(){if(P.hp>0)return false;
 if(P.tut){P.hp=maxHp();log('Varga packt dich am Kragen und zieht dich raus. „Nochmal. Langsamer diesmal.“','sys');return false}
 if(P.revive){P.revive=false;P.hp=Math.round(maxHp()*(P.revivePct||40)/100);sys('Du kommst noch mal hoch. Der zweite Atem hat dich gerettet.');return false}
-log('Alles wird schwarz. Dann zieht etwas an deiner Hand, und der Stein holt dich zurück.','bad');endRun(false);return true}
+if((meta.camp||0)>=4&&!P.ordRev&&!P.tut){P.ordRev=true;P.hp=Math.round(maxHp()*.35);sys('Dir wird schwarz vor Augen. Dann reißt etwas an deiner Narbe, und du stehst wieder. Der Orden lässt dich nicht fallen. Einmal nicht.');try{sayQ('Haken, kein Strich.','Varga')}catch(e){}return false} log('Alles wird schwarz. Dann zieht etwas an deiner Hand, und der Stein holt dich zurück.','bad');endRun(false);return true}
 function act(kind){P.defending=false;
 if(kind==='atk'){if(P.cls==='magier'&&P.cd>1)P.cd--;dealDmg(1);if(E.hp>0&&P.bonus.twin){dealDmg(P.bonus.twin/100)}if(E.hp>0&&wp('dbl')&&R()*100<wp('dbl')){log('Zweiter Hieb!','crit');dealDmg(.7)}}
 else if(kind==='skill')useSkill();
@@ -832,7 +835,7 @@ function showGate(){S.screen='gate';try{if(!smp('stone',.75,.95,.4))sfx('door')}
 
 function startRun(id){newRun(id);if(!P.tut)statHit('runs');S.queue=[];logs=[];
 _rng=Math.random;P.mod='ruhig';if(S.chal==='week'){const W=weekly();P.mod=W.mod;P.weekly=W.k;log(`Herausforderung · Riss der Woche: ${RMODS[W.mod].n} (${RMODS[W.mod].d}). Ziel: Etage ${W.goal}.`,'sys')}else if(S.chal==='day'){const D=daily();P.mod=D.mod;P.daily=D.k;log(`Herausforderung · Riss des Tages: ${RMODS[D.mod].n} (${RMODS[D.mod].d}). Heute sind die Etagen für alle gleich.`,'sys')}S.chal=null;
-const pk=meta.pack||{},got=[];if(pk.pot){P.potions=Math.min(potMax(),P.potions+pk.pot);got.push(pk.pot+' Heiltrank')}if(pk.fire){P.kindling+=pk.fire;got.push(pk.fire+' Zunder')}if(pk.key){P.keys+=pk.key;got.push(pk.key+' Schlüssel')}if(pk.bell){P.bells+=pk.bell;got.push(pk.bell+' Händlerglocke')}if(pk.stone){P.bonus.atk+=3;got.push('Schleifstein')}if(pk.segen){P.bonus.hp+=Math.round(maxHp()*.1);P.hp=maxHp();got.push('Segen des Ordens')}
+const pk=meta.pack||{},got=[];if(pk.pot){P.potions=Math.min(potMax(),P.potions+pk.pot);got.push(pk.pot+' Heiltrank')}if(pk.fire){P.kindling+=pk.fire;got.push(pk.fire+' Zunder')}if(pk.key){P.keys+=pk.key;got.push(pk.key+' Schlüssel')}if(pk.bell){P.bells+=pk.bell;got.push(pk.bell+' Händlerglocke')}if(pk.nell1){P.bonus.potion+=25;got.push('Starker Trank')}if(pk.nell2){P.bonus.def+=5;got.push('Eisenkraut')}if(pk.nell3){P.bonus.ls+=3;got.push('Blutwurz')}if(pk.stone){P.bonus.atk+=3;got.push('Schleifstein')}if(pk.segen){P.bonus.hp+=Math.round(maxHp()*.1);P.hp=maxHp();got.push('Segen des Ordens')}
 if(pk.weapon){P.floor=2;const w=genItem(0,1,{w:Object.keys(WT)},['a','h','g','j']);P.floor=0;P.weapon=w;got.push(w.name)}
 const tk=(meta.take||[]).map(a=>meta.armory.find(i=>i.aid===a)).filter(Boolean);for(const it of tk){const k=SK[it.slot];if(P[k]&&P.bag.length<BAG)P.bag.push(P[k]);P[k]=it;got.push(it.name);meta.armory=meta.armory.filter(i=>i!==it)}if(tk.length){meta.take=[];P.hp=maxHp()}
 if(got.length){meta.pack={};saveMeta();log('Brenn hat dir ein Paket geschnürt: '+got.join(', ')+'.','goldt')}
@@ -854,7 +857,7 @@ try{if(!retreat&&!P.tut){const lt=logs.slice(0,7).map(l=>l.t).join(' '),tips=[];
  let cause='Treffer',key=null;try{key=E?foeKey(E):null}catch(x){}
  if(/gewaltigen Schlag/.test(lt))cause='ein gewaltiger Schlag';else if(/leidet unter Gift|Du bist vergiftet/.test(lt))cause='Gift';else if(/Feuer|brennst|Flammen/.test(lt))cause='Feuer';else if(/Leben aus dem Leib/.test(lt))cause='Lebensentzug';else if(/Eisiger Hauch/.test(lt))cause='Kälte und dann ein Treffer';else if(/Falle/.test(lt))cause='eine Falle';
  recap={key,cause,lvl:P.lvl,hpMax:maxHp(),gear:['weapon','armor','helm','gloves','jewel'].map(k=>P[k]?{n:P[k].name,r:P[k].r,cur:!!P[k].curse}:null).filter(Boolean),killer:E?E.name:null,kt:E?E.type:null,perks:[...new Set(P.perks)].map(id=>{const p=PK(id);return p?pName(p,pCount(id)):''}).filter(Boolean),w:P.weapon?{n:P.weapon.name,r:P.weapon.r}:null,a:P.armor?{n:P.armor.name,r:P.armor.r}:null,tip:tips[0]}}}catch(e){recap=null}
-const raw=P.ess+P.floor+P.bosses*5,mult=(1+ul('seele')*.1)*(retreat?(P.lift?1.75:1.5):1)*rm('ess',1)*(hasS('tief')?1.25:1),tot=Math.round(raw*mult*.8),goldHome=0,goldLost=P.gold;
+const raw=P.ess+P.floor+P.bosses*5,mult=(1+ul('seele')*.1)*(retreat?(P.lift?1.75:1.5):1)*rm('ess',1)*(hasS('tief')?1.25:1),tot=Math.round(raw*mult*.8*((meta.camp||0)>=4?1.1:1)),goldHome=0,goldLost=P.gold;
 meta.gold=(meta.gold||0)+goldHome;const soulHome=matsToMeta(true),matsLost=Object.keys(P.mats||{}).map(k=>P.mats[k]+'× '+MATS[k].n);if(!retreat){meta.deaths=(meta.deaths||0)+1;if(!meta.scarOffer&&(meta.scars||[]).length<SCART.filter(t=>meta.deaths>=t).length){const pool=Object.keys(SCARS).filter(k=>!hasS(k));meta.scarOffer=pool.sort(()=>R()-.5).slice(0,2)}if(P.floor>=3)writeShade()}writeBoard(P.floor);if(P.vqFound){meta.vqPend='vq'+meta.vq}if(P.bqFound&&meta.bq===1)meta.bqPend=1;meta.cbest=meta.cbest||{};meta.cbest[P.cls]=Math.max(meta.cbest[P.cls]||0,P.floor);
 const oldR=rankOf(P.startBest||0);
 meta.essence+=tot;meta.best=Math.max(meta.best,P.floor);meta.runs++;meta.bosses+=P.bosses;saveMeta();
@@ -1118,7 +1121,7 @@ if(d.fog)h+='<div class="fog"></div><div class="fog f2"></div>';
 const dp=(typeof P!=='undefined'&&P&&P.floor&&!o.dead&&/^[gbtko]/.test(k)&&k!=='o1')?Math.min(1,P.floor/45):0;
 return `<div class="art img${o.elite?' elite':''}${o.boss?' boss':''}${o.dead?' dead':''}">${h}<div class="edge"${dp?` style="box-shadow:inset 0 0 ${36+dp*60}px ${10+dp*26}px #16161b"`:''}></div></div>`}
 function artFor(){const s=S.screen;
-if(s==='hub')return artImg('o1');if(s==='end'&&S.end&&S.end.recap&&S.end.recap.key)return artImg(S.end.recap.key,{elite:true,dead:true});if(s==='rite')return artImg('o1',{rite:true});if(s==='forge')return artImg('x2');if(s==='story'&&S.story&&/^bq/.test(S.story.id))return IMG.x4?artImg('x4'):'';if(s==='story'||s==='quests')return artImg('x1');
+if(s==='hub'){const c=meta.camp||0;for(let i=c;i>=1;i--)if(IMG['l'+i])return artImg('l'+i);return artImg('o1')}if(s==='end'&&S.end&&S.end.recap&&S.end.recap.key)return artImg(S.end.recap.key,{elite:true,dead:true});if(s==='rite')return artImg('o1',{rite:true});if(s==='forge')return artImg('x2');if(s==='story'&&S.story&&/^bq/.test(S.story.id))return IMG.x4?artImg('x4'):'';if(s==='story'||s==='quests')return artImg('x1');
 if(!P)return'';const ai=Math.min(4,Math.max(0,AREAS.indexOf(areaOf(P.floor||1))));
 if(s==='acard')return artImg('o'+(2+ai),{area:true});if(s==='doors'){if(S.fireOpen)return artImg(ai&&IMG['r'+(ai+1)]?'r'+(ai+1):'o8');const nf=P.floor+1,boss=P.tut?nf===3:nf%5===0;if(boss){const ai2=Math.min(4,Math.max(0,AREAS.indexOf(areaOf(nf)))),vk='v'+(ai2+1+(nf%10===0?5:0));return artImg(!P.tut&&nf<=50&&IMG[vk]?vk:'o7')}return artImg('o'+(2+Math.min(4,Math.max(0,AREAS.indexOf(areaOf(nf))))))}
 if(s==='gate'){const k=P.floor===30?'x10':P.floor>20?'x11':'x9';if(k&&IMG[k])return artImg(k)}
@@ -1314,8 +1317,13 @@ if(lockd.length&&meta.runs>=2){g=group('Kampfstile lernen');for(const id of lock
 {const pk=meta.pack||{},pl=QM.filter(q=>pk[q.id]).map(q=>`${pk[q.id]}× ${q.n}`);
 if((meta.gold||0)>0||pl.length){
 g=group(`Quartiermeister Brenn · <span class="c-gold">${meta.gold||0} Gold</span>`);
-for(const q of QM){const have=pk[q.id]||0,qc=Math.round(q.c*(meta.bq>=3?.8:1));btn(g,`${q.n} ${have}/${q.id==='pot'?Math.min(q.max,Math.max(have,4-ul('trank'))):q.max}`,()=>{meta.gold-=qc;meta.pack=Object.assign({},pk,{[q.id]:have+1});unlock('brenn');saveMeta();log(`Brenn packt dir ein: ${q.n}.`,'goldt');brennSay()},{sub:`${q.d}<br><span class="c-gold">${qc}<b></b> Gold</span>`,dis:have>=q.max||(q.id==='pot'&&1+ul('trank')+have>=5)||(meta.gold||0)<qc})}
+for(const q of QM){const have=pk[q.id]||0,qc=Math.round(q.c*(meta.bq>=3?.8:1));const qmx=q.max+((meta.camp||0)>=1?1:0);btn(g,`${q.n} ${have}/${q.id==='pot'?Math.min(qmx,Math.max(have,4-ul('trank'))):qmx}`,()=>{meta.gold-=qc;meta.pack=Object.assign({},pk,{[q.id]:have+1});unlock('brenn');saveMeta();log(`Brenn packt dir ein: ${q.n}.`,'goldt');brennSay()},{sub:`${q.d}<br><span class="c-gold">${qc}<b></b> Gold</span>`,dis:have>=qmx||(q.id==='pot'&&1+ul('trank')+have>=5)||(meta.gold||0)<qc})}
 if(pl.length)btn(g,'Gepackt: '+pl.join(', '),()=>{},{dis:true,cls:'info',sub:'Wird beim nächsten Abstieg mitgenommen'})}}
+/* Lagerausbau */
+{const CS=CAMP,c=meta.camp||0;if(meta.runs>=3||c){g=group(`Lagerausbau · Stufe ${c}/${CS.length}`);
+ if(c<CS.length){const n=CS[c];btn(g,`Spende an Varga: ${n.n}`,()=>{meta.gold-=n.c;meta.camp=c+1;saveMeta();try{for(let i=0;i<3;i++)smp('hammer',.4,.95+R()*.1,i*.45)}catch(e){}sys(`Das Lager wächst: ${n.n}. ${n.e}`);sayQ(n.q,'Varga')},{sub:`${n.e}<br><span class="c-gold">${n.c}<b></b> Gold</span>`,dis:(meta.gold||0)<n.c})}
+ else btn(g,'Erbauer des Lagers',()=>{},{dis:true,cls:'info',sub:'Das Lager ist fertig ausgebaut. Varga hat deinen Namen in den Stein gehauen.'})}
+ if(c>=2){const pk=meta.pack||{};g=group('Kräuterzelt · Nell');for(const q of NELL){const have=pk[q.id]||0;btn(g,q.n+(have?' ✓':''),()=>{meta.gold-=q.c;meta.pack=Object.assign({},meta.pack||{},{[q.id]:1});saveMeta();log(`Nell gibt dir ${q.n} mit.`,'goldt');if(R()<.5)sayQ(pick(NELLQ),'Nell')},{sub:`${q.d}<br><span class="c-gold">${q.c}<b></b> Gold</span>`,dis:!!have||(meta.gold||0)<q.c})}}}
 /* Lager */
 const mats=Object.values(meta.mats||{}).some(v=>v>0);
 g=group('Lager');
@@ -1386,7 +1394,7 @@ scene(`${rc?`<p class="gt" style="color:var(--red)">Unten geblieben · Etage ${x
 const g=group('');btn(g,'Zurück ins Lager',()=>{P=null;S.screen='hub'},{cls:'big',delay:600})},
 };
 
-function render(){
+function render(){BAG=BAG0+((meta.camp||0)>=3?1:0);
 checkQuests();
 if(P&&!['hub','end','chronik','settings','save'].includes(S.screen)){try{localStorage.setItem(RUNSAVE,JSON.stringify({v:2,P,E,S:{screen:S.screen,queue:S.queue,doors:S.doors,ptitle:S.ptitle,choices:S.choices,item:S.item,story:S.story,acard:S.acard,roomKey:S.roomKey,invSel:S.invSel,fireOpen:S.fireOpen},logs:logs.slice(0,15)}))}catch(e){}}
 try{rankInit();contractTick()}catch(e){}
