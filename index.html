@@ -146,6 +146,7 @@ textarea.code{width:100%;box-sizing:border-box;height:84px;background:#111114;co
 .btn.chal{display:flex;flex-direction:column;justify-content:flex-start;align-items:flex-start;text-align:left;border:1px solid rgba(201,143,92,.45);border-left:3px solid #c98f5c;background:linear-gradient(90deg,rgba(201,143,92,.14),rgba(201,143,92,.02) 70%)}.btn.chal.on{border-color:#e6c34a;border-left-color:#e6c34a;background:linear-gradient(90deg,rgba(230,195,74,.24),rgba(230,195,74,.04) 70%);box-shadow:0 0 12px rgba(230,195,74,.18)}
 [class^="fx-"],[class*=" fx-"],small [class^="c-"],small [class*=" c-"]{white-space:nowrap}
 #say{position:fixed;left:50%;top:38%;transform:translate(-50%,-50%) translateY(8px);z-index:90;pointer-events:none;text-align:center;opacity:0;transition:opacity .9s ease,transform .9s ease;padding:18px 20px;width:100vw;box-sizing:border-box;background:linear-gradient(90deg,transparent,rgba(10,10,12,.985) 15%,rgba(10,10,12,.985) 85%,transparent);border-top:1px solid rgba(201,143,92,.25);border-bottom:1px solid rgba(201,143,92,.25)}#say.on{opacity:1;transform:translate(-50%,-50%)}#say .q{font-style:italic;font-size:1.35rem;letter-spacing:.03em;color:#e6dccb;text-shadow:0 0 18px rgba(201,143,92,.35)}#say .w{margin-top:6px;font-size:.8rem;letter-spacing:.2em;text-transform:uppercase;color:#c98f5c}
+@keyframes flg{0%{box-shadow:0 0 0 1px #6fcf7a,0 0 26px rgba(111,207,122,.55)}100%{box-shadow:0 6px 24px rgba(0,0,0,.45)}}@keyframes flb{0%{box-shadow:0 0 0 1px #e5484d,0 0 26px rgba(229,72,77,.6)}100%{box-shadow:0 6px 24px rgba(0,0,0,.45)}}#stage.fl-good{animation:flg 1.6s ease-out}#stage.fl-bad{animation:flb 1.6s ease-out}
 #fcard{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;pointer-events:none;z-index:60;opacity:0;background:rgba(6,6,8,.0)}
 #fcard.on{animation:fcard 1.5s ease-in-out forwards}#fcard.on.big{animation-duration:2.4s}
 #fcard .fc1{font-size:1.6rem;letter-spacing:.3em;text-transform:uppercase;color:#d8d2c4}#fcard .fc2{font-size:.95rem;letter-spacing:.2em;color:#8f8a80;margin-top:6px}
@@ -472,7 +473,7 @@ return h?`<div class="hint"><b>Varga:</b> ${h}</div>`:''}
 
 /* ---------- Zustand ---------- */
 let S={screen:'hub',queue:[]}, P=null, E=null, lock=false, logs=[], resetArm=false;
-function log(t,c=''){logs.unshift({t,c});if(logs.length>40)logs.pop();try{sfxLog(t,c)}catch(e){}}
+function log(t,c=''){logs.unshift({t,c});try{if(S&&['room','doors','gate','loot'].includes(S.screen)){if(c==='bad')S.flash='bad';else if((c==='good'||c==='goldt')&&S.flash!=='bad')S.flash='good'}}catch(e){}if(logs.length>40)logs.pop();try{sfxLog(t,c)}catch(e){}}
 const sys=t=>log(t,'sys');
 
 /* ---------- Spieler ---------- */
@@ -1378,6 +1379,8 @@ checkQuests();
 if(P&&!['hub','end','chronik','settings','save'].includes(S.screen)){try{localStorage.setItem(RUNSAVE,JSON.stringify({v:2,P,E,S:{screen:S.screen,queue:S.queue,doors:S.doors,ptitle:S.ptitle,choices:S.choices,item:S.item,story:S.story,acard:S.acard,roomKey:S.roomKey,invSel:S.invSel,fireOpen:S.fireOpen},logs:logs.slice(0,15)}))}catch(e){}}
 try{rankInit();contractTick()}catch(e){}
 $('#stats').innerHTML=statsHTML();$('#actions').innerHTML='';SCR[S.screen]();
+{const rk=S.screen+'|'+(P?P.floor:'')+'|'+(S.roomKey||'');const run=['combat','doors','room','loot','perks','gate','acard','inv','story'];if(rk!==S._lastRk&&run.includes(S.screen)&&P){S._lastRk=rk;try{const st=$('#stage'),mi=$('#mini'),h=(mi&&mi.offsetHeight)||44,y=st.getBoundingClientRect().top+window.scrollY-h-8;requestAnimationFrame(()=>window.scrollTo({top:Math.max(0,y),behavior:S._lastScr===undefined?'auto':'smooth'}))}catch(e){}}}
+if(S.flash){const st=$('#stage'),f=S.flash;S.flash=null;if(st){st.classList.remove('fl-good','fl-bad');void st.offsetWidth;st.classList.add('fl-'+f);setTimeout(()=>st.classList.remove('fl-'+f),1700)}}
 if(S.screen!==S._lastScr){const top=['forge','beast','guild','bounty','quests','chronik','settings','save','ranks','hub','inv','scar','rite'];if(top.includes(S.screen)&&S._lastScr!==undefined)try{window.scrollTo({top:0,behavior:'auto'})}catch(e){}S._lastScr=S.screen}
 if(P&&P.contract&&!P.tut&&S.screen==='doors'){const c=P.contract;$('#scene').insertAdjacentHTML('beforeend',`<div class="srow small contract">${c.done?'✓':'◆'} Auftrag: ${CON[c.id].t(c.n)} <span class="c-ess">${c.r} ✧</span></div>`)}
 const th=tutHint();if(th)$('#scene').innerHTML=th+$('#scene').innerHTML;
