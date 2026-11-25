@@ -244,7 +244,7 @@ function contractTick(){const c=P&&P.contract;if(!c||c.done||P.tut)return;if(CON
 function roomBquest(){room('Eine Wand, von oben bis unten voller Striche, immer fünf und einer quer durch. Neben jeder Reihe ist ein Name in den Stein gekratzt. Ein paar davon hast du in Brenns Buch gelesen.',()=>[{l:'Die Namen abschreiben',fn:()=>{P.bqFound=true;log('Ganz unten steht noch ein Name, und zwar deiner. Daneben ist noch kein Strich.','sys');next()}}],'bquest')}
 function roomSchrein(){try{smp('hum',.4)}catch(e){}room('Ein Schrein aus schwarzem Stein, halb unter Geröll begraben. Auf dem Sockel das Zeichen des Ordens. Als du näher kommst, glimmt das Zeichen auf deiner Hand.',()=>[
 {l:'Segen der Klinge',sub:`+${trainV()*3} Angriff für diesen Abstieg`,fn:()=>{P.bonus.atk+=trainV()*3;log('Der Stein wird warm unter deiner Hand. Deine Waffe fühlt sich plötzlich leichter an.','good');next()}},
-{l:'Segen des Ankers',sub:'Volle LP und +2 Heiltränke',fn:()=>{heal(maxHp());P.potions+=2;log('Du atmest durch. Zum ersten Mal seit Stunden tut nichts mehr weh.','good');next()}},
+{l:'Segen des Ankers',sub:'Volle LP und +2 Heiltränke',fn:()=>{heal(maxHp());gainPot(2);log('Du atmest durch. Zum ersten Mal seit Stunden tut nichts mehr weh.','good');next()}},
 {l:'Segen der Gefallenen',sub:'+1 Schlüssel und ein Beutel Gold',fn:()=>{P.keys++;const g=goldAmt(4);P.gold+=g;log(`Unter dem Sockel liegt ein Beutel, den jemand hier versteckt hat. +${g} Gold, +1 Schlüssel`,'goldt');next()}}],'schrein')}
 
 /* ---------- Welt ---------- */
@@ -498,6 +498,9 @@ const gBonus=()=>ul('gier')*15+P.bonus.gold+gs('gold');
 const luckV=(x=0)=>ul('glueck')+P.bonus.luck+rm('luck',0)+gs('luck')+x;
 const dropPct=(x=0)=>Math.min(100,Math.round((.22+luckV(x)*.02)*100));
 const rarePct=(x=0)=>Math.min(100,Math.round(20+luckV(x)*1.8));
+const BRENNQ=['Haken, kein Strich.','Steht im Buch. Bring es wieder mit hoch.','Zweimal gezählt. Stimmt.','Ich schreib es auf deinen Namen. Sorg dafür, dass der Name oben bleibt.','Gold rein, Ware raus. Der Rest ist deine Sache.','Pack es nicht ganz nach unten. Unten sucht man nicht lange.','Ich war nie unten. Aber ich weiß, was die brauchen, die zurückkommen.','Deine Seite im Buch ist noch ziemlich leer. Gut so.','Nicht verschwenden. Unten gibt es keinen Brenn.','Quittiert. Und jetzt raus aus meinem Zelt.'];
+function brennSay(){const n=Date.now();if(S.brennT&&n-S.brennT<120000&&R()>.3)return;S.brennT=n;const pool=BRENNQ.filter(q=>q!==S.brennL);const q=pick(pool);S.brennL=q;sayQ(q,'Brenn')}
+const potMax=()=>5+(P&&P.perks&&P.perks.includes('potion')?1:0);function gainPot(n=1){let over=0;for(let i=0;i<n;i++){if(P.potions<potMax())P.potions++;else over++}if(over){const h=heal(potHeal()*over);log(h>0?`Kein Platz mehr für Tränke. Du trinkst ${over>1?over+' gleich':'ihn gleich'}. +${h} LP`:`Kein Platz mehr für Tränke. ${over>1?'Sie gehen':'Er geht'} verloren.`,h>0?'good':'dim')}}
 const potHeal=(x=0)=>Math.round(maxHp()*.4*(1+(P.bonus.potion+x)/100)*(hasS('schwer')?.8:1)*(hasC('bruch')?.7:1)*(P.cls==='blut'?.7:1));
 const cdNow=(x=0)=>Math.max(1,CLS[P.cls].skill.cd-P.bonus.cdr-x+(hasS('wach')?1:0)+(hasC('unrast')?1:0));
 const PR=[{n:'Gewöhnlich',m:1},{n:'Selten',m:1.5},{n:'Episch',m:2},{n:'Legendär',m:3}];
@@ -512,7 +515,7 @@ const PERKS=[
 {id:'gold',n:'Goldfinger',d:'Mehr Gold von Gegnern und Schätzen',f:m=>P.bonus.gold+=rnd(30*m),pv:m=>`Gold-Bonus +${gBonus()} % → +${gBonus()+rnd(30*m)} %`,cur:()=>`Gold-Bonus jetzt +${gBonus()} %`},
 {id:'luck',n:'Schatzsucher',d:'Gegner lassen öfter Ausrüstung fallen, und sie ist häufiger selten',f:m=>P.bonus.luck+=rnd(2*m),pv:m=>`Beute bei Gegnern ${dropPct(rnd(2*m))} % · Selten oder besser ${rarePct(rnd(2*m))} %`,cur:()=>`Beute bei Gegnern jetzt ${dropPct()} % · Selten oder besser ${rarePct()} %`},
 {id:'cdr',n:'Fokus',d:'Deine Fähigkeit lädt schneller',f:m=>P.bonus.cdr+=m>=2?2:1,max:2,pv:m=>`Abklingzeit ${cdNow()} → ${cdNow(m>=2?2:1)} Runden`,cur:()=>`Abklingzeit jetzt ${cdNow()} Runden`},
-{id:'potion',n:'Trankmeister',d:'Tränke heilen mehr, und du bekommst sofort welche dazu',f:m=>{P.bonus.potion+=rnd(50*m);P.potions+=rnd(m)},pv:m=>`Trank heilt ${potHeal()} → ${potHeal(rnd(50*m))} LP · +${rnd(m)} Heiltrank`,cur:()=>`Ein Trank heilt jetzt ${potHeal()} LP`},
+{id:'potion',n:'Trankmeister',d:'Tränke heilen mehr, und du bekommst sofort welche dazu',f:m=>{P.bonus.potion+=rnd(50*m);gainPot(rnd(m))},pv:m=>`Trank heilt ${potHeal()} → ${potHeal(rnd(50*m))} LP · +${rnd(m)} Heiltrank`,cur:()=>`Ein Trank heilt jetzt ${potHeal()} LP`},
 {id:'rage',n:'Blutrausch',d:'Jeder Sieg gibt Angriff bis zum Ende des Runs',f:m=>P.bonus.rage=rnd(m),max:1,pv:m=>`+${rnd(m)} Angriff pro Sieg`,cur:()=>`Bisher +${P.rageStacks} Angriff`},
 {id:'revive',n:'Zweiter Atem',d:'Einmal pro Run stehst du nach dem Tod wieder auf',f:m=>{P.revive=true;P.revivePct=Math.min(100,rnd(40*m))},max:1,pv:m=>`Wiederbelebung mit ${Math.min(100,rnd(40*m))} % LP`,cur:()=>P.revive?`Noch verfügbar (${P.revivePct||40} % LP)`:'Schon verbraucht'},
 {id:'regen',n:'Regeneration',d:'Heilt dich nach jedem Kampf',f:m=>P.bonus.regen+=rnd(6*m),pv:m=>`Heilung nach Kampf ${P.bonus.regen} % → ${P.bonus.regen+rnd(6*m)} % der max. LP`,cur:()=>`${P.bonus.regen} % der max. LP nach jedem Kampf`},
@@ -744,7 +747,7 @@ function roomTresorTuer(){room('Eine schwere Tür mit Siegeln aus Eisen. Dahinte
  {l:'Weitergehen',fn:next}],'tresorTuer')}
 function lightFire(){P.kindling--;log('Du zündest den Zunder an, und das trockene Holz fängt sofort Feuer.','good');roomRast()}
 function roomTresor(){P.keys--;if(!P.tut){meta.vaults++;saveMeta()}log('Der Schlüssel dreht sich schwer. Die Siegel brechen nacheinander.','goldt');
-const g=goldAmt(6);P.gold+=g;log(`+${g} Gold`,'goldt');if(R()<.5){P.kindling++;log('Ein Bündel Zunder liegt im Regal.','goldt')}if(R()<.4){P.potions++;log('Dazu ein Heiltrank.','good')}if(R()<.25){P.bells++;log('Auf einem Regal steht eine kleine Händlerglocke.','goldt')}
+const g=goldAmt(6);P.gold+=g;log(`+${g} Gold`,'goldt');if(R()<.5){P.kindling++;log('Ein Bündel Zunder liegt im Regal.','goldt')}if(R()<.4){log('Dazu ein Heiltrank.','good');gainPot()}if(R()<.25){P.bells++;log('Auf einem Regal steht eine kleine Händlerglocke.','goldt')}
 addMat('m'+Math.min(4,AREAS.indexOf(areaOf(P.floor))),ri(2,3));
 const a=genItem(2,2);S.queue.push({k:'loot',it:a});if(R()<.5){const b=genItem(2,1,null,[a.slot]);S.queue.push({k:'loot',it:b})}
 room('Eine Kammer, die seit Jahren keiner betreten hat. Staub liegt auf Truhen, die noch verschlossen sind.',()=>[{l:'Plündern',fn:next}],'tresorDone')}
@@ -755,7 +758,7 @@ function room(text,opts,key){S.screen='room';S.room={text,opts};S.roomKey=key||n
 function roomSchatz(){
 if(R()<.15){const d=Math.round(maxHp()*.12);P.hp-=d;log(`Eine Falle! Pfeile schnellen aus der Wand. −${d} LP`,'bad');if(checkDeath())return}
 const g=goldAmt(3);P.gold+=g;log(`Du findest ${g} Gold.`,'goldt');
-if(R()<.3){P.potions++;log('Du findest einen Heiltrank.','good')}
+if(R()<.3){log('Du findest einen Heiltrank.','good');gainPot()}
 if(R()<.5){const it=genItem(1);S.queue.push({k:'loot',it})}
 if(R()<.4)addMat('m'+Math.min(4,AREAS.indexOf(areaOf(P.floor))),ri(1,2));
 room('Eine verlassene Schatzkammer. Die meisten Truhen sind offen und voller Spinnweben, aber ein paar sind noch zu.',()=>[{l:'Weitergehen',fn:next}],'schatz')}
@@ -767,7 +770,7 @@ function roomHaendler(){const f=P.floor,it=genItem(1);unlock('haendler');
 const pm=rm('price',1)*(hasS('gier')?1.15:1),sh={pot:Math.round((15+f*2)*pm),item:Math.round((30+f*6)*(1+it.r*.6)*pm),bless:Math.round((25+f*4)*pm),full:Math.round((12+f*3)*pm),fire:Math.round((20+f*3)*pm),bell:Math.round((50+f*4)*pm),curse:Math.round((40+f*6)*pm),sold:false};
 room(['Ein vermummter Händler hockt neben einem Karren voller Klirrkram. „Gold, Ankerträger. Nur Gold.“','Eine alte Frau mit Laterne und einem Karren voller Waffen von Toten. „Die brauchen sie nicht mehr. Du schon.“','Ein Mann mit grauer Narbe auf der Hand nickt dir zu. „Bin seit elf Jahren nicht mehr oben gewesen. Was brauchst du?“','Zwischen den Eiswänden steht ein Schlitten voller Kisten. Der Händler daneben trägt drei Mäntel übereinander. „Hier unten verdirbt nichts. Was brauchst du?“','Im Dunkeln schwebt eine Laterne. Darunter sitzt jemand auf einer Kiste, das Gesicht unter der Kapuze verborgen. „Auch hier unten zahlt man mit Gold.“'][Math.min(4,Math.max(0,AREAS.indexOf(areaOf(P.floor||1))))],()=>{
 const cur=P[SK[it.slot]];return[
-{l:'Heiltrank',sub:`${sh.pot} Gold`,dis:P.gold<sh.pot,fn:()=>{P.gold-=sh.pot;P.potions++;log('Heiltrank gekauft.','good')}},
+{l:'Heiltrank',sub:P.potions>=potMax()?`${sh.pot} Gold · Tasche voll, wird sofort getrunken`:`${sh.pot} Gold`,dis:P.gold<sh.pot,fn:()=>{P.gold-=sh.pot;log('Heiltrank gekauft.','good');gainPot()}},
 {l:sh.sold?'Verkauft':it.name,html:true,sub:sh.sold?'':`${RAR[it.r].n} · ${iStats(it)}${iDiff(it)} · ${sh.item} Gold`,dis:sh.sold||P.gold<sh.item||!!(cur&&cur.curse),fn:()=>{P.gold-=sh.item;equip(it);sh.sold=true;log(`${it.name} angelegt.`,'good')}},
 {l:'Zunder',sub:`Für ein Lagerfeuer · ${sh.fire} Gold`,dis:P.gold<sh.fire,fn:()=>{P.gold-=sh.fire;P.kindling++;log('Zunder gekauft.','good')}},
 {l:'Händlerglocke',sub:`Ruft später einen Händler · ${sh.bell} Gold`,dis:P.gold<sh.bell,fn:()=>{P.gold-=sh.bell;P.bells++;log('Händlerglocke gekauft. „Läute, wenn du was brauchst. Einer von uns hört es immer.“','good')}},
@@ -790,15 +793,15 @@ const EVENTS=[
  {l:'Begraben',fn:()=>{if(R()<.2){log('Als du den letzten Stein auflegst, schlägt er die Augen auf.','bad');startCombat('elite',{name:'Erwachter Toter',base:'Ghul'})}else{P.ess+=4;sys('Du deckst ihn mit Steinen zu. Etwas Warmes bleibt an dir hängen. +4 Seelensplitter');next()}}}]),
 ()=>room('Eine Quelle schimmert in blassem Blau. Das Wasser summt leise.',()=>[
  {l:'Trinken',fn:()=>{if(R()<.65){const h=heal(Math.round(maxHp()*.5));log(`Das Wasser ist eiskalt und tut gut. +${h} LP`,'good')}else{const d=Math.round(maxHp()*.15);P.hp=Math.max(1,P.hp-d);log(`Das Wasser brennt in der Kehle. −${d} LP`,'bad')}next()}},
- {l:'Flasche füllen',fn:()=>{if(R()<.25){const d=Math.round(maxHp()*.1);P.hp=Math.max(1,P.hp-d);log(`Das Wasser wird in der Flasche schwarz und stinkt nach Fäulnis. Dir wird übel. −${d} LP`,'bad')}else{P.potions++;log('Du füllst eine Flasche. Ein Heiltrank.','good')}next()}}]),
+ {l:'Flasche füllen',fn:()=>{if(R()<.25){const d=Math.round(maxHp()*.1);P.hp=Math.max(1,P.hp-d);log(`Das Wasser wird in der Flasche schwarz und stinkt nach Fäulnis. Dir wird übel. −${d} LP`,'bad')}else{log('Du füllst eine Flasche. Ein Heiltrank.','good');gainPot()}next()}}]),
 ()=>room('Ein verlassenes Lager. Schlafsäcke, eine kalte Feuerstelle, ein umgekippter Rucksack. Wer hier war, ist in Eile aufgebrochen.',()=>[
- {l:'Durchsuchen',fn:()=>{P.kindling++;log('Im Rucksack steckt ein Bündel Zunder.','goldt');if(R()<.5){P.potions++;log('Und ein Heiltrank.','good')}if(R()<.25){const d=Math.round(maxHp()*.15);P.hp=Math.max(1,P.hp-d);log(`Eine Giftspinne krabbelt aus dem Schlafsack und beißt zu. −${d} LP`,'bad')}next()}},
+ {l:'Durchsuchen',fn:()=>{P.kindling++;log('Im Rucksack steckt ein Bündel Zunder.','goldt');if(R()<.5){log('Und ein Heiltrank.','good');gainPot()}if(R()<.25){const d=Math.round(maxHp()*.15);P.hp=Math.max(1,P.hp-d);log(`Eine Giftspinne krabbelt aus dem Schlafsack und beißt zu. −${d} LP`,'bad')}next()}},
  {l:'Weitergehen',fn:next}]),
 ()=>room('Ein Runenstein pulsiert im Takt deines Herzschlags.',()=>[
  {l:'Berühren',fn:()=>{if(R()<.25){const o=pick([['−2 Angriff',()=>P.bonus.atk-=2],['−1 Verteidigung',()=>P.bonus.def-=1],['−10 max. LP',()=>{P.bonus.hp-=10;P.hp=Math.max(1,Math.min(P.hp,maxHp()))}]]);o[1]();log(`Die Rune brennt sich in deine Haut, und irgendwas daran stimmt nicht: ${o[0]}.`,'bad')}else{const o=pick([['+2 Angriff',()=>P.bonus.atk+=2],['+1 Verteidigung',()=>P.bonus.def+=1],['+10 max. LP',()=>{P.bonus.hp+=10;P.hp+=10}],['+4 % Krit',()=>P.bonus.crit+=4]]);o[1]();sys(`Die Rune brennt sich in deine Haut: ${o[0]}.`)}next()}},
  {l:'Weitergehen',fn:next}]),
 ()=>room('In einer Zelle kauert ein gefesselter Händlerjunge. „Bitte … ich kann zahlen!“',()=>[
- {l:'Befreien',fn:()=>{if(R()<.75){const g=goldAmt(2.5);P.gold+=g;P.potions++;log(`Dankbar gibt er dir ${g} Gold und einen Heiltrank.`,'goldt');next()}else{log('Der Junge grinst. Seine Zähne sind zu lang und zu spitz. Ein Ghul!','bad');startCombat('elite',{name:'Ghul in Kindergestalt',base:'Ghul'})}}},
+ {l:'Befreien',fn:()=>{if(R()<.75){const g=goldAmt(2.5);P.gold+=g;log(`Dankbar gibt er dir ${g} Gold und einen Heiltrank.`,'goldt');gainPot();next()}else{log('Der Junge grinst. Seine Zähne sind zu lang und zu spitz. Ein Ghul!','bad');startCombat('elite',{name:'Ghul in Kindergestalt',base:'Ghul'})}}},
  {l:'Weitergehen',fn:next}]),
 ()=>room('Eine Ankerträgerin sitzt an der Wand, das Bein voller Blut. „Hast du einen Trank übrig? Ich zahl’s dir zurück, versprochen.“',()=>[
  {l:'Trank geben',sub:`Du hast ${P.potions}`,dis:P.potions<1,fn:()=>{P.potions--;if(R()<.75){const g=goldAmt(2);P.gold+=g;P.keys++;log(`„Danke. Hier, das hab ich weiter unten gefunden.“ +${g} Gold und 1 Schlüssel`,'goldt')}else{const g=Math.floor(P.gold*.5);P.gold-=g;log(`Kaum hat sie getrunken, springt sie auf und rennt weg. ${g} Gold aus deinem Beutel nimmt sie mit.`,'bad')}next()}},
@@ -829,7 +832,7 @@ function showGate(){S.screen='gate';try{if(!smp('stone',.75,.95,.4))sfx('door')}
 
 function startRun(id){newRun(id);if(!P.tut)statHit('runs');S.queue=[];logs=[];
 _rng=Math.random;P.mod='ruhig';if(S.chal==='week'){const W=weekly();P.mod=W.mod;P.weekly=W.k;log(`Herausforderung · Riss der Woche: ${RMODS[W.mod].n} (${RMODS[W.mod].d}). Ziel: Etage ${W.goal}.`,'sys')}else if(S.chal==='day'){const D=daily();P.mod=D.mod;P.daily=D.k;log(`Herausforderung · Riss des Tages: ${RMODS[D.mod].n} (${RMODS[D.mod].d}). Heute sind die Etagen für alle gleich.`,'sys')}S.chal=null;
-const pk=meta.pack||{},got=[];if(pk.pot){P.potions+=pk.pot;got.push(pk.pot+' Heiltrank')}if(pk.fire){P.kindling+=pk.fire;got.push(pk.fire+' Zunder')}if(pk.key){P.keys+=pk.key;got.push('1 Schlüssel')}if(pk.bell){P.bells+=pk.bell;got.push('1 Händlerglocke')}
+const pk=meta.pack||{},got=[];if(pk.pot){P.potions=Math.min(potMax(),P.potions+pk.pot);got.push(pk.pot+' Heiltrank')}if(pk.fire){P.kindling+=pk.fire;got.push(pk.fire+' Zunder')}if(pk.key){P.keys+=pk.key;got.push('1 Schlüssel')}if(pk.bell){P.bells+=pk.bell;got.push('1 Händlerglocke')}
 if(pk.weapon){P.floor=2;const w=genItem(0,1,{w:Object.keys(WT)},['a','h','g','j']);P.floor=0;P.weapon=w;got.push(w.name)}
 const tk=(meta.take||[]).map(a=>meta.armory.find(i=>i.aid===a)).filter(Boolean);for(const it of tk){const k=SK[it.slot];if(P[k]&&P.bag.length<BAG)P.bag.push(P[k]);P[k]=it;got.push(it.name);meta.armory=meta.armory.filter(i=>i!==it)}if(tk.length){meta.take=[];P.hp=maxHp()}
 if(got.length){meta.pack={};saveMeta();log('Brenn hat dir ein Paket geschnürt: '+got.join(', ')+'.','goldt')}
@@ -1182,7 +1185,7 @@ return `<div class="srow"><span><b>${CLS[P.cls].name}</b> · Stufe ${P.lvl}</spa
 <div class="srow"><span>${ck('s:hp',`<span class="c-hp">LP</span> ${Math.max(0,P.hp)}/${maxHp()}`)}</span>${bar(P.hp,maxHp(),'var(--red)')}</div>
 <div class="srow"><span>${ck('s:xp',`<span class="c-xp">EP</span> ${P.xp}/${P.xpNext}`)}</span>${bar(P.xp,P.xpNext,'var(--accent)')}</div>
 <div class="srow small">${ck('s:atk',`<span class="c-atk">⚔ ${atk()}</span>`)} · ${ck('s:def',`<span class="c-def">⛨ ${def()}</span>`)} · ${ck('s:crit',`<span class="fx-crit">✦ ${crit()} %</span>`)}${dodge()?` · ${ck('s:dodge',`<span class="fx-dodge">↷ ${dodge()} %</span>`)}`:''} · ${ck('s:gold',`<span class="c-gold">${P.gold} Gold</span>`)} · ${ck('s:ess',`<span class="c-ess">${P.ess} ✧</span>`)}</div>
-<div class="srow small">${ck('s:pot',`<span class="c-pot">${P.potions} ${P.potions===1?'Trank':'Tränke'}</span>`)} · ${ck('s:key',`<span class="c-key">${P.keys||0} Schlüssel</span>`)} · ${ck('s:fire',`<span class="c-fire">${P.kindling||0} Zunder</span>`)}${P.bells?` · ${ck('s:bell',`<span class="c-key">${P.bells} Glocke</span>`)}`:''}</div>
+<div class="srow small">${ck('s:pot',`<span class="c-pot">${P.potions}/${potMax()} ${P.potions===1?'Trank':'Tränke'}</span>`)} · ${ck('s:key',`<span class="c-key">${P.keys||0} Schlüssel</span>`)} · ${ck('s:fire',`<span class="c-fire">${P.kindling||0} Zunder</span>`)}${P.bells?` · ${ck('s:bell',`<span class="c-key">${P.bells} Glocke</span>`)}`:''}</div>
 ${P.comp?`<div class="srow small">${ck('s:comp',`Begleiter: <b>${esc(P.comp.n)}</b> ${Math.max(0,P.comp.hp)}/${P.comp.max} LP`)}</div>`:''}${Object.keys(P.mats||{}).length?`<div class="srow small">${ck('s:mat',`<span class="mat">Material: ${Object.values(P.mats).reduce((a,b)=>a+b,0)}</span>`)}</div>`:''}
 ${P.mod&&P.mod!=='ruhig'&&RMODS[P.mod]?`<div class="srow small dim">${P.daily?'Riss des Tages':P.weekly?'Riss der Woche':'Besonderheit'}: ${ck('s:mod',`<b>${RMODS[P.mod].n}</b>`)}</div>`:''}
 <div class="chl">Ausrüstung</div><div class="chips small">${['weapon','armor','helm','gloves','jewel'].map(k=>P[k]?`<span class="chip eq${S.info==='e:'+k?' on':''}" data-i="e:${k}" style="color:${RAR[P[k].r].c};border-left-color:${RAR[P[k].r].c}"><em>${SN[{weapon:'w',armor:'a',helm:'h',gloves:'g',jewel:'j'}[k]]}</em>${P[k].name}</span>`:'').join('')}${!P.weapon&&!P.armor&&!P.helm&&!P.gloves&&!P.jewel?'<span class="dim">Keine Ausrüstung</span>':''}</div>
@@ -1308,7 +1311,7 @@ if(lockd.length&&meta.runs>=2){g=group('Kampfstile lernen');for(const id of lock
 {const pk=meta.pack||{},pl=QM.filter(q=>pk[q.id]).map(q=>`${pk[q.id]}× ${q.n}`);
 if((meta.gold||0)>0||pl.length){
 g=group(`Quartiermeister Brenn · <span class="c-gold">${meta.gold||0} Gold</span>`);
-for(const q of QM){const have=pk[q.id]||0,qc=Math.round(q.c*(meta.bq>=3?.8:1));btn(g,`${q.n} ${have}/${q.max}`,()=>{meta.gold-=qc;meta.pack=Object.assign({},pk,{[q.id]:have+1});unlock('brenn');saveMeta();log(`Brenn packt dir ein: ${q.n}.`,'goldt');sayQ('Haken, kein Strich.','Brenn')},{sub:`${q.d}<br><span class="c-gold">${qc}<b></b> Gold</span>`,dis:have>=q.max||(meta.gold||0)<qc})}
+for(const q of QM){const have=pk[q.id]||0,qc=Math.round(q.c*(meta.bq>=3?.8:1));btn(g,`${q.n} ${have}/${q.id==='pot'?Math.min(q.max,Math.max(have,4-ul('trank'))):q.max}`,()=>{meta.gold-=qc;meta.pack=Object.assign({},pk,{[q.id]:have+1});unlock('brenn');saveMeta();log(`Brenn packt dir ein: ${q.n}.`,'goldt');brennSay()},{sub:`${q.d}<br><span class="c-gold">${qc}<b></b> Gold</span>`,dis:have>=q.max||(q.id==='pot'&&1+ul('trank')+have>=5)||(meta.gold||0)<qc})}
 if(pl.length)btn(g,'Gepackt: '+pl.join(', '),()=>{},{dis:true,cls:'info',sub:'Wird beim nächsten Abstieg mitgenommen'})}}
 /* Lager */
 const mats=Object.values(meta.mats||{}).some(v=>v>0);
