@@ -1104,7 +1104,9 @@ function foeKey(e){if(e.name==='Der schwarze Duellant'&&IMG.e12)return'e12';if(e
 const AREAP=['dust','dust','embers','snow','dust'];
 function artImg(k,o={}){const d=IMG[k];if(!d)return'';const src=`img/${k}.webp`;let h=`<img class="base" src="${src}" alt="">`;
 const gl=(x,y,r,c,a)=>{const m=`radial-gradient(ellipse ${r}% ${(r*1.78).toFixed(1)}% at ${x}% ${y}%,#000 30%,transparent 100%)`;return `<img class="hl c-${c} a-${a}" src="${src}" alt="" style="-webkit-mask-image:${m};mask-image:${m}">`};
-if(o.rite){h+=gl(43,30,16,'v','pulse');h+=gl(43,30,9,'v','fl2')}
+if(o.rite){h+=gl(43,30,16,'v','pulse');h+=gl(43,30,9,'v','fl2')}if(o.camp){const c=o.camp,au=(r,a,y=28)=>`<div class="moon" style="mix-blend-mode:screen;animation-duration:${5-c*.5}s;background:radial-gradient(ellipse ${r}% ${(r*1.78).toFixed(1)}% at 43% ${y}%,rgba(175,125,255,${a}) 0%,rgba(140,90,255,${(a*.4).toFixed(2)}) 50%,transparent 100%)"></div>`;
+ h+=gl(43,26,13+c*2,'v','pulse');h+=gl(43,24,9+c,'v','fl2');if(c>=2)h+=gl(43,26,16+c*2,'v','pulse');
+ h+=au(10+c*5,(.06+c*.07).toFixed(2));if(c>=3)h+=au(30,.18,52);if(c>=4){h+=au(44,.16);h+=gl(43,26,24,'v','fl2')}}
 for(const g of d.g||[]){h+=gl(...g);if(g[4]==='fl'){const r=g[2]*2.6;h+=`<div class="pool" style="background:radial-gradient(ellipse ${r}% ${(r*1.78).toFixed(1)}% at ${g[0]}% ${g[1]}%,rgba(255,150,60,.22),rgba(255,120,40,.08) 45%,transparent 100%)"></div>`}}
 if(d.m){const [x,y,r]=d.m;h+=`<div class="moon" style="background:radial-gradient(ellipse ${r*1.05}% ${(r*1.87).toFixed(1)}% at ${x}% ${y}%,rgba(255,252,240,.55) 0%,rgba(240,240,250,.35) 70%,transparent 100%),radial-gradient(ellipse ${r*3.2}% ${(r*5.7).toFixed(1)}% at ${x}% ${y}%,rgba(215,225,255,.32) 0%,rgba(190,205,255,.12) 45%,transparent 100%),radial-gradient(ellipse ${r*9}% ${(r*16).toFixed(1)}% at ${x}% ${y}%,rgba(170,185,230,.12) 0%,transparent 100%)"></div>`}
 if(d.s){const bg=d.s.map(e=>`radial-gradient(ellipse ${e[2]}% ${(e[2]*1.78).toFixed(1)}% at ${e[0]}% ${e[1]}%,rgba(190,140,255,.9) 0%,rgba(150,90,255,.35) 45%,transparent 100%)`).join(',');h+=`<div class="eg a-pulse" style="background-image:${bg}"></div>`}
@@ -1121,7 +1123,7 @@ if(d.fog)h+='<div class="fog"></div><div class="fog f2"></div>';
 const dp=(typeof P!=='undefined'&&P&&P.floor&&!o.dead&&/^[gbtko]/.test(k)&&k!=='o1')?Math.min(1,P.floor/45):0;
 return `<div class="art img${o.elite?' elite':''}${o.boss?' boss':''}${o.dead?' dead':''}">${h}<div class="edge"${dp?` style="box-shadow:inset 0 0 ${36+dp*60}px ${10+dp*26}px #16161b"`:''}></div></div>`}
 function artFor(){const s=S.screen;
-if(s==='hub'){const c=meta.camp||0;for(let i=c;i>=1;i--)if(IMG['l'+i])return artImg('l'+i);return artImg('o1')}if(s==='end'&&S.end&&S.end.recap&&S.end.recap.key)return artImg(S.end.recap.key,{elite:true,dead:true});if(s==='rite')return artImg('o1',{rite:true});if(s==='forge')return artImg('x2');if(s==='story'&&S.story&&/^bq/.test(S.story.id))return IMG.x4?artImg('x4'):'';if(s==='story'||s==='quests')return artImg('x1');
+if(s==='hub')return artImg('o1',{camp:meta.camp||0});if(s==='end'&&S.end&&S.end.recap&&S.end.recap.key)return artImg(S.end.recap.key,{elite:true,dead:true});if(s==='rite')return artImg('o1',{rite:true});if(s==='forge')return artImg('x2');if(s==='story'&&S.story&&/^bq/.test(S.story.id))return IMG.x4?artImg('x4'):'';if(s==='story'||s==='quests')return artImg('x1');
 if(!P)return'';const ai=Math.min(4,Math.max(0,AREAS.indexOf(areaOf(P.floor||1))));
 if(s==='acard')return artImg('o'+(2+ai),{area:true});if(s==='doors'){if(S.fireOpen)return artImg(ai&&IMG['r'+(ai+1)]?'r'+(ai+1):'o8');const nf=P.floor+1,boss=P.tut?nf===3:nf%5===0;if(boss){const ai2=Math.min(4,Math.max(0,AREAS.indexOf(areaOf(nf)))),vk='v'+(ai2+1+(nf%10===0?5:0));return artImg(!P.tut&&nf<=50&&IMG[vk]?vk:'o7')}return artImg('o'+(2+Math.min(4,Math.max(0,AREAS.indexOf(areaOf(nf))))))}
 if(s==='gate'){const k=P.floor===30?'x10':P.floor>20?'x11':'x9';if(k&&IMG[k])return artImg(k)}
@@ -1321,7 +1323,7 @@ for(const q of QM){const have=pk[q.id]||0,qc=Math.round(q.c*(meta.bq>=3?.8:1));c
 if(pl.length)btn(g,'Gepackt: '+pl.join(', '),()=>{},{dis:true,cls:'info',sub:'Wird beim nächsten Abstieg mitgenommen'})}}
 /* Lagerausbau */
 {const CS=CAMP,c=meta.camp||0;if(meta.runs>=3||c){g=group(`Lagerausbau · Stufe ${c}/${CS.length}`);
- if(c<CS.length){const n=CS[c];btn(g,`Spende an Varga: ${n.n}`,()=>{meta.gold-=n.c;meta.camp=c+1;saveMeta();try{for(let i=0;i<3;i++)smp('hammer',.4,.95+R()*.1,i*.45)}catch(e){}sys(`Das Lager wächst: ${n.n}. ${n.e}`);sayQ(n.q,'Varga')},{sub:`${n.e}<br><span class="c-gold">${n.c}<b></b> Gold</span>`,dis:(meta.gold||0)<n.c})}
+ if(c<CS.length){const n=CS[c];btn(g,`Spende an Varga: ${n.n}`,()=>{meta.gold-=n.c;meta.camp=c+1;saveMeta();try{for(let i=0;i<3;i++)smp('hammer',.4,.95+R()*.1,i*.45)}catch(e){}sys(`Das Lager wächst: ${n.n}. ${n.e} Die Adern im Stein leuchten heller.`);sayQ(n.q,'Varga')},{sub:`${n.e}<br><span class="c-gold">${n.c}<b></b> Gold</span>`,dis:(meta.gold||0)<n.c})}
  else btn(g,'Erbauer des Lagers',()=>{},{dis:true,cls:'info',sub:'Das Lager ist fertig ausgebaut. Varga hat deinen Namen in den Stein gehauen.'})}
  if(c>=2){const pk=meta.pack||{};g=group('Kräuterzelt · Nell');for(const q of NELL){const have=pk[q.id]||0;btn(g,q.n+(have?' ✓':''),()=>{meta.gold-=q.c;meta.pack=Object.assign({},meta.pack||{},{[q.id]:1});saveMeta();log(`Nell gibt dir ${q.n} mit.`,'goldt');if(R()<.5)sayQ(pick(NELLQ),'Nell')},{sub:`${q.d}<br><span class="c-gold">${q.c}<b></b> Gold</span>`,dis:!!have||(meta.gold||0)<q.c})}}}
 /* Lager */
