@@ -971,8 +971,8 @@ function bmStop(){if(!BMUS.nodes)return;const t=AU.ctx.currentTime,ns=BMUS.nodes
 /* ---- Bossmusik (Ersatz-Trommeln) ---- */
 function bOut(t,dur,a,peak){const c=AU.ctx,g=c.createGain();g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(peak,t+a);g.gain.exponentialRampToValueAtTime(.0001,t+dur);g.connect(AU.mus);return g}
 function bKick(t,v=.5){const c=AU.ctx,o=c.createOscillator(),g=bOut(t,.42,.004,v);o.type='sine';o.frequency.setValueAtTime(110,t);o.frequency.exponentialRampToValueAtTime(38,t+.18);o.connect(g);o.start(t);o.stop(t+.45)}
-function preTick(){const c=AU.ctx,n=c.currentTime;if(!AU.preS){AU.preS=n;AU.preT=n+.6;AU.preI=0}const big=(P.floor+1)%10===0,el=n-AU.preS,v=Math.min(1,el/14)*(big?.26:.2)+.03,sp=60/(big?76:70);
-while(AU.preT<n+.5){const i=AU.preI%4;if(i===0)bTaiko(AU.preT,v);if(i===2&&el>5)bTaiko(AU.preT,v*.6);if(i===3&&el>10)bTaiko(AU.preT+sp*.5,v*.45);AU.preT+=sp;AU.preI++}}
+function preTick(){const c=AU.ctx,n=c.currentTime;if(!AU.preS){AU.preS=n;AU.preT=n+.15;AU.preI=0}const big=(P.floor+1)%10===0,el=n-AU.preS,v=Math.min(1,.35+el/3)*(big?.26:.2),sp=60/(big?96:88);
+while(AU.preT<n+.5){const i=AU.preI%4;if(i===0)bTaiko(AU.preT,v);if(i===2&&el>1)bTaiko(AU.preT,v*.6);if(i===3&&el>2.2)bTaiko(AU.preT+sp*.5,v*.45);AU.preT+=sp;AU.preI++}}
 function bTaiko(t,v=.32){const c=AU.ctx,o=c.createOscillator(),g=bOut(t,.55,.003,v);o.type='triangle';o.frequency.setValueAtTime(150,t);o.frequency.exponentialRampToValueAtTime(70,t+.3);o.connect(g);o.start(t);o.stop(t+.6);
  const n=c.createBufferSource(),f=c.createBiquadFilter(),ng=bOut(t,.22,.002,v*.55);n.buffer=AU.noise;f.type='bandpass';f.frequency.value=900;f.Q.value=.8;n.connect(f);f.connect(ng);n.start(t,R()*1.5);n.stop(t+.25)}
 function bHat(t,v=.035){const c=AU.ctx,n=c.createBufferSource(),f=c.createBiquadFilter(),g=bOut(t,.06,.001,v);n.buffer=AU.noise;f.type='highpass';f.frequency.value=7000;n.connect(f);f.connect(g);n.start(t,R()*1.5);n.stop(t+.08)}
