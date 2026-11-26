@@ -213,7 +213,7 @@ const UPG=[
 const CLS={
 krieger:{name:'Krieger',hp:70,atk:5,def:3,crit:3,cost:0,desc:'Robust und standhaft',fav:['hammer','schwert'],pass:{n:'Bollwerk',d:'Abwehren blockt 70 %, der nächste Angriff danach macht +40 %'},skill:{name:'Schildschlag',cd:3,desc:'125 % Schaden, betäubt 1 Runde'}},
 klinge:{name:'Klingentänzer',hp:45,atk:7,def:0,crit:25,cost:60,desc:'Schnell, tödliche Krits',fav:['dolch','saebel'],pass:{n:'Rhythmus',d:'Jeder Treffer in Folge +6 % Krit (bis 5×), ein Treffer gegen dich bricht die Serie · 8 % Ausweichen'},skill:{name:'Wirbelklinge',cd:4,desc:'3 Hiebe à 70 %, jeder mit +15 % Krit-Chance'}},
-magier:{name:'Runenmagier',hp:38,atk:4,def:0,crit:5,cost:150,desc:'Zerbrechlich, aber verheerend',fav:['stab','speer'],pass:{n:'Runenschild',d:'Jeder Kampf beginnt mit einem Schild aus 20 % deiner LP · normale Angriffe laden die Fähigkeit schneller'},skill:{name:'Runenfeuer',cd:3,desc:'260 %, ignoriert Rüstung, verbrennt'}},
+magier:{name:'Runenmagier',hp:38,atk:4,def:0,crit:5,cost:150,desc:'Zerbrechlich, aber verheerend',fav:['stab','speer'],pass:{n:'Runenschild',d:'Jeder Kampf beginnt mit einem Schild aus 20 % deiner LP · normale Angriffe laden die Fähigkeit schneller'},skill:{name:'Runenfeuer',cd:3,desc:'210 %, ignoriert Rüstung, verbrennt'}},
 blut:{name:'Blutritter',hp:60,atk:6,def:1,crit:8,cost:300,desc:'Lebt vom Blut seiner Feinde',fav:['sense','axt'],pass:{n:'Blutdurst',d:'5 % Lebensraub · unter 50 % LP +25 % Schaden · Heiltränke wirken nur zu 70 %'},skill:{name:'Blutpakt',cd:4,desc:'200 % Schaden, heilt um 50 % davon'}},
 };
 const RANKS=[[45,'Grundläufer'],[30,'Ankermeister'],[20,'Tiefengänger'],[12,'Pfadgänger'],[5,'Geselle'],[0,'Novize']];
@@ -558,8 +558,8 @@ const PERKS=[
 {id:'b_step',cls:'klinge',n:'Schattenschritt',d:'Mehr Ausweichen, und Ausweichen hält deinen Rhythmus',f:m=>{P.bonus.dodge=(P.bonus.dodge||0)+rnd(4*m);P.bonus.bstep=1},pv:m=>`Ausweichen ${dodge()} % → ${dodge()+rnd(4*m)} % · Ausweichen gibt +1 Rhythmus`,cur:()=>`Ausweichen ${dodge()} %`},
 {id:'b_cut',cls:'klinge',n:'Feine Schnitte',minR:2,max:1,d:'Kritische Treffer lassen den Gegner bluten',f:m=>P.bonus.bcut=1,pv:()=>'Jeder Krit verursacht Blutung',cur:()=>'Krits verursachen Blutung'},
 {id:'m_wall',cls:'magier',n:'Runenwall',d:'Dein Runenschild wird stärker',f:m=>P.bonus.mshield=(P.bonus.mshield||0)+rnd(10*m),pv:m=>`Runenschild ${20+(P.bonus.mshield||0)} % → ${20+(P.bonus.mshield||0)+rnd(10*m)} % der LP`,cur:()=>`Runenschild ${20+(P.bonus.mshield||0)} % der LP`},
-{id:'m_glut',cls:'magier',n:'Glutrunen',d:'Brennende Gegner nehmen mehr Schaden',f:m=>P.bonus.mburn=(P.bonus.mburn||0)+rnd(40*m),pv:m=>`Brandschaden +${P.bonus.mburn||0} % → +${(P.bonus.mburn||0)+rnd(40*m)} %`,cur:()=>`Brandschaden +${P.bonus.mburn||0} %`},
-{id:'m_echo',cls:'magier',n:'Runenecho',minR:2,max:1,d:'Runenfeuer hallt nach und trifft ein zweites Mal',f:m=>P.bonus.mecho=1,pv:()=>'Zweiter Treffer mit 50 % Schaden',cur:()=>'Runenfeuer trifft zweimal'},
+{id:'m_glut',cls:'magier',n:'Glutrunen',tier:[30,45,60,90],d:'Brennende Gegner nehmen mehr Schaden',f:m=>P.bonus.mburn=PK('m_glut').tier[mR(m)],pv:m=>`Brandschaden +${P.bonus.mburn||0} % → +${PK('m_glut').tier[mR(m)]} %`,cur:()=>`Brandschaden +${P.bonus.mburn||0} %`},
+{id:'m_echo',cls:'magier',n:'Runenecho',minR:2,max:1,d:'Runenfeuer hallt nach und trifft ein zweites Mal',f:m=>P.bonus.mecho=1,pv:()=>'Zweiter Treffer mit 40 % Schaden',cur:()=>'Runenfeuer trifft zweimal'},
 {id:'r_pakt',cls:'blut',n:'Tiefer Pakt',d:'Dein Blutpakt heilt mehr',f:m=>P.bonus.rpakt=(P.bonus.rpakt||0)+rnd(20*m),pv:m=>`Blutpakt heilt ${50+(P.bonus.rpakt||0)} % → ${50+(P.bonus.rpakt||0)+rnd(20*m)} % des Schadens`,cur:()=>`Blutpakt heilt ${50+(P.bonus.rpakt||0)} %`},
 {id:'r_durst',cls:'blut',n:'Rasender Durst',d:'Blutdurst macht noch mehr Schaden',f:m=>P.bonus.rdurst=(P.bonus.rdurst||0)+rnd(12*m),pv:m=>`Blutdurst +${25+(P.bonus.rdurst||0)} % → +${25+(P.bonus.rdurst||0)+rnd(12*m)} %`,cur:()=>`Blutdurst +${25+(P.bonus.rdurst||0)} %`},
 {id:'r_last',cls:'blut',n:'Todesverachtung',minR:2,max:1,d:'Einmal pro Kampf überlebst du einen tödlichen Schlag mit 1 LP',f:m=>P.bonus.rlast=1,pv:()=>'Einmal pro Kampf unsterblich',cur:()=>'Einmal pro Kampf unsterblich'},{id:'harvest',n:'Seelenernte',minR:3,max:1,
@@ -648,7 +648,7 @@ function stunOk(){if(E&&E.type==='boss'&&R()<.3){log(`${E.name} schüttelt die B
 function useSkill(){const c=P.cls;log(`» ${CLS[c].skill.name}`,'sys');
 if(c==='krieger'){dealDmg(1.25*(1+(P.bonus.kskill||0)/100),{skill:1});if(E.hp>0&&stunOk()){E.stun=1;log(`${E.name} ist betäubt.`)}}
 else if(c==='klinge'){for(let i=0;i<3&&E.hp>0;i++)dealDmg(.7,{skill:1,cb:15})}
-else if(c==='magier'){dealDmg(2.6,{pierce:1,skill:1});if(E.hp>0&&P.bonus.mecho){log('Runenecho!','crit');dealDmg(1.3,{pierce:1,skill:1})}if(E.hp>0){E.burn=3;log(`${E.name} brennt.`,'crit')}}
+else if(c==='magier'){dealDmg(2.1,{pierce:1,skill:1});if(E.hp>0&&P.bonus.mecho){log('Runenecho!','crit');dealDmg(.85,{pierce:1,skill:1})}if(E.hp>0){E.burn=3;log(`${E.name} brennt.`,'crit')}}
 else if(c==='blut'){const d=dealDmg(2,{skill:1});const h=heal(Math.round(d*(.5+(P.bonus.rpakt||0)/100)));if(h)log(`+${h} LP`,'good')}
 if(hasU('weinende')&&E.hp>0){E.pdot=3;log(`${E.name} ist vergiftet.`,'dim')}
 P.cd=cdNow()+1}
