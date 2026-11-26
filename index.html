@@ -341,11 +341,11 @@ sense:{n:'Sense',m:1,ls:8,d:'8 % Lebensraub'},
 saebel:{n:'Säbel',m:.85,dbl:25,d:'25 % Chance auf einen zweiten Hieb'},
 stab:{n:'Runenstab',m:.8,skill:25,d:'Schwache Hiebe, aber die Fähigkeit macht 25 % mehr Schaden'}};
 const AT={
-leder:{n:'Lederrüstung',dm:.65,hm:1.15,dodge:8,d:'Leicht: viel LP, wenig Schutz, 8 % Ausweichen'},
+leder:{n:'Lederrüstung',dm:.6,hm:1.05,dodge:8,crit:5,d:'Beweglich: +8 % Ausweichen, +5 % Krit · wenig Schutz'},
 kette:{n:'Kettenhemd',dm:1,hm:.9,thorn:20,d:'Dornen: wer dich trifft, erleidet 20 % des Schadens selbst'},
-platte:{n:'Plattenpanzer',dm:1.7,hm:1.2,crit:-5,d:'Schwer: sehr viel Schutz, −5 % Krit'},
-robe:{n:'Runenrobe',dm:.5,hm:.8,skill:30,d:'Fähigkeit macht 30 % mehr Schaden'},
-mantel:{n:'Schattenmantel',dm:.6,hm:.7,dodge:15,d:'15 % Ausweichen'}};
+platte:{n:'Plattenpanzer',dm:1.9,hm:1.35,crit:-5,dodge:-8,heavy:35,d:'Festung: schwere Schläge −35 % · −5 % Krit, −8 % Ausweichen'},
+robe:{n:'Runenrobe',dm:.45,hm:.75,skill:30,d:'Fähigkeit macht 30 % mehr Schaden · wenig Schutz'},
+mantel:{n:'Schattenmantel',dm:.4,hm:.55,dodge:12,frag:20,d:'Schatten: 12 % Ausweichen · Treffer gegen dich +20 % Schaden'}};
 const HT={kappe:{n:'Lederkappe',def:.2,hp:1.1,d:'Leicht: viel Leben, kaum Schutz'},helm:{n:'Eisenhelm',def:1.3,d:'Schwer: nur Schutz, kein Leben'},hoerner:{n:'Hörnerhelm',def:.3,atk:1.1,stun:4,d:'Angriffslustig: Angriff und Betäubung'},kapuze:{n:'Kapuze',hp:.25,dodge:6,crit:6,d:'Unauffällig: Krit und Ausweichen'}};
 const GT={leder:{n:'Lederhandschuhe',crit:4,d:'Sichere Griffe'},panzer:{n:'Panzerhandschuhe',def:.5,stun:5,d:'Schwer und wuchtig'},krallen:{n:'Krallenhandschuhe',bleed:12,d:'Reißen Wunden auf'},dieb:{n:'Diebeshandschuhe',gold:20,d:'Finden mehr Gold'}};
 const JT={blut:{n:'Blutamulett',ls:4,d:'Trinkt mit'},glueck:{n:'Glücksring',luck:2,d:'Mehr und bessere Beute'},kraft:{n:'Kraftring',atk:1.2,d:'Mehr Kraft'},leben:{n:'Lebensamulett',hp:1,d:'Mehr Leben'},fokus:{n:'Fokusring',skill:20,d:'Stärkt deine Fähigkeit'}};
@@ -511,7 +511,7 @@ const atk=()=>{const v=P.baseAtk+P.bonus.atk+(P.weapon?P.weapon.atk:0)+P.rageSta
 const def=()=>Math.max(0,P.baseDef+P.bonus.def+(P.armor?P.armor.def:0)+gs('def')-(hasS('stumm')?2:0));
 const crit=()=>Math.max(0,Math.min(75,P.baseCrit+P.bonus.crit+(P.weapon?(P.weapon.crit||0)+(wt(P.weapon).crit||0):0)+(P.armor?at_(P.armor).crit||0:0)+gs('crit')+(hasS('kalt')?10:0)+(P.cls==='klinge'?(P.rhy||0)*(6+(P.bonus.brhy||0)):0)));
 const lsP=()=>P.bonus.ls+(P.weapon?(P.weapon.ls||0)+(wt(P.weapon).ls||0):0)+gs('ls')+(hasS('blut')?6:0)+(P&&P.cls==='blut'?5:0);
-const dodge=()=>Math.min(60,(P.armor?(at_(P.armor).dodge||0)+(P.armor.dodge||0):0)+(P.bonus.dodge||0)+gs('dodge')+(hasS('schatten')?8:0)+(P.cls==='klinge'?8:0));
+const dodge=()=>Math.max(0,Math.min(60,(P.armor?(at_(P.armor).dodge||0)+(P.armor.dodge||0):0)+(P.bonus.dodge||0)+gs('dodge')+(hasS('schatten')?8:0)+(P.cls==='klinge'?8:0)));
 const wp=k=>(P.weapon?(wt(P.weapon)[k]||0)+(k==='stun'||k==='bleed'?P.weapon[k]||0:0):0)+(k==='bleed'||k==='stun'?gs(k):0);
 function heal(n){const b=P.hp;P.hp=Math.min(maxHp(),P.hp+n);return P.hp-b}
 const goldAmt=m=>Math.round((ri(3,7)+P.floor*1.5)*m*rm('gold',1)*(hasS('gier')?1.3:1)*(hasC('armut')?.85:1)*(1+(ul('gier')*15+P.bonus.gold+gs('gold'))/100));
@@ -663,7 +663,7 @@ if(P.comp&&R()<.3){const d=Math.max(1,Math.round(E.atk*(heavy?1.6:1)*(.85+R()*.3
 if(P.uBlock){P.uBlock=false;log('Aldrics Wachpanzer fängt den ersten Schlag ab.','good');continue}
 if(dodge()&&R()*100<dodge()){log('Du weichst aus!','good');if(P.bonus.bstep&&P.cls==='klinge')P.rhy=Math.min(5,(P.rhy||0)+1);if(hasU('weissfell')&&E.hp>0){const d=Math.max(1,Math.round(atk()*.5-E.def));E.hp-=d;log(`Gegenangriff: ${d} Schaden.`,'good')}continue}
 let d=E.atk*(heavy?2.2:hits>1?.65:1)*(E.chill?.6:1)*(hasC('zorn')?1.15:1)*(P.wach?.5:1)*(.85+R()*.3)-def();if(P.wach){P.wach=false}
-if(P.defending)d*=P.cls==='krieger'?(heavy?.2:.3):(heavy?.25:.4);
+if(P.defending)d*=P.cls==='krieger'?(heavy?.2:.3):(heavy?.25:.4);{const A=P.armor?at_(P.armor):null;if(A){if(heavy&&A.heavy)d*=1-A.heavy/100;if(A.frag)d*=1+A.frag/100}}
 d=Math.max(1,Math.round(d));if(P.rsh>0){const a=Math.min(P.rsh,d);P.rsh-=a;d-=a;log(a>=d+a?`Der Runenschild fängt den Schlag ab.`:`Der Runenschild fängt ${a} ab.`,'dim');if(P.rsh<=0)log('Der Runenschild zerbricht.','dim')}if(d>0&&P.rhy){P.rhy=0}if(P.bonus.rlast&&!P.rlastU&&P.hp-d<=0&&P.hp>1){P.rlastU=true;d=P.hp-1;log('Todesverachtung! Du bleibst stehen.','crit')}P.hp-=d;{const th=P.armor?at_(P.armor).thorn||0:0;if(th&&d>0&&E.hp>0){const r2=Math.max(1,Math.round(d*th/100));E.hp-=r2;log(`Dornen: ${E.name} verletzt sich selbst. ${r2} Schaden.`,'good')}}
 log(heavy?`${E.name} entfesselt einen gewaltigen Schlag! −${d} LP`:`${E.name} trifft dich${hits>1?(i?' noch mal':' blitzschnell'):''}. −${d} LP`,'bad');if(P.defending&&P.bonus.kcounter&&E.hp>0&&d>0){const c2=Math.max(2,Math.round(atk()*.8*(.85+R()*.3)-E.def*.5));E.hp-=c2;log(`Gegenschlag! ${c2} Schaden.`,'good');try{weaponSfx(false)}catch(e){}if(E.hp<=0)return}
 if(P.bonus.thorns){const t=Math.max(1,Math.round(d*P.bonus.thorns/100));E.hp-=t;log(`Dornen: ${t} Schaden zurück.`)}
