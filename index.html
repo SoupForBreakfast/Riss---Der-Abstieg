@@ -519,7 +519,8 @@ const lsP=()=>P.bonus.ls+(P.bonus.vamp||0)+(P.weapon?(P.weapon.ls||0)+(wt(P.weap
 const dodge=()=>Math.max(0,Math.min(60,(P.armor?(at_(P.armor).dodge||0)+(P.armor.dodge||0):0)+(P.bonus.dodge||0)+(P.bonus.rflx||0)+gs('dodge')+(hasS('schatten')?8:0)+(P.cls==='klinge'?8:0)));
 const wp=k=>(P.weapon?(wt(P.weapon)[k]||0)+(k==='stun'||k==='bleed'?P.weapon[k]||0:0):0)+(k==='bleed'||k==='stun'?gs(k):0);
 function heal(n){const b=P.hp;P.hp=Math.min(maxHp(),P.hp+n);return P.hp-b}
-const goldAmt=m=>Math.round((ri(3,7)+P.floor*1.5)*m*rm('gold',1)*(hasS('gier')?1.3:1)*(hasC('armut')?.85:1)*(1+(ul('gier')*15+P.bonus.gold+gs('gold'))/100));
+const goldMul=()=>Math.min(2,rm('gold',1)*(hasS('gier')?1.3:1)*(1+(ul('gier')*15+P.bonus.gold+gs('gold'))/100))*(hasC('armut')?.85:1);
+const goldAmt=m=>Math.round((ri(3,7)+P.floor*1.5)*m*goldMul());
 function gainXp(x){P.xp+=x;while(P.xp>=P.xpNext){P.xp-=P.xpNext;P.lvl++;P.xpNext=Math.round(BAL.xpB*Math.pow(P.lvl,BAL.xpE));if(!P.tut&&P.lvl>meta.maxLvl){meta.maxLvl=P.lvl;saveMeta()}P.baseHp+=BAL.lh;if(P.lvl%BAL.laEvery===0)P.baseAtk+=1;heal(Math.round(maxHp()*.25));sys(`Stufe ${P.lvl} erreicht. Wähle eine Fähigkeit.`);S.queue.push({k:'perks',t:'Aufstieg – Stufe '+P.lvl})}}
 
 const gBonus=()=>ul('gier')*15+P.bonus.gold+gs('gold');
@@ -746,7 +747,7 @@ for(let i=0;i<n;i++){const t=wpick(w.filter(x=>x[1]>0&&!used.has(x[0])));used.ad
 if(nf>=2&&R()<.22)a.push({t:'tresor',s:pick(FLAV.tresor)});return a}
 const FLAV={kampf:['Knurren hinter der Tür','Frische Kratzspuren am Boden','Es riecht nach nassem Fell','Schritte, die plötzlich innehalten'],elite:['Ein tiefes, langsames Atmen','Abgenagte Knochen vor der Schwelle','Die Luft ist schwer und still','Etwas Großes bewegt sich'],schatz:['Ein Schimmer im Türspalt','Rostige Truhenbeschläge','Goldstaub auf den Steinen'],rast:['Wärme dringt heraus','Rauch und Holzgeruch','Leises Knistern'],haendler:['Klirrende Glöckchen','Eine Laterne flackert','Jemand summt eine Melodie'],ereignis:['Ein seltsames Flüstern','Blaues Licht unter der Tür','Das Holz ist warm','Runen glimmen im Rahmen','Es riecht nach Weihrauch'],boss:['Die Erde bebt'],tresor:['Sieben Siegel aus Eisen','Ein Schloss, so groß wie eine Faust','Goldene Runen im Holz']};
 function goDoors(){S.screen='doors';S.doors=[]}
-function rollRoom(){const f=P.floor;if(P.tut)return f===1?'kampf':f===2?'tresorTuer':'boss';if(f%5===0)return'boss';
+function rollRoom(){const f=P.floor;if(P.broAt&&f>=P.broAt&&!P.comp&&!P.tut){const hp=Math.round(maxHp()*.6);P.comp={n:'Bruder '+(P.broN||'Orrik'),hp,max:hp,atk:Math.max(2,Math.round(atk()*.5)),left:ri(4,6)};P.broAt=0;log(`Schritte hinter dir. Der Ordensbruder holt dich ein, die Wunde verbunden. „Ich sagte doch, ich zahl’s zurück.“`,'good')}if(P.tut)return f===1?'kampf':f===2?'tresorTuer':'boss';if(f%5===0)return'boss';
 if(f<=4&&(P.kills||0)<(f>=4?2:f>=2?1:0)){P.lastT='kampf';return'kampf'}
 const sh=pickShade(f);if(sh){P.shadeNow=sh;return'shade'}
 if(meta.bq===1&&!meta.bqPend&&!P.bqFound&&f>=13&&f<=19&&R()<(f>=17?.5:.15))return'bquest';
@@ -810,12 +811,14 @@ const cur=P[SK[it.slot]];return[
 ...(['weapon','armor','helm','gloves','jewel'].some(k=>P[k]&&P[k].curse)?[{l:'Fluch brechen',sub:`Löst alle Flüche auf deiner Ausrüstung · ${sh.curse} Gold`,dis:P.gold<sh.curse,fn:()=>{P.gold-=sh.curse;for(const k of ['weapon','armor','helm','gloves','jewel'])if(P[k]&&P[k].curse){P[k].curse=null;P[k].name=P[k].name.replace(' (verflucht)','')}log('Der Händler murmelt etwas und spuckt auf deine Ausrüstung. Der Fluch ist weg.','good')}}]:[]),
 {l:'Weitergehen',fn:next}]},'haendler')}
 
+const BROQ=['Die Goblins tragen unsere Rüstungen. Ich hab einen gesehen, der hatte noch meinen alten Gürtel um.','Ganz unten singt etwas. Nicht laut. Aber jeder, der lang genug unten war, kennt das Lied.','Im Eis stehen sie aufrecht, als würden sie auf jemanden warten. Auf uns, glaub ich.','Der Stein im Lager war früher kleiner. Ich schwör’s dir. Ich war dabei, als wir ihn gefunden haben.','Die Kultisten sind nicht verrückt. Sie haben nur aufgehört, sich zu wehren.'];
 const EVENTS=[
 
 ()=>room('Ein Altar aus schwarzem Stein. Frisches Blut glänzt in seiner Schale. Etwas flüstert: „Gib mir von dir.“',()=>[
  {l:'Blut opfern',sub:'−25 % LP, erhalte eine Gabe',fn:()=>{P.hp=Math.max(1,P.hp-Math.round(maxHp()*.25));log('Der Altar trinkt dein Blut.','bad');S.queue.unshift({k:'perks',t:'Gabe des Altars'});next()}},
  {l:'Weitergehen',fn:next}]),
-()=>room('Mitten im Raum steht eine schwere, beschlagene Truhe. Kein Staub drauf, keine Spinnweben.',()=>[
+()=>room('Mitten im Raum steht eine schwere, beschlagene Truhe. Kein Staub drauf, keine Spinnweben. Wenn du ganz still bist, hörst du sie atmen.',()=>[
+ {l:'Mit Schlüssel prüfen',sub:P.keys>0?'Kostet einen Schlüssel · sicher':'Kein Schlüssel',dis:!(P.keys>0),fn:()=>{P.keys--;if(R()<.35){log('Der Schlüssel klemmt, und die Truhe atmet aus. Ein Mimic, und er hat dich nicht kommen sehen.','crit');startCombat('elite',{name:'Mimic',base:'Mimic',ess:4});E.stun=1}else{const g=goldAmt(2.6);P.gold+=g;log(`Das Schloss springt auf. +${g} Gold`,'goldt');const it=genItem(2);S.queue.unshift({k:'loot',it});next()}}},
  {l:'Öffnen',fn:()=>{if(R()<.35){log('Die Truhe hat Zähne! Ein Mimic!','bad');startCombat('elite',{name:'Mimic',base:'Mimic',ess:4})}else{const g=goldAmt(2);P.gold+=g;log(`Die Truhe ist voller Schätze. +${g} Gold`,'goldt');const it=genItem(2);S.queue.unshift({k:'loot',it});next()}}},
  {l:'Ignorieren',fn:next}]),
 ()=>room('Ein toter Ankerträger lehnt an der Wand. Die Narbe auf seiner Hand ist grau geworden. Der Stein hat ihn nicht mehr zurückgeholt.',()=>[
@@ -851,6 +854,25 @@ const EVENTS=[
 ()=>room('Hinter einem Gitter hockt ein Ankerträger in Ketten. „Die Kultisten haben mich hier vergessen. Hol mich raus, dann geh ich ein Stück mit dir.“',()=>[
  {l:'Befreien',sub:P.comp?'Du hast schon jemanden dabei':'Kämpft ein paar Etagen mit dir',dis:!!P.comp,fn:()=>{const n=pick(COMPN),hp=Math.round(maxHp()*.6);P.comp={n,hp,max:hp,atk:Math.max(2,Math.round(atk()*.45)),left:ri(4,7),traitor:R()<.15};log(`${n} reibt sich die Handgelenke. „Danke. Ich halt dir den Rücken frei.“`,'good');next()}},
  {l:'Weitergehen',fn:next}])
+,
+()=>{const st=Math.max(1,Math.min(P.gold,goldAmt(3)));return room('Zwei Gestalten hocken um einen umgedrehten Schild und würfeln mit Fingerknochen. „Ein Wurf, Ankerträger? Doppelt oder nichts.“',()=>[
+ {l:'Setzen',sub:`${st} Gold · doppelt oder nichts`,dis:P.gold<1,fn:()=>{try{smp('coin',.5)}catch(e){}if(R()<.45){P.gold+=st;log(`Die Knochen fallen für dich. Sie fluchen und zahlen. +${st} Gold`,'goldt');S.flash='good'}else{P.gold-=st;log(`Die Knochen fallen gegen dich. Einer streicht grinsend dein Gold ein. −${st} Gold`,'bad');S.flash='bad'}next()}},
+ {l:'Alles auf einen Wurf',sub:`${Math.floor(P.gold/2)} Gold, die Hälfte von allem`,dis:P.gold<20,fn:()=>{const b=Math.floor(P.gold/2);if(R()<.45){P.gold+=b;log(`Stille, dann ein Knochen, der auf der Kante liegen bleibt. Gewonnen. +${b} Gold`,'goldt');S.flash='good'}else{P.gold-=b;log(`Verloren. „Komm wieder, wenn du mehr hast.“ −${b} Gold`,'bad');S.flash='bad'}next()}},
+ {l:'Weitergehen',fn:next}])},
+()=>{if(P.splint)return room('Ein Bruchstück schwarzen Steins. Seine Adern sind erloschen. Hier warst du schon.',()=>[{l:'Weitergehen',fn:next}]);return room('Im Boden steckt ein Bruchstück schwarzen Steins, durchzogen von denselben Adern wie der Monolith im Lager. Deine Narbe zieht in seine Richtung, fester als je zuvor.',()=>[
+ {l:'Berühren',sub:'+25 % max. LP für diesen Abstieg · Tränke heilen 30 % weniger',fn:()=>{P.splint=1;const v=Math.round(maxHp()*.25);P.bonus.hp+=v;P.hp=maxHp();P.bonus.potion-=30;log(`Die Adern leuchten auf und wandern über deine Hand bis zum Ellbogen. Du fühlst dich stärker als je zuvor. +${v} max. LP`,'good');log('Aber etwas in dir nimmt Heilung jetzt widerwilliger an.','bad');S.flash='good';next()}},
+ {l:'Nicht anfassen',fn:()=>{log('Du gehst weiter. Die Narbe pocht noch eine Weile.','dim');next()}}])},
+()=>{const w=P.weapon,a=P.armor,n=P.sharp||0,cw=Math.round((60+P.floor*8)*(1+n*.6)),vw=w?Math.max(2,Math.round(w.atk*.12)):0,va=a?Math.max(1,Math.round((a.def||0)*.12)):0;return room('Ein Schmied mit rußschwarzem Bart hämmert an einem Amboss, der aus einem Grabstein gehauen ist. „Zeig her, was du da trägst. Umsonst ist hier unten aber nichts.“',()=>[
+ {l:'Waffe schärfen',sub:w?`${w.name}: +${vw} Angriff · ${cw} Gold`:'Du trägst keine Waffe',dis:!w||P.gold<cw,fn:()=>{P.gold-=cw;w.atk+=vw;P.sharp=n+1;try{for(let i=0;i<3;i++)smp('hammer',.45,1,i*.35)}catch(e){}log(`Funken stieben. ${w.name} ist schärfer. +${vw} Angriff`,'good');next()}},
+ {l:'Rüstung ausbessern',sub:a?`${a.name}: +${va} Verteidigung · ${cw} Gold`:'Du trägst keine Rüstung',dis:!a||P.gold<cw,fn:()=>{P.gold-=cw;a.def=(a.def||0)+va;P.sharp=n+1;try{for(let i=0;i<3;i++)smp('hammer',.45,1,i*.35)}catch(e){}log(`Er klopft Dellen aus und vernietet Risse. +${va} Verteidigung`,'good');next()}},
+ {l:'Weitergehen',fn:next}])},
+()=>{const C=['weapon','armor','helm','gloves','jewel'].filter(k=>P[k]&&!P[k].uq&&(P[k].r||0)<3),cg=goldAmt(6);return room('Ein Altar aus verkohltem Holz. Darauf liegt ein Ring aus Asche. Eine Stimme fragt, was dir dein Werkzeug wert ist.',()=>[
+ ...C.slice(0,3).map(k=>({l:`${P[k].name} weihen`,sub:`→ ${RAR[(P[k].r||0)+1].n} · kostet 30 % deiner max. LP`,dis:P.hp<=maxHp()*.3,fn:()=>{const o=P[k],sl=o.slot||{weapon:'w',armor:'a',helm:'h',gloves:'g',jewel:'j'}[k],nr=(o.r||0)+1,it=buildItem(sl,o.type,nr,P.floor,RAR[nr].m);P[k]=it;P.hp=Math.max(1,P.hp-Math.round(maxHp()*.3));log(`Das Holz glüht auf. Aus ${o.name} wird ${it.name}.`,'good');log('Der Altar nimmt sich, was er verlangt hat.','bad');S.flash='good';next()}})),
+ {l:'Gold opfern',sub:C.length?`${cg} Gold · ein zufälliges Teil wird aufgewertet`:'Nichts, was sich aufwerten ließe',dis:!C.length||P.gold<cg,fn:()=>{P.gold-=cg;const k=pick(C),o=P[k],sl=o.slot||{weapon:'w',armor:'a',helm:'h',gloves:'g',jewel:'j'}[k],nr=(o.r||0)+1,it=buildItem(sl,o.type,nr,P.floor,RAR[nr].m);P[k]=it;log(`Das Gold schmilzt in die Asche. Aus ${o.name} wird ${it.name}.`,'good');next()}},
+ {l:'Weitergehen',fn:next}])},
+()=>room('An der Wand sitzt ein Ordensbruder, die Hand auf eine tiefe Wunde gepresst. Die Adern seiner Narbe sind schon grau. „Hast du was für mich? Ich zahl’s dir zurück. Irgendwie.“',()=>[
+ {l:'Heiltrank geben',sub:P.potions>0?'Kostet einen Heiltrank':'Du hast keinen Trank',dis:!(P.potions>0),fn:()=>{P.potions--;const t=pick(BROQ);log('Er trinkt in einem Zug. Dann erzählt er dir etwas, das er unten gesehen hat.','good');sayQ(t,'Ordensbruder');P.broAt=P.floor+ri(2,4);P.broN=pick(COMPN);next()}},
+ {l:'Weitergehen',fn:()=>{log('Er sieht dir nach, ohne etwas zu sagen.','dim');next()}}]),
 ];
 
 function rollPR(){const L=luckV()*.25,x=R()*100;return x<1+L*.2?3:x<4.5+L*.6?2:x<18+L?1:0}
