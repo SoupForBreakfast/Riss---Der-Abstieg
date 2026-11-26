@@ -551,8 +551,8 @@ const PR=[{n:'Gewöhnlich',m:1},{n:'Selten',m:1.5},{n:'Episch',m:2},{n:'Legendä
 const rnd=v=>Math.max(1,Math.round(v));const mR=m=>Math.max(0,PR.findIndex(x=>x.m===m));const tierCur=id=>P.perkR&&P.perkR[id]!=null?P.perkR[id]:-1;
 function tmpB(k,x,fn){const o=P.bonus[k]||0;P.bonus[k]=o+x;const v=fn();P.bonus[k]=o;return v}
 const PERKS=[
-{id:'hp',n:'Eiserne Haut',d:'Mehr max. LP, in Prozent',f:m=>{const a=maxHp();P.bonus.hpP=(P.bonus.hpP||0)+Math.round(5*m);P.hp+=maxHp()-a},pv:m=>`+${Math.round(5*m)} % · Max. LP ${maxHp()} → ${tmpB('hpP',Math.round(5*m),maxHp)}`,cur:()=>`Max. LP jetzt ${maxHp()} (+${P.bonus.hpP||0} %)`},
-{id:'atk',n:'Klingenkunst',d:'Mehr Angriff, in Prozent',f:m=>P.bonus.atkP=(P.bonus.atkP||0)+Math.round(5*m),pv:m=>`+${Math.round(5*m)} % · Angriff ${atk()} → ${tmpB('atkP',Math.round(5*m),atk)}`,cur:()=>`Angriff jetzt ${atk()} (+${atkPct()} %)`},
+{id:'hp',n:'Eiserne Haut',d:'Mehr max. LP',f:m=>{const a=maxHp();P.bonus.hpP=(P.bonus.hpP||0)+Math.round(5*m);P.hp+=maxHp()-a},pv:m=>`+${Math.round(5*m)} % · Max. LP ${maxHp()} → ${tmpB('hpP',Math.round(5*m),maxHp)}`,cur:()=>`Max. LP jetzt ${maxHp()} (+${P.bonus.hpP||0} %)`},
+{id:'atk',n:'Klingenkunst',d:'Mehr Angriff',f:m=>P.bonus.atkP=(P.bonus.atkP||0)+Math.round(5*m),pv:m=>`+${Math.round(5*m)} % · Angriff ${atk()} → ${tmpB('atkP',Math.round(5*m),atk)}`,cur:()=>`Angriff jetzt ${atk()} (+${atkPct()} %)`},
 {id:'def',n:'Panzerung',d:'Jeder Treffer gegen dich macht weniger Schaden',f:m=>P.bonus.dr=(P.bonus.dr||0)+Math.round(4*m),pv:m=>`Erlittener Schaden −${drP()} % → −${Math.min(60,drP()+Math.round(4*m))} %`,cur:()=>`Erlittener Schaden −${drP()} %`},
 {id:'crit',n:'Tödliche Präzision',d:'Höhere Chance auf Krits (doppelter Schaden)',f:m=>P.bonus.crit+=rnd(6*m),pv:m=>`Krit-Chance ${crit()} % → ${Math.min(75,crit()+rnd(6*m))} %`,cur:()=>`Krit-Chance jetzt ${crit()} %`},
 {id:'ls',n:'Vampirismus',tier:[5,8,11,16],d:'Ein Teil deines Schadens heilt dich',f:m=>P.bonus.vamp=PK('ls').tier[mR(m)],pv:m=>`Lebensraub ${lsP()} % → ${lsP()-(P.bonus.vamp||0)+PK('ls').tier[mR(m)]} %`,cur:()=>`Lebensraub jetzt ${lsP()} %`},
