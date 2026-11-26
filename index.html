@@ -211,7 +211,7 @@ const UPG=[
 ];
 const CLS={
 krieger:{name:'Krieger',hp:70,atk:5,def:3,crit:3,cost:0,desc:'Robust und standhaft',fav:['hammer','schwert'],pass:{n:'Bollwerk',d:'Abwehren blockt 70 %, der nächste Angriff danach macht +40 %'},skill:{name:'Schildschlag',cd:3,desc:'125 % Schaden, betäubt 1 Runde'}},
-klinge:{name:'Klingentänzer',hp:45,atk:7,def:0,crit:25,cost:60,desc:'Schnell, tödliche Krits',fav:['dolch','saebel'],pass:{n:'Rhythmus',d:'Jeder Treffer in Folge +6 % Krit (bis 5×), ein Treffer gegen dich bricht die Serie · 8 % Ausweichen'},skill:{name:'Wirbelklinge',cd:3,desc:'3 Hiebe à 85 %, jeder mit +25 % Krit-Chance'}},
+klinge:{name:'Klingentänzer',hp:45,atk:7,def:0,crit:25,cost:60,desc:'Schnell, tödliche Krits',fav:['dolch','saebel'],pass:{n:'Rhythmus',d:'Jeder Treffer in Folge +6 % Krit (bis 5×), ein Treffer gegen dich bricht die Serie · 8 % Ausweichen'},skill:{name:'Wirbelklinge',cd:4,desc:'3 Hiebe à 70 %, jeder mit +15 % Krit-Chance'}},
 magier:{name:'Runenmagier',hp:38,atk:4,def:0,crit:5,cost:150,desc:'Zerbrechlich, aber verheerend',fav:['stab','speer'],pass:{n:'Runenschild',d:'Jeder Kampf beginnt mit einem Schild aus 20 % deiner LP · normale Angriffe laden die Fähigkeit schneller'},skill:{name:'Runenfeuer',cd:3,desc:'260 %, ignoriert Rüstung, verbrennt'}},
 blut:{name:'Blutritter',hp:60,atk:6,def:1,crit:8,cost:300,desc:'Lebt vom Blut seiner Feinde',fav:['sense','axt'],pass:{n:'Blutdurst',d:'5 % Lebensraub · unter 50 % LP +25 % Schaden · Heiltränke wirken nur zu 70 %'},skill:{name:'Blutpakt',cd:4,desc:'200 % Schaden, heilt um 50 % davon'}},
 };
@@ -622,7 +622,7 @@ return d}
 function stunOk(){if(E&&E.type==='boss'&&R()<.3){log(`${E.name} schüttelt die Betäubung ab.`,'bad');return false}return true}
 function useSkill(){const c=P.cls;log(`» ${CLS[c].skill.name}`,'sys');
 if(c==='krieger'){dealDmg(1.25*(1+(P.bonus.kskill||0)/100),{skill:1});if(E.hp>0&&stunOk()){E.stun=1;log(`${E.name} ist betäubt.`)}}
-else if(c==='klinge'){for(let i=0;i<3&&E.hp>0;i++)dealDmg(.85,{skill:1,cb:25})}
+else if(c==='klinge'){for(let i=0;i<3&&E.hp>0;i++)dealDmg(.7,{skill:1,cb:15})}
 else if(c==='magier'){dealDmg(2.6,{pierce:1,skill:1});if(E.hp>0&&P.bonus.mecho){log('Runenecho!','crit');dealDmg(1.3,{pierce:1,skill:1})}if(E.hp>0){E.burn=3;log(`${E.name} brennt.`,'crit')}}
 else if(c==='blut'){const d=dealDmg(2,{skill:1});const h=heal(Math.round(d*(.5+(P.bonus.rpakt||0)/100)));if(h)log(`+${h} LP`,'good')}
 if(hasU('weinende')&&E.hp>0){E.pdot=3;log(`${E.name} ist vergiftet.`,'dim')}
@@ -1151,7 +1151,7 @@ function claimShade(id){const x=NET.shades.find(s=>s.id===id);if(x)x.claimed=tru
 function writeShade(){if(!NET.db||P.tut)return;const it=P.weapon||P.armor;try{NET.db.collection('shades').add({uid:NET.uid||'',floor:P.floor,cls:P.cls,lvl:P.lvl,item:it?JSON.parse(JSON.stringify(it)):null,claimed:false,ts:Date.now()}).catch(()=>{})}catch(e){}}
 function writeBoard(f){if(!NET.db||!NET.uid||P.tut)return;try{NET.db.doc('board/'+NET.uid).set({uid:NET.uid,best:Math.max(meta.best,f),runs:meta.runs+1,bounties:meta.bounty.length,day:meta.dayBest||null,ts:Date.now()}).catch(()=>{})}catch(e){}}
 async function loadGuild(){S.guild=null;if(!NET.db){S.guild=[];return}try{const q=await NET.db.collection('board').orderBy('best','desc').limit(25).get();const rows=q.docs.map(d=>d.data()).filter(x=>x&&typeof x.best==='number');await resolveNames(rows.map(r=>r.uid));S.guild=rows}catch(e){S.guild=[]}if(S.screen==='guild')render()}
-function forgeDo(t,r0){let r=r0;try{for(let i=0;i<3;i++)smp('hammer',.5*(i===2?1.15:1),.92+R()*.12,i*.55);smp('ring',.25,1,1.15)}catch(e){}const c=90*(t+1)*(r===3?4:r===2?2:1);meta.mats['m'+t]-=r===3?8:4;if(r>=2)meta.mats.kern-=r===3?2:1;meta.gold-=c;let miss=false;if(r===2&&R()>=.45){r=1;miss=true}else if(r===3&&R()>=.3){r=2;miss=true}const it=forgeItem(S.fSlot,S.fType,t,r);it.tier=t;meta.armory.push(it);saveMeta();sys(miss?`Der Kern hält die Glut nicht ganz. Hild hat ${it.name} geschmiedet, ${RAR[r].n.toLowerCase()}. Es liegt in der Waffenkammer.`:`Hild hat ${it.name} geschmiedet. Es liegt in der Waffenkammer.`);if(miss)sayQ(pick(['Passiert. Der Stahl hat seinen eigenen Kopf.','Nicht jeder Kern will brennen.','Gut, aber nicht das, was ich wollte. Nächstes Mal.']),'Hild');S.fSlot=null;S.fType=null}
+function forgeDo(t,r0){let r=r0;try{for(let i=0;i<3;i++)smp('hammer',.5*(i===2?1.15:1),.92+R()*.12,i*.55);smp('ring',.25,1,1.15)}catch(e){}const c=90*(t+1)*(r===3?4:r===2?2:1);meta.mats['m'+t]-=r===3?8:4;if(r>=2)meta.mats.kern-=r===3?2:1;meta.gold-=c;let miss=false;if(r===2&&R()>=.3){r=1;miss=true}else if(r===3&&R()>=.15){r=2;miss=true}const it=forgeItem(S.fSlot,S.fType,t,r);it.tier=t;meta.armory.push(it);saveMeta();sys(miss?`Der Kern hält die Glut nicht ganz. Hild hat ${it.name} geschmiedet, ${RAR[r].n.toLowerCase()}. Es liegt in der Waffenkammer.`:`Hild hat ${it.name} geschmiedet. Es liegt in der Waffenkammer.`);if(miss)sayQ(pick(['Passiert. Der Stahl hat seinen eigenen Kopf.','Nicht jeder Kern will brennen.','Gut, aber nicht das, was ich wollte. Nächstes Mal.']),'Hild');S.fSlot=null;S.fType=null}
 /* ---------- Darstellung ---------- */
 function bar(v,m,c){return `<div class="bar2"><div style="width:${Math.max(0,Math.min(100,v/m*100))}%;background:${c}"></div></div>`}
 function scene(h){$('#scene').innerHTML=h}
@@ -1215,8 +1215,8 @@ else if(!S.fType){const TT=S.fSlot==='w'?WT:S.fSlot==='a'?AT:XT[S.fSlot];for(con
 else{const TT=S.fSlot==='w'?WT:S.fSlot==='a'?AT:XT[S.fSlot],T=TT[S.fType],maxT=Math.min(4,Math.floor(meta.best/10));
  for(let t=0;t<=maxT;t++){const mk='m'+t,have=mm[mk]||0,c=90*(t+1);
   btn(g,`${T.n} aus ${MATS[mk].n}`,()=>forgeDo(t,1),{sub:`4× ${MATS[mk].n} (du hast ${have}) · ${c} Gold → Selten, stark wie Etage ${t*10+8}`,dis:full||have<4||(meta.gold||0)<c});
-  btn(g,'… mit Wächterkern',()=>forgeDo(t,2),{sub:`dazu 1× Wächterkern (du hast ${mm.kern||0}) · ${c*2} Gold → 45 % Episch, sonst Selten`,dis:full||have<4||(mm.kern||0)<1||(meta.gold||0)<c*2});
-  if((meta.rank||0)>=2)btn(g,'… als Meisterarbeit',()=>forgeDo(t,3),{sub:`8× ${MATS[mk].n} · 2× Wächterkern · ${c*4} Gold → 30 % Legendär, sonst Episch`,cls:'rar3',dis:full||have<8||(mm.kern||0)<2||(meta.gold||0)<c*4})}
+  btn(g,'… mit Wächterkern',()=>forgeDo(t,2),{sub:`dazu 1× Wächterkern (du hast ${mm.kern||0}) · ${c*2} Gold → 30 % Episch, sonst Selten`,dis:full||have<4||(mm.kern||0)<1||(meta.gold||0)<c*2});
+  if((meta.rank||0)>=2)btn(g,'… als Meisterarbeit',()=>forgeDo(t,3),{sub:`8× ${MATS[mk].n} · 2× Wächterkern · ${c*4} Gold → 15 % Legendär, sonst Episch`,cls:'rar3',dis:full||have<8||(mm.kern||0)<2||(meta.gold||0)<c*4})}
  btn(g,'Zurück',()=>S.fType=null,{delay:120})}
 if((meta.uniq||[]).length){g=group('Unikate');for(const id of meta.uniq){const b=BOUNTIES.find(x=>x.id===id);if(!b)continue;const tr=(meta.troph||{})[id]||0,lv=(meta.uqLvl||{})[id]||0,mk='m'+b.area,km=mm.kern||0;
  btn(g,`${UNIQ[id].n} nachschmieden`,()=>{meta.troph[id]--;meta.mats.kern-=2;meta.gold-=200;const it=makeUnique(id,(b.area+1)*10);it.aid='a'+Date.now().toString(36)+ri(0,999);it.src='Hild';meta.armory.push(it);saveMeta();sys(`Hild hat ${it.name} nachgeschmiedet.`)},{sub:`1× ${TROPH[id]} (${tr}) · 2× Wächterkern (${km}) · 200 Gold`,dis:full||tr<1||km<2||(meta.gold||0)<200});
