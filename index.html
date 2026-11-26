@@ -565,7 +565,7 @@ const PERKS=[
 {id:'b_cut',cls:'klinge',n:'Feine Schnitte',minR:2,max:1,d:'Kritische Treffer lassen den Gegner bluten',f:m=>P.bonus.bcut=1,pv:()=>'Jeder Krit verursacht Blutung',cur:()=>'Krits verursachen Blutung'},
 {id:'m_wall',cls:'magier',n:'Runenwall',d:'Dein Runenschild wird stärker',f:m=>P.bonus.mshield=(P.bonus.mshield||0)+rnd(10*m),pv:m=>`Runenschild ${20+(P.bonus.mshield||0)} % → ${20+(P.bonus.mshield||0)+rnd(10*m)} % der LP`,cur:()=>`Runenschild ${20+(P.bonus.mshield||0)} % der LP`},
 {id:'m_glut',cls:'magier',n:'Glutrunen',tier:[30,45,60,90],d:'Brennende Gegner nehmen mehr Schaden',f:m=>P.bonus.mburn=PK('m_glut').tier[mR(m)],pv:m=>`Brandschaden +${P.bonus.mburn||0} % → +${PK('m_glut').tier[mR(m)]} %`,cur:()=>`Brandschaden +${P.bonus.mburn||0} %`},
-{id:'m_echo',cls:'magier',n:'Runenecho',minR:2,max:1,d:'Runenfeuer hallt nach und trifft ein zweites Mal',f:m=>P.bonus.mecho=1,pv:()=>'Zweiter Treffer mit 40 % Schaden',cur:()=>'Runenfeuer trifft zweimal'},
+{id:'m_echo',cls:'magier',n:'Runenecho',minR:2,max:1,d:'Runenfeuer hallt nach und trifft ein zweites Mal',f:m=>P.bonus.mecho=1,pv:()=>'Zweiter Treffer mit 85 % Schaden',cur:()=>'Runenfeuer trifft zweimal (85 %)'},
 {id:'r_pakt',cls:'blut',n:'Tiefer Pakt',d:'Dein Blutpakt heilt mehr',f:m=>P.bonus.rpakt=(P.bonus.rpakt||0)+rnd(20*m),pv:m=>`Blutpakt heilt ${50+(P.bonus.rpakt||0)} % → ${50+(P.bonus.rpakt||0)+rnd(20*m)} % des Schadens`,cur:()=>`Blutpakt heilt ${50+(P.bonus.rpakt||0)} %`},
 {id:'r_durst',cls:'blut',n:'Rasender Durst',d:'Blutdurst macht noch mehr Schaden',f:m=>P.bonus.rdurst=(P.bonus.rdurst||0)+rnd(12*m),pv:m=>`Blutdurst +${25+(P.bonus.rdurst||0)} % → +${25+(P.bonus.rdurst||0)+rnd(12*m)} %`,cur:()=>`Blutdurst +${25+(P.bonus.rdurst||0)} %`},
 {id:'r_last',cls:'blut',n:'Todesverachtung',minR:2,max:1,d:'Einmal pro Kampf überlebst du einen tödlichen Schlag mit 1 LP',f:m=>P.bonus.rlast=1,pv:()=>'Einmal pro Kampf unsterblich',cur:()=>'Einmal pro Kampf unsterblich'},{id:'harvest',n:'Seelenernte',minR:3,max:1,
@@ -650,6 +650,7 @@ if(E.hp>0&&hasU('ylva')&&R()<.25){E.chill=1;log(`${E.name} ist unterkühlt.`,'di
 if(E.hp>0&&(wp('stun')+(hasU('schlacke')?20:0))&&R()*100<wp('stun')+(hasU('schlacke')?20:0)&&!E.stun){if(stunOk())E.stun=1,log(`Der Hieb haut ${E.name} aus den Latschen.`)}
 const l=lsP();if(l>0){const h=heal(Math.ceil(d*l/100));if(h>0)log(`+${h} LP (Lebensraub)`,'good')}
 return d}
+function atkPrev(e){let m=1;if(P.bonus.exec&&e.hp/e.maxHp<.3)m*=1+P.bonus.exec/100;if(P.frozen)m*=.5;if(hasU('kaelen'))m*=1+(1-P.hp/maxHp())*.6;m*=1+bb(e.base);if(P.bulw)m*=1.4;if(P.cls==='blut'&&P.hp<maxHp()*.5)m*=1.25+(P.bonus.rdurst||0)/100;if(P.bonus.berserk&&P.hp<maxHp()*.5)m*=1+P.bonus.berserk/100;let d=Math.max(1,atk()*m-e.def*(1-wp('pierce')/100));if(e.shield)d*=.25;return Math.max(1,Math.round(d))}
 function stunOk(){if(E&&E.type==='boss'&&R()<.3){log(`${E.name} schüttelt die Betäubung ab.`,'bad');return false}return true}
 function useSkill(){const c=P.cls;log(`» ${CLS[c].skill.name}`,'sys');
 if(c==='krieger'){dealDmg(1.25*(1+(P.bonus.kskill||0)/100),{skill:1});if(E.hp>0&&stunOk()){E.stun=1;log(`${E.name} ist betäubt.`)}}
@@ -680,12 +681,13 @@ log(heavy?`${E.name} entfesselt einen gewaltigen Schlag! −${d} LP`:`${E.name} 
 if(P.bonus.thorns&&raw0>0&&E.hp>0){const t=Math.max(1,Math.round(raw0*P.bonus.thorns/100));E.hp-=t;log(`Dornen: ${t} Schaden zurück.`)}
 if(E.ls){E.hp=Math.min(E.maxHp,E.hp+Math.round(d*E.ls))}
 if(E.poison&&R()<.5){P.poison=3;log('Du bist vergiftet.','bad')}}E.chill=0}
-function doMech(m){const dm=P.defending?.4:1;
+function mechHit(d){d=Math.max(1,Math.round(d));if(P.rsh>0){const a=Math.min(P.rsh,d);P.rsh-=a;d-=a;log(d<=0?'Der Runenschild fängt es ab.':`Der Runenschild fängt ${a} ab.`,'dim');if(P.rsh<=0)log('Der Runenschild zerbricht.','dim')}if(P.bonus.rlast&&!P.rlastU&&P.hp-d<=0&&P.hp>1){P.rlastU=true;d=P.hp-1;log('Todesverachtung! Du bleibst stehen.','crit')}P.hp-=d;return d}
+function doMech(m){const dm=P.defending?(P.cls==='krieger'?.3:.4):1;
 if(m==='shield'){E.shield=true;log(`${E.name} verschanzt sich hinter einem Schild.`,'dim');return true}
 if(m==='mirror'){E.mirror=true;log(`${E.name}s Haut wird glatt wie ein Spiegel. Wer jetzt zuschlägt, trifft sich selbst.`,'bad');return true}
 if(m==='warcry'){E.atk=Math.round(E.atk*1.2);log(`${E.name} brüllt einen Kriegsschrei. Seine Schläge werden härter.`,'bad');return true}
-if(m==='breath'){const d=Math.max(1,Math.round((E.atk*1.3-def()*.5)*dm));P.hp-=d;P.burn=3;log(`Feueratem! −${d} LP – du brennst.`,'bad');return true}
-if(m==='drain'){const d=Math.max(1,Math.round(maxHp()*.15*dm));P.hp-=d;E.hp=Math.min(E.maxHp,E.hp+d*2);log(`${E.name} zieht dir das Leben aus dem Leib. −${d} LP`,'bad');return true}
+if(m==='breath'){const d=mechHit((E.atk*1.3-def()*.5)*dm);P.burn=3;log(`Feueratem! −${d} LP – du brennst.`,'bad');return true}
+if(m==='drain'){const d=mechHit(maxHp()*.15*dm);E.hp=Math.min(E.maxHp,E.hp+d*2);log(`${E.name} zieht dir das Leben aus dem Leib. −${d} LP`,'bad');return true}
 if(m==='freeze'){P.frozen=1;log('Eisiger Hauch! Deine Hände werden steif, dein nächster Angriff ist schwächer.','bad');return false}
 return false}
 function checkDeath(){if(P.hp>0)return false;
@@ -725,7 +727,7 @@ if(P.bonus.rage){P.rageStacks+=P.bonus.rage}
 if(P.bonus.harvest&&!P.tut){P.ess+=P.bonus.harvest}
 if(P.bonus.regen)heal(Math.round(maxHp()*P.bonus.regen/100));
 gainXp(Math.round(e.xp*rm('xp',1)));
-const lc=e.type==='boss'||e.type==='elite'?1:.22+(ul('glueck')+P.bonus.luck)*.02;
+const lc=e.type==='boss'||e.type==='elite'?1:dropPct()/100;
 const src=gearOf(e),nm=e.name;
 const used=S.queue.filter(q=>q.k==='loot').map(q=>q.it.slot);
 if(R()<lc){const it=e.bounty?genItem(4,2,src,used):genItem(e.type==='boss'?2:e.type==='elite'?1.5:0,0,src,used);it.src=nm;used.push(it.slot);S.queue.push({k:'loot',it})}
@@ -1435,14 +1437,14 @@ scene(`<div class="enemy"><div class="nm" style="color:${col}">${e.bounty?'<span
 ${(()=>{const L=[];if(P.bonus.exec&&e.hp/e.maxHp<.3)L.push(`Henker: +${P.bonus.exec} % Schaden`);if(P.cls==='blut'&&P.hp<maxHp()*.5)L.push(`Blutdurst: +${25+(P.bonus.rdurst||0)} % Schaden`);if(P.bonus.berserk&&P.hp<maxHp()*.5)L.push(`Berserkerblut: +${P.bonus.berserk} % Schaden`);if(hasU('kaelen')&&P.hp<maxHp())L.push(`Kaelens Klinge: +${Math.round((1-P.hp/maxHp())*60)} % Schaden`);return L.length?`<div class="dmgup">${L.map(x=>`<span>▲ ${x}</span>`).join('')}</div>`:''})()}
 <div class="intent ${warn?'warn':''}">${e.stun?'Ist betäubt.':e.shield?'Verschanzt sich hinter dem Schild.':e.mirror?'Spiegelt jeden Treffer.':nm?TELE[nm]:warn?TELE.heavy:'Lauert auf eine Lücke.'}</div></div>${P.poison?'<p class="small"><span class="fx-poison">Du bist vergiftet.</span></p>':''}${P.burn?'<p class="small"><span class="fx-burn">Du brennst.</span></p>':''}${P.frozen?'<p class="small"><span class="fx-stun">Deine Hände sind steif vor Kälte.</span></p>':''}${P.rsh>0?`<p class="small"><span class="fx-dodge">Runenschild: ${P.rsh}</span></p>`:''}${P.rhy?`<p class="small"><span class="fx-crit">Rhythmus ×${P.rhy} · +${P.rhy*(6+(P.bonus.brhy||0))} % Krit</span></p>`:''}${P.bulw?'<p class="small"><span class="fx-stun">Bollwerk: nächster Angriff +40 %</span></p>':''}${P.cls==='blut'&&P.hp<maxHp()*.5?`<p class="small"><span class="fx-rage">Blutdurst: +${25+(P.bonus.rdurst||0)} % Schaden</span></p>`:''}`);
 const sk=CLS[P.cls].skill;let g=group('');
-btn(g,'Angriff',()=>act('atk'),{delay:450,sub:`~${Math.max(1,Math.round(atk()-e.def*(1-wp('pierce')/100)))} Schaden`});
+btn(g,'Angriff',()=>act('atk'),{delay:450,sub:`~${atkPrev(e)} Schaden`});
 btn(g,sk.name,()=>act('skill'),{delay:450,dis:P.cd>0,sub:P.cd>0?`Lädt … ${P.cd}`:sk.desc});
 btn(g,'Abwehren',()=>act('def'),{delay:450,sub:'Schaden stark verringert'});
 btn(g,'Heiltrank',()=>act('potion'),{delay:450,dis:P.potions<1||P.hp>=maxHp(),sub:`${P.potions} übrig`});
 if(e.type!=='boss'&&!P.tut)btn(g,'Fliehen',()=>act('flee'),{delay:450,sub:'55 % Chance'})},
 room(){scene(`<p>${S.room.text}</p>`);const g=group('');for(const o of S.room.opts())btn(g,o.l,o.fn,{sub:o.sub,dis:o.dis,delay:350})},
 perks(){scene(`<p class="sys">${S.ptitle}</p><p class="dim">Wähle eine Fähigkeit. Sie hält bis zum Ende des Runs.</p>`);const g=group('');
-for(const c of S.choices.map(c=>typeof c==='string'?{id:c,r:0}:c)){const p=PK(c.id),m=PR[c.r].m,up=p.tier&&pCount(p.id)>0,n=p.tier?1:pCount(p.id)+1;btn(g,`<span style="color:${RAR[c.r].c}">${pName(p,n)}</span>`+(c.r?` <span class="small" style="color:${RAR[c.r].c}">${PR[c.r].n}</span>`:'')+(up?' <span class="dim small">(ersetzt deine bisherige)</span>':n>1?' <span class="dim small">(verstärkt)</span>':''),()=>{p.f(m);if(!up)P.perks.push(p.id);P.perkR=P.perkR||{};P.perkR[p.id]=Math.max(P.perkR[p.id]||0,c.r);sys(`Gelernt: ${pName(p,n)}${c.r?' ('+PR[c.r].n+')':''}.`);next()},{sub:`${p.d}<br><span class="sys">${p.pv(m)}</span>`,cls:'big'+(c.r?' rar'+c.r:''),delay:400})}},
+for(const c of S.choices.map(c=>typeof c==='string'?{id:c,r:0}:c)){const p=PK(c.id),m=PR[c.r].m,up=p.tier&&pCount(p.id)>0,n=p.tier?1:pCount(p.id)+1;btn(g,`<span style="color:${RAR[c.r].c}">${pName(p,n)}</span>`+(c.r?` <span class="small" style="color:${RAR[c.r].c}">${PR[c.r].n}</span>`:'')+(up?' <span class="dim small">(ersetzt deine bisherige)</span>':n>1?' <span class="dim small">(verstärkt)</span>':''),()=>{if(!up)P.perks.push(p.id);p.f(m);P.perkR=P.perkR||{};P.perkR[p.id]=Math.max(P.perkR[p.id]||0,c.r);sys(`Gelernt: ${pName(p,n)}${c.r?' ('+PR[c.r].n+')':''}.`);next()},{sub:`${p.d}<br><span class="sys">${p.pv(m)}</span>`,cls:'big'+(c.r?' rar'+c.r:''),delay:400})}},
 inv(){const sel=S.invSel,eq=(it,l)=>`<div class="item" style="border-color:${it?RAR[it.r].c:'#333'}"><span class="small dim">${l}</span><br>${it?iName(it)+`<br><span class="small dim">${fxc(iStats(it))}</span>`:'<span class="dim">nichts</span>'}</div>`;
 scene(`<p class="gt">Ausgerüstet</p>${['w','a','h','g','j'].map(k=>eq(P[SK[k]],SN[k])).join('')}<p class="gt" style="margin-top:14px">Rucksack ${P.bag.length}/${BAG}</p>${P.bag.length?'<p class="dim small">Tippe auf einen Gegenstand.</p>':'<p class="dim small">Leer.</p>'}`);
 let g=group('');P.bag.forEach((it,i)=>btn(g,(i===sel?'▸ ':'')+iName(it),()=>{S.invSel=sel===i?null:i},{sub:`${RAR[it.r].n} ${slotN(it)} · ${iStats(it)}${iDiff(it)}`,cls:'big',delay:120}));
