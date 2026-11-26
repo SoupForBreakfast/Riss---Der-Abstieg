@@ -212,7 +212,7 @@ const UPG=[
 {id:'wahl',name:'Weitblick',desc:'+1 Auswahl beim Aufstieg',cost:l=>250,max:1},
 ];
 const CLS={
-krieger:{name:'Krieger',hp:70,atk:5,def:3,crit:3,cost:0,desc:'Robust und standhaft',fav:['hammer','schwert'],pass:{n:'Bollwerk',d:'Abwehren blockt 70 %, der nächste Angriff danach macht +40 %'},skill:{name:'Schildschlag',cd:3,desc:'125 % Schaden, betäubt 1 Runde'}},
+krieger:{name:'Krieger',hp:70,atk:5,def:3,crit:3,cost:0,desc:'Robust und standhaft',fav:['hammer','schwert'],pass:{n:'Bollwerk',d:'Abwehren blockt 70 %, der nächste Angriff danach macht +40 %'},skill:{name:'Schildschlag',cd:3,desc:'125 % Schaden, betäubt 1 Runde (Bosse: 70 %)'}},
 klinge:{name:'Klingentänzer',hp:45,atk:7,def:0,crit:25,cost:60,desc:'Schnell, tödliche Krits',fav:['dolch','saebel'],pass:{n:'Rhythmus',d:'Jeder Treffer in Folge +6 % Krit (bis 5×), ein Treffer gegen dich bricht die Serie · 8 % Ausweichen'},skill:{name:'Wirbelklinge',cd:4,desc:'3 Hiebe à 70 %, jeder mit +15 % Krit-Chance'}},
 magier:{name:'Runenmagier',hp:38,atk:4,def:0,crit:5,cost:150,desc:'Zerbrechlich, aber verheerend',fav:['stab','speer'],pass:{n:'Runenschild',d:'Jeder Kampf beginnt mit einem Schild aus 20 % deiner LP · normale Angriffe laden die Fähigkeit schneller'},skill:{name:'Runenfeuer',cd:3,desc:'210 %, ignoriert Rüstung, verbrennt'}},
 blut:{name:'Blutritter',hp:60,atk:6,def:1,crit:8,cost:300,desc:'Lebt vom Blut seiner Feinde',fav:['sense','axt'],pass:{n:'Blutdurst',d:'5 % Lebensraub · unter 50 % LP +25 % Schaden · Heiltränke wirken nur zu 70 %'},skill:{name:'Blutpakt',cd:4,desc:'200 % Schaden, heilt um 50 % davon'}},
@@ -342,7 +342,7 @@ schwert:{n:'Schwert',m:1,crit:5,d:'Ausgewogen, +5 % Krit'},
 dolch:{n:'Dolch',m:.75,crit:15,d:'Wenig Schaden, aber +15 % Krit'},
 axt:{n:'Axt',m:1.15,bleed:25,d:'25 % Chance auf Blutung (3 Runden)'},
 speer:{n:'Speer',m:.95,pierce:50,d:'Ignoriert die Hälfte der gegnerischen Rüstung'},
-hammer:{n:'Kriegshammer',m:1.3,stun:15,crit:-5,d:'Sehr wuchtig, 15 % Betäubung, −5 % Krit'},
+hammer:{n:'Kriegshammer',m:1.3,stun:15,crit:-5,d:'Sehr wuchtig, 15 % Betäubung (Bosse schütteln 30 % ab), −5 % Krit'},
 sense:{n:'Sense',m:1,ls:8,d:'8 % Lebensraub'},
 saebel:{n:'Säbel',m:.85,dbl:25,d:'25 % Chance auf einen zweiten Hieb'},
 stab:{n:'Runenstab',m:.8,skill:25,d:'Schwache Hiebe, aber die Fähigkeit macht 25 % mehr Schaden'}};
@@ -611,6 +611,8 @@ return it.slot==='w'?` (${sgn(it.atk-cur.atk)} Angriff ggü. jetzt)`:` (${sgn(it
 const slotN=it=>SN[it.slot]||'Ausrüstung';
 
 /* ---------- Gegner ---------- */
+const evOn=()=>!!(meta.frost||(meta.best||0)>40);
+const evKey=e=>{const k=foeKey(e);return e&&e.ev&&IMG[k+'e']?k+'e':k};
 function makeEnemy(type,ov={}){const f=P.floor,a=areaOf(f);
 let hp=(22+f*5.5)*Math.pow(BAL.eh,f),at=(4+f*1.05)*Math.pow(BAL.ea,f),df=Math.floor(f*BAL.ed),name=pick(a.mobs);
 const e={type,ls:0,poison:false,stun:0,burn:0,turn:0,heavyEvery:0,base:name};if(f>30){hp*=1+(f-30)*.03;at*=1+(f-30)*.02}hp*=rm('hp',1);at*=rm('dmg',1)*(hasS('tief')?1.08:1);if(rm('evade',0))e.evade=rm('evade',0);
@@ -620,13 +622,15 @@ if(type==='elite'){hp*=1.7;at*=1.25;e.heavyEvery=4}
 if(type==='boss'){const big=f%10===0,ai=AREAS.indexOf(a);hp*=big?BAL.bb:BAL.bs;at*=big?1.45:1.3;df+=2;e.mechEvery=3;e.mi=0;
  if(P.trial&&RANG[P.trial]&&RANG[P.trial].f===f){hp*=1.25;at*=1.12;e.trial=P.trial}
  if(big){const B=BOSSM[ai];name=a.boss+(f>50?' (Echo '+Math.floor(f/10)+')':'');e.base=a.boss;e.mechs=B.mechs;Object.assign(e,B.traits||{})}
- else{const T=TW[ai];name=T.n;e.base=T.n;e.mechs=T.mechs}if(e.trial)name+=' · Prüfer'}
+ else{const T=TW[ai];name=T.n;e.base=T.n;e.mechs=T.mechs}if(e.trial)name+=' · Prüfer';
+ if(!e.trial&&!P.tut&&ai<=1&&f<=20&&evOn()&&R()<.25){e.ev=1;hp*=1.6;at*=1.3;df+=3;name+=' · Entfesselt'}}
 Object.assign(e,{name,hp:Math.round(hp),maxHp:Math.round(hp),atk:Math.round(at),def:df,
- xp:Math.round((6+f*2)*(type==='elite'?2.2:type==='boss'?5:1)),gm:type==='boss'?4:type==='elite'?2:1,ess:type==='boss'?8:type==='elite'?3:1},ov);
+ xp:Math.round((6+f*2)*(type==='elite'?2.2:type==='boss'?5:1)*(e.ev?1.5:1)),gm:(type==='boss'?4:type==='elite'?2:1)*(e.ev?2.5:1),ess:(type==='boss'?8:type==='elite'?3:1)*(e.ev?2:1)},ov);
 if(ov.name)e.maxHp=e.hp;return e}
 
 /* ---------- Kampf ---------- */
 function startCombat(type,ov){E=makeEnemy(type,ov);try{voice(E,0)}catch(e){}S.screen='combat';P.cd=0;P.defending=false;P.uBlock=hasU('aldric');P.hits=0;P.wach=hasS('wach');P.rhy=0;P.bulw=false;P.rsh=P.cls==='magier'?Math.round(maxHp()*(.2+(P.bonus.mshield||0)/100)):0;P.rlastU=false;
+if(E.ev)log('Etwas stimmt nicht. Der Wächter wirkt größer als sonst, und in seinen Augen glüht etwas, das vorher nicht da war.','bad');
 log(type==='boss'?`${E.name} versperrt das Tor!`:`${E.name} stellt sich dir in den Weg.`,type==='kampf'?'':'bad')}
 function dealDmg(mult,o={}){
 if(E.evade&&!hasS('stumm')&&R()<E.evade){log(`${E.name} weicht aus!`,'dim');return 0}
@@ -677,7 +681,7 @@ if(dodge()&&R()*100<dodge()){log('Du weichst aus!','good');if(P.bonus.bstep&&P.c
 const raw0=E.atk*(heavy?2.2:hits>1?.65:1)*(E.chill?.6:1)*(hasC('zorn')?1.15:1)*(P.wach?.5:1)*(.85+R()*.3);let d=raw0-def();if(P.wach){P.wach=false}
 if(P.defending)d*=P.cls==='krieger'?(heavy?.2:.3):(heavy?.25:.4);{const A=P.armor?at_(P.armor):null;if(A){if(heavy&&A.heavy)d*=1-A.heavy/100;if(A.frag)d*=1+A.frag/100}}
 d=Math.max(1,Math.round(d));if(P.rsh>0){const a=Math.min(P.rsh,d);P.rsh-=a;d-=a;log(a>=d+a?`Der Runenschild fängt den Schlag ab.`:`Der Runenschild fängt ${a} ab.`,'dim');if(P.rsh<=0)log('Der Runenschild zerbricht.','dim')}if(d>0&&P.rhy){P.rhy=0}if(P.bonus.rlast&&!P.rlastU&&P.hp-d<=0&&P.hp>1){P.rlastU=true;d=P.hp-1;log('Todesverachtung! Du bleibst stehen.','crit')}P.hp-=d;{const th=P.armor?at_(P.armor).thorn||0:0;if(th&&raw0>0&&E.hp>0){const r2=Math.max(1,Math.round(raw0*th/100));E.hp-=r2;log(`Dornen: ${E.name} verletzt sich selbst. ${r2} Schaden.`,'good')}}
-log(heavy?`${E.name} entfesselt einen gewaltigen Schlag! −${d} LP`:`${E.name} trifft dich${hits>1?(i?' noch mal':' blitzschnell'):''}. −${d} LP`,'bad');if(P.defending&&P.bonus.kcounter&&E.hp>0&&d>0){const c2=Math.max(2,Math.round(atk()*.8*(.85+R()*.3)-E.def*.5));E.hp-=c2;log(`Gegenschlag! ${c2} Schaden.`,'good');try{weaponSfx(false)}catch(e){}if(E.hp<=0)return}
+log(heavy?`${E.name} entfesselt einen gewaltigen Schlag! −${d} LP`:`${E.name} trifft dich${hits>1?(i?' noch mal':' blitzschnell'):''}. −${d} LP`,'bad');if(P.defending&&P.bonus.kcounter&&E.hp>0&&raw0>0){const c2=Math.max(2,Math.round(atk()*.8*(.85+R()*.3)-E.def*.5));E.hp-=c2;log(`Gegenschlag! ${c2} Schaden.`,'good');try{weaponSfx(false)}catch(e){}if(E.hp<=0)return}
 if(P.bonus.thorns&&raw0>0&&E.hp>0){const t=Math.max(1,Math.round(raw0*P.bonus.thorns/100));E.hp-=t;log(`Dornen: ${t} Schaden zurück.`)}
 if(E.ls){E.hp=Math.min(E.maxHp,E.hp+Math.round(d*E.ls))}
 if(E.poison&&R()<.5){P.poison=3;log('Du bist vergiftet.','bad')}}E.chill=0}
@@ -685,7 +689,7 @@ function mechHit(d){d=Math.max(1,Math.round(d));if(P.rsh>0){const a=Math.min(P.r
 function doMech(m){const dm=P.defending?(P.cls==='krieger'?.3:.4):1;
 if(m==='shield'){E.shield=true;log(`${E.name} verschanzt sich hinter einem Schild.`,'dim');return true}
 if(m==='mirror'){E.mirror=true;log(`${E.name}s Haut wird glatt wie ein Spiegel. Wer jetzt zuschlägt, trifft sich selbst.`,'bad');return true}
-if(m==='warcry'){E.atk=Math.round(E.atk*1.2);log(`${E.name} brüllt einen Kriegsschrei. Seine Schläge werden härter.`,'bad');return true}
+if(m==='warcry'){if((E.wc||0)>=3){log(`${E.name} brüllt wieder, aber härter kann er nicht mehr zuschlagen.`,'dim');return false}E.wc=(E.wc||0)+1;E.atk=Math.round(E.atk*1.2);log(`${E.name} brüllt einen Kriegsschrei. Seine Schläge werden härter (${E.wc}/3).`,'bad');return true}
 if(m==='breath'){const d=mechHit((E.atk*1.3-def()*.5)*dm);P.burn=3;log(`Feueratem! −${d} LP – du brennst.`,'bad');return true}
 if(m==='drain'){const d=mechHit(maxHp()*.15*dm);E.hp=Math.min(E.maxHp,E.hp+d*2);log(`${E.name} zieht dir das Leben aus dem Leib. −${d} LP`,'bad');return true}
 if(m==='freeze'){P.frozen=1;log('Eisiger Hauch! Deine Hände werden steif, dein nächster Angriff ist schwächer.','bad');return false}
@@ -732,6 +736,8 @@ const src=gearOf(e),nm=e.name;
 const used=S.queue.filter(q=>q.k==='loot').map(q=>q.it.slot);
 if(R()<lc){const it=e.bounty?genItem(4,2,src,used):genItem(e.type==='boss'?2:e.type==='elite'?1.5:0,0,src,used);it.src=nm;used.push(it.slot);S.queue.push({k:'loot',it})}
 if(e.bounty){const it=genItem(3,1,src,used);it.src=nm;S.queue.push({k:'loot',it})}
+if(e.ev&&!P.tut){const it=genItem(5,2,src,used);it.src=nm;used.push(it.slot);S.queue.push({k:'loot',it});if(R()<.35){const it2=genItem(6,3,src,used);it2.src=nm;S.queue.push({k:'loot',it:it2})}const mk2='m'+Math.min(4,AREAS.indexOf(areaOf(P.floor)));addMat(mk2,ri(3,4));addMat('kern',1);sys('Der entfesselte Wächter hinterlässt deutlich mehr als sonst.')}
+if(e.type==='boss'&&!P.tut&&foeKey(e)==='b4'&&!meta.frost){meta.frost=1;saveMeta();sys('Die Frostgruft ist bezwungen. Oben erzählt man sich, dass die alten Wächter seitdem unruhig sind.')}
 if(e.type==='boss'&&P.tut){sys('Prüfung bestanden.');S.queue.push({k:'story',id:'tutEnd'})}
 else if(e.type==='boss'){P.bosses++;sys(`Torwächter bezwungen. Etage ${P.floor} gesichert.`);if(e.trial){meta.rankPend=e.trial;P.trial=0;saveMeta();sfx('win');sys(`Prüfung bestanden! Kehr ins Lager zurück. Varga wartet am Stein, um dich als ${RANG[e.trial].n} aufzunehmen.`)}
  const bi=P.floor/10;if(P.floor%10===0&&bi<=4){const nw=!meta.lore.includes('b'+bi);unlock('b'+bi);if(nw&&!(meta.saga||{})['i'+bi])setTimeout(()=>saga('i'+bi),1800)}
@@ -909,7 +915,7 @@ try{if(!retreat&&!P.tut){const lt=logs.slice(0,7).map(l=>l.t).join(' '),tips=[];
  if(P.lvl<P.floor*.45)tips.push('„Du warst zu schnell zu tief. Kämpf ein bisschen mehr, bevor du weitergehst.“');
  if(!P.rests&&P.floor>=6)tips.push('„Kein einziges Mal am Feuer gerastet? Zunder ist zum Benutzen da.“');
  tips.push('„Rückzug ist keine Schande. Wer lebend hochkommt, bringt mehr Splitter mit.“');
- let cause='Treffer',key=null;try{key=E?foeKey(E):null}catch(x){}
+ let cause='Treffer',key=null;try{key=E?evKey(E):null}catch(x){}
  if(/gewaltigen Schlag/.test(lt))cause='ein gewaltiger Schlag';else if(/leidet unter Gift|Du bist vergiftet/.test(lt))cause='Gift';else if(/Feuer|brennst|Flammen/.test(lt))cause='Feuer';else if(/Leben aus dem Leib/.test(lt))cause='Lebensentzug';else if(/Eisiger Hauch/.test(lt))cause='Kälte und dann ein Treffer';else if(/Falle/.test(lt))cause='eine Falle';
  recap={key,cause,lvl:P.lvl,hpMax:maxHp(),gear:['weapon','armor','helm','gloves','jewel'].map(k=>P[k]?{n:P[k].name,r:P[k].r,cur:!!P[k].curse}:null).filter(Boolean),killer:E?E.name:null,kt:E?E.type:null,perks:[...new Set(P.perks)].map(id=>{const p=PK(id);return p?pName(p,pCount(id)):''}).filter(Boolean),w:P.weapon?{n:P.weapon.name,r:P.weapon.r}:null,a:P.armor?{n:P.armor.name,r:P.armor.r}:null,tip:tips[0]}}}catch(e){recap=null}
 const raw=P.ess+P.floor+P.bosses*5,mult=(1+ul('seele')*.1)*(retreat?(P.lift?1.75:1.5):1)*rm('ess',1)*(hasS('tief')?1.25:1)*(P.hEss?1.15:1),tot=Math.round(raw*mult*.8*((meta.camp||0)>=4?1.1:1)*(retreat||P.tut?1:.6)),goldHome=retreat?P.gold:0,goldLost=retreat?0:P.gold;
@@ -1200,7 +1206,7 @@ if(s==='hub'){const c=meta.camp||0;for(let i=Math.min(5,c);i>=1;i--)if(IMG['l'+i
 if(!P)return'';const ai=Math.min(4,Math.max(0,AREAS.indexOf(areaOf(P.floor||1))));
 if(s==='acard')return artImg('o'+(2+ai),{area:true});if(s==='doors'){if(S.fireOpen)return artImg(ai&&IMG['r'+(ai+1)]?'r'+(ai+1):'o8');const nf=P.floor+1,boss=P.tut?nf===3:nf%5===0;if(boss){const ai2=Math.min(4,Math.max(0,AREAS.indexOf(areaOf(nf)))),vk='v'+(ai2+1+(nf%10===0?5:0));return artImg(!P.tut&&nf<=50&&IMG[vk]?vk:'o7')}return artImg('o'+(2+Math.min(4,Math.max(0,AREAS.indexOf(areaOf(nf))))))}
 if(s==='gate'){const k=P.floor===30?'x10':P.floor>20?'x11':'x9';if(k&&IMG[k])return artImg(k)}
-if(s==='combat'&&E)return artImg(foeKey(E),{elite:E.type==='elite',boss:E.type==='boss',area:ai});
+if(s==='combat'&&E)return artImg(evKey(E),{elite:E.type==='elite'||(E.ev&&!IMG[foeKey(E)+'e']),boss:E.type==='boss',area:ai});
 if(s==='room'){if(S.roomKey==='haendler')return artImg(ai&&IMG['h'+(ai+1)]?'h'+(ai+1):'o9');if(S.roomKey==='rast')return artImg(ai&&IMG['r'+(ai+1)]?'r'+(ai+1):'o8');if(S.roomKey==='tresorTuer')return artImg('x3');if(S.roomKey==='schrein')return artImg(IMG.x6?'x6':'o3');if(S.roomKey==='tresorDone'&&IMG.x7)return artImg('x7');if(S.roomKey==='x'&&IMG.x8)return artImg('x8');if(S.roomKey==='schatz')return artImg(IMG.x5?'x5':'e7');if(S.roomKey==='vquest'){const q='q'+(meta.vq||1);return artImg(IMG[q]?q:'o'+(2+ai),{area:!IMG[q]})}if(S.roomKey==='bquest')return artImg(IMG.q3?'q3':'o'+(2+ai),{area:!IMG.q3});const EVI={ev0:'e1',ev1:'e7',ev2:'e3',ev3:'e2',ev4:'e8',ev5:'e6',ev6:'e4',ev11:'e5',ev7:'e9',ev8:'e10',ev9:'e11',ev10:'e12',ev12:'e13',ev13:'e13',ev14:'e14',ev15:'e15',ev16:'e16',ev17:'e17',ev18:'e18'}[S.roomKey];if(EVI&&IMG[EVI])return artImg(EVI)}
 return''}
 
