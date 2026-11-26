@@ -514,8 +514,8 @@ const favAtk=()=>P&&P.weapon&&(CLS[P.cls].fav||[]).includes(P.weapon.type)?Math.
 const atk=()=>{let v=P.baseAtk+P.bonus.atk+(P.weapon?P.weapon.atk:0)+P.rageStacks+gs('atk')+favAtk();if(!P.weapon&&!P.tut)v=Math.round(v*.6);return hasS('schatten')?Math.round(v*.9):v};
 const def=()=>Math.max(0,P.baseDef+P.bonus.def+(P.armor?P.armor.def:0)+gs('def')-(hasS('stumm')?2:0));
 const crit=()=>Math.max(0,Math.min(75,P.baseCrit+P.bonus.crit+(P.weapon?(P.weapon.crit||0)+(wt(P.weapon).crit||0):0)+(P.armor?at_(P.armor).crit||0:0)+gs('crit')+(hasS('kalt')?10:0)+(P.cls==='klinge'?(P.rhy||0)*(6+(P.bonus.brhy||0)):0)));
-const lsP=()=>P.bonus.ls+(P.weapon?(P.weapon.ls||0)+(wt(P.weapon).ls||0):0)+gs('ls')+(hasS('blut')?6:0)+(P&&P.cls==='blut'?5:0);
-const dodge=()=>Math.max(0,Math.min(60,(P.armor?(at_(P.armor).dodge||0)+(P.armor.dodge||0):0)+(P.bonus.dodge||0)+gs('dodge')+(hasS('schatten')?8:0)+(P.cls==='klinge'?8:0)));
+const lsP=()=>P.bonus.ls+(P.bonus.vamp||0)+(P.weapon?(P.weapon.ls||0)+(wt(P.weapon).ls||0):0)+gs('ls')+(hasS('blut')?6:0)+(P&&P.cls==='blut'?5:0);
+const dodge=()=>Math.max(0,Math.min(60,(P.armor?(at_(P.armor).dodge||0)+(P.armor.dodge||0):0)+(P.bonus.dodge||0)+(P.bonus.rflx||0)+gs('dodge')+(hasS('schatten')?8:0)+(P.cls==='klinge'?8:0)));
 const wp=k=>(P.weapon?(wt(P.weapon)[k]||0)+(k==='stun'||k==='bleed'?P.weapon[k]||0:0):0)+(k==='bleed'||k==='stun'?gs(k):0);
 function heal(n){const b=P.hp;P.hp=Math.min(maxHp(),P.hp+n);return P.hp-b}
 const goldAmt=m=>Math.round((ri(3,7)+P.floor*1.5)*m*rm('gold',1)*(hasS('gier')?1.3:1)*(hasC('armut')?.85:1)*(1+(ul('gier')*15+P.bonus.gold+gs('gold'))/100));
@@ -529,31 +529,31 @@ const BRENNQ=['Haken, kein Strich.','Steht im Buch. Bring es wieder mit hoch.','
 function brennSay(){const n=Date.now();if(S.brennT&&n-S.brennT<120000&&R()>.3)return;S.brennT=n;const pool=BRENNQ.filter(q=>q!==S.brennL);const q=pick(pool);S.brennL=q;sayQ(q,'Brenn')}
 const potMax=()=>5+(P&&P.perks&&P.perks.includes('potion')?1:0);function gainPot(n=1){let over=0;for(let i=0;i<n;i++){if(P.potions<potMax())P.potions++;else over++}if(over){const h=heal(potHeal()*over);log(h>0?`Kein Platz mehr für Tränke. Du trinkst ${over>1?over+' gleich':'ihn gleich'}. +${h} LP`:`Kein Platz mehr für Tränke. ${over>1?'Sie gehen':'Er geht'} verloren.`,h>0?'good':'dim')}}
 const potHeal=(x=0)=>Math.round(maxHp()*.4*(1+(P.bonus.potion+x)/100)*(hasS('schwer')?.8:1)*(hasC('bruch')?.7:1)*(P.cls==='blut'?.7:1));
-const cdNow=(x=0)=>Math.max(1,CLS[P.cls].skill.cd-P.bonus.cdr-x+(hasS('wach')?1:0)+(hasC('unrast')?1:0));
+const cdNow=(x=0)=>Math.max(2,CLS[P.cls].skill.cd-P.bonus.cdr-x+(hasS('wach')?1:0)+(hasC('unrast')?1:0));
 const PR=[{n:'Gewöhnlich',m:1},{n:'Selten',m:1.5},{n:'Episch',m:2},{n:'Legendär',m:3}];
-const rnd=v=>Math.max(1,Math.round(v));
+const rnd=v=>Math.max(1,Math.round(v));const mR=m=>Math.max(0,PR.findIndex(x=>x.m===m));const tierCur=id=>P.perkR&&P.perkR[id]!=null?P.perkR[id]:-1;
 const PERKS=[
 {id:'hp',n:'Eiserne Haut',d:'Mehr max. LP',f:m=>{const v=rnd(15*m);P.bonus.hp+=v;P.hp+=v},pv:m=>`Max. LP ${maxHp()} → ${maxHp()+rnd(15*m)}`,cur:()=>`Max. LP jetzt ${maxHp()}`},
 {id:'atk',n:'Klingenkunst',d:'Mehr Angriff',f:m=>P.bonus.atk+=rnd(3*m),pv:m=>`Angriff ${atk()} → ${atk()+rnd(3*m)}`,cur:()=>`Angriff jetzt ${atk()}`},
 {id:'def',n:'Panzerung',d:'Mehr Verteidigung',f:m=>P.bonus.def+=rnd(2*m),pv:m=>`Verteidigung ${def()} → ${def()+rnd(2*m)}`,cur:()=>`Verteidigung jetzt ${def()}`},
 {id:'crit',n:'Tödliche Präzision',d:'Höhere Chance auf Krits (doppelter Schaden)',f:m=>P.bonus.crit+=rnd(6*m),pv:m=>`Krit-Chance ${crit()} % → ${Math.min(75,crit()+rnd(6*m))} %`,cur:()=>`Krit-Chance jetzt ${crit()} %`},
-{id:'ls',n:'Vampirismus',d:'Ein Teil deines Schadens heilt dich',f:m=>P.bonus.ls+=rnd(6*m),pv:m=>`Lebensraub ${lsP()} % → ${lsP()+rnd(6*m)} %`,cur:()=>`Lebensraub jetzt ${lsP()} %`},
-{id:'thorns',n:'Dornenrüstung',d:'Ein Teil des erlittenen Schadens geht an den Angreifer zurück',f:m=>P.bonus.thorns+=rnd(25*m),pv:m=>`Rückwurf ${P.bonus.thorns} % → ${P.bonus.thorns+rnd(25*m)} %`,cur:()=>`Rückwurf jetzt ${P.bonus.thorns} %`},
+{id:'ls',n:'Vampirismus',tier:[5,8,11,16],d:'Ein Teil deines Schadens heilt dich',f:m=>P.bonus.vamp=PK('ls').tier[mR(m)],pv:m=>`Lebensraub ${lsP()} % → ${lsP()-(P.bonus.vamp||0)+PK('ls').tier[mR(m)]} %`,cur:()=>`Lebensraub jetzt ${lsP()} %`},
+{id:'thorns',n:'Dornenrüstung',tier:[25,35,50,75],d:'Ein Teil des erlittenen Schadens geht an den Angreifer zurück',f:m=>P.bonus.thorns=PK('thorns').tier[mR(m)],pv:m=>`Rückwurf ${P.bonus.thorns} % → ${PK('thorns').tier[mR(m)]} %`,cur:()=>`Rückwurf jetzt ${P.bonus.thorns} %`},
 {id:'gold',n:'Goldfinger',d:'Mehr Gold von Gegnern und Schätzen',f:m=>P.bonus.gold+=rnd(30*m),pv:m=>`Gold-Bonus +${gBonus()} % → +${gBonus()+rnd(30*m)} %`,cur:()=>`Gold-Bonus jetzt +${gBonus()} %`},
 {id:'luck',n:'Schatzsucher',d:'Gegner lassen öfter Ausrüstung fallen, und sie ist häufiger selten',f:m=>P.bonus.luck+=rnd(2*m),pv:m=>`Beute bei Gegnern ${dropPct(rnd(2*m))} % · Selten oder besser ${rarePct(rnd(2*m))} %`,cur:()=>`Beute bei Gegnern jetzt ${dropPct()} % · Selten oder besser ${rarePct()} %`},
-{id:'cdr',n:'Fokus',d:'Deine Fähigkeit lädt schneller',f:m=>P.bonus.cdr+=m>=2?2:1,max:2,pv:m=>`Abklingzeit ${cdNow()} → ${cdNow(m>=2?2:1)} Runden`,cur:()=>`Abklingzeit jetzt ${cdNow()} Runden`},
+{id:'cdr',n:'Fokus',tier:[1,1,2,2],d:'Deine Fähigkeit lädt schneller',f:m=>P.bonus.cdr=PK('cdr').tier[mR(m)],pv:m=>`Abklingzeit ${cdNow()} → ${cdNow(PK('cdr').tier[mR(m)]-P.bonus.cdr)} Runden`,cur:()=>`Abklingzeit jetzt ${cdNow()} Runden`},
 {id:'potion',n:'Trankmeister',d:'Tränke heilen mehr, und du bekommst sofort welche dazu',f:m=>{P.bonus.potion+=rnd(50*m);gainPot(rnd(m))},pv:m=>`Trank heilt ${potHeal()} → ${potHeal(rnd(50*m))} LP · +${rnd(m)} Heiltrank`,cur:()=>`Ein Trank heilt jetzt ${potHeal()} LP`},
 {id:'rage',n:'Blutrausch',d:'Jeder Sieg gibt Angriff bis zum Ende des Runs',f:m=>P.bonus.rage=rnd(m),max:1,pv:m=>`+${rnd(m)} Angriff pro Sieg`,cur:()=>`Bisher +${P.rageStacks} Angriff`},
 {id:'revive',n:'Zweiter Atem',d:'Einmal pro Run stehst du nach dem Tod wieder auf',f:m=>{P.revive=true;P.revivePct=Math.min(100,rnd(40*m))},max:1,pv:m=>`Wiederbelebung mit ${Math.min(100,rnd(40*m))} % LP`,cur:()=>P.revive?`Noch verfügbar (${P.revivePct||40} % LP)`:'Schon verbraucht'},
-{id:'regen',n:'Regeneration',d:'Heilt dich nach jedem Kampf',f:m=>P.bonus.regen+=rnd(6*m),pv:m=>`Heilung nach Kampf ${P.bonus.regen} % → ${P.bonus.regen+rnd(6*m)} % der max. LP`,cur:()=>`${P.bonus.regen} % der max. LP nach jedem Kampf`},
+{id:'regen',n:'Regeneration',tier:[5,8,11,16],d:'Heilt dich nach jedem Kampf',f:m=>P.bonus.regen=PK('regen').tier[mR(m)],pv:m=>`Heilung nach Kampf ${P.bonus.regen} % → ${PK('regen').tier[mR(m)]} % der max. LP`,cur:()=>`${P.bonus.regen} % der max. LP nach jedem Kampf`},
 {id:'exec',n:'Henker',d:'Mehr Schaden gegen angeschlagene Gegner (unter 30 % LP)',f:m=>P.bonus.exec+=rnd(50*m),pv:m=>`Bonus-Schaden ${P.bonus.exec} % → ${P.bonus.exec+rnd(50*m)} %`,cur:()=>`+${P.bonus.exec} % Schaden gegen angeschlagene Gegner`},
 {id:'berserk',n:'Berserkerblut',minR:2,max:1,d:'Viel mehr Schaden, solange du unter 50 % LP bist',f:m=>P.bonus.berserk=rnd(20*m),pv:m=>`+${rnd(20*m)} % Schaden`,cur:()=>`+${P.bonus.berserk||0} % Schaden`},
-{id:'reflex',n:'Reflexe',minR:2,d:'Du weichst öfter aus',f:m=>P.bonus.dodge=(P.bonus.dodge||0)+rnd(5*m),pv:m=>`Ausweichen ${dodge()} % → ${dodge()+rnd(5*m)} %`,cur:()=>`Ausweichen jetzt ${dodge()} %`},
+{id:'reflex',n:'Reflexe',minR:2,tier:[6,8,10,14],d:'Du weichst öfter aus',f:m=>P.bonus.rflx=PK('reflex').tier[mR(m)],pv:m=>`Ausweichen ${dodge()} % → ${dodge()-(P.bonus.rflx||0)+PK('reflex').tier[mR(m)]} %`,cur:()=>`Ausweichen jetzt ${dodge()} %`},
 {id:'twin',n:'Zwillingsklinge',minR:3,max:1,d:'Jeder normale Angriff trifft ein zweites Mal',f:m=>P.bonus.twin=50,pv:()=>'Zweiter Treffer mit 50 % Schaden',cur:()=>'Zweiter Treffer mit 50 % Schaden'},
 {id:'k_erd',cls:'krieger',n:'Erdstoß',d:'Dein Schildschlag trifft härter',f:m=>P.bonus.kskill=(P.bonus.kskill||0)+rnd(30*m),pv:m=>`Schildschlag +${(P.bonus.kskill||0)} % → +${(P.bonus.kskill||0)+rnd(30*m)} %`,cur:()=>`Schildschlag +${P.bonus.kskill||0} %`},
-{id:'k_guard',cls:'krieger',n:'Standhaft',d:'Abwehren heilt dich',f:m=>P.bonus.kguard=(P.bonus.kguard||0)+rnd(4*m),pv:m=>`Heilung beim Abwehren ${(P.bonus.kguard||0)} % → ${(P.bonus.kguard||0)+rnd(4*m)} % der max. LP`,cur:()=>`Abwehren heilt ${P.bonus.kguard||0} % der max. LP`},
+{id:'k_guard',cls:'krieger',n:'Standhaft',tier:[4,6,8,12],d:'Abwehren heilt dich',f:m=>P.bonus.kguard=PK('k_guard').tier[mR(m)],pv:m=>`Heilung beim Abwehren ${(P.bonus.kguard||0)} % → ${PK('k_guard').tier[mR(m)]} % der max. LP`,cur:()=>`Abwehren heilt ${P.bonus.kguard||0} % der max. LP`},
 {id:'k_counter',cls:'krieger',n:'Gegenschlag',minR:2,max:1,d:'Wirst du beim Abwehren getroffen, schlägst du sofort zurück',f:m=>P.bonus.kcounter=1,pv:()=>'Gegenschlag mit 80 % Schaden, halbe Rüstung',cur:()=>'Gegenschlag beim Abwehren'},
-{id:'b_flow',cls:'klinge',n:'Fließende Klinge',d:'Rhythmus gibt mehr Krit pro Stufe',f:m=>P.bonus.brhy=(P.bonus.brhy||0)+(m>=2?2:1),pv:m=>`Rhythmus ${6+(P.bonus.brhy||0)} % → ${6+(P.bonus.brhy||0)+(m>=2?2:1)} % pro Stufe`,cur:()=>`Rhythmus ${6+(P.bonus.brhy||0)} % pro Stufe`},
+{id:'b_flow',cls:'klinge',n:'Fließende Klinge',tier:[1,2,3,4],d:'Rhythmus gibt mehr Krit pro Stufe',f:m=>P.bonus.brhy=PK('b_flow').tier[mR(m)],pv:m=>`Rhythmus ${6+(P.bonus.brhy||0)} % → ${6+PK('b_flow').tier[mR(m)]} % pro Stufe`,cur:()=>`Rhythmus ${6+(P.bonus.brhy||0)} % pro Stufe`},
 {id:'b_step',cls:'klinge',n:'Schattenschritt',d:'Mehr Ausweichen, und Ausweichen hält deinen Rhythmus',f:m=>{P.bonus.dodge=(P.bonus.dodge||0)+rnd(4*m);P.bonus.bstep=1},pv:m=>`Ausweichen ${dodge()} % → ${dodge()+rnd(4*m)} % · Ausweichen gibt +1 Rhythmus`,cur:()=>`Ausweichen ${dodge()} %`},
 {id:'b_cut',cls:'klinge',n:'Feine Schnitte',minR:2,max:1,d:'Kritische Treffer lassen den Gegner bluten',f:m=>P.bonus.bcut=1,pv:()=>'Jeder Krit verursacht Blutung',cur:()=>'Krits verursachen Blutung'},
 {id:'m_wall',cls:'magier',n:'Runenwall',d:'Dein Runenschild wird stärker',f:m=>P.bonus.mshield=(P.bonus.mshield||0)+rnd(10*m),pv:m=>`Runenschild ${20+(P.bonus.mshield||0)} % → ${20+(P.bonus.mshield||0)+rnd(10*m)} % der LP`,cur:()=>`Runenschild ${20+(P.bonus.mshield||0)} % der LP`},
@@ -851,7 +851,7 @@ const EVENTS=[
 ];
 
 function rollPR(){const L=luckV()*.25,x=R()*100;return x<1+L*.2?3:x<4.5+L*.6?2:x<18+L?1:0}
-function showPerks(title){const ch=[];for(let i=0;i<3+ul('wahl');i++){let r=rollPR();const pool=PERKS.filter(p=>(!p.cls||p.cls===P.cls)&&(!p.max||pCount(p.id)<p.max)&&(!p.minR||p.minR<=r)&&!ch.some(c=>c.id===p.id));if(!pool.length)break;
+function showPerks(title){const ch=[];for(let i=0;i<3+ul('wahl');i++){let r=rollPR();const pool=PERKS.filter(p=>(!p.cls||p.cls===P.cls)&&(!p.max||pCount(p.id)<p.max)&&(!p.minR||p.minR<=r)&&(!p.tier||tierCur(p.id)<0||p.tier[Math.max(r,p.minR||0)]>p.tier[tierCur(p.id)])&&!ch.some(c=>c.id===p.id));if(!pool.length)break;
  const own=pool.filter(p=>p.cls),ex=pool.filter(p=>p.minR),p=own.length&&R()<.3?pick(own):ex.length&&R()<.5?pick(ex):pick(pool);ch.push({id:p.id,r:Math.max(r,p.minR||0)})}
 S.screen='perks';S.ptitle=title;S.choices=ch}
 function showLoot(it){S.screen='loot';S.item=it;if(!(!it.src&&smp('chest',.5)))sfx(it.src&&it.src!=='Hild'?'rustle':'creak');if(it.r===3&&!P.tut){meta.legend++;saveMeta()}}
@@ -1407,7 +1407,7 @@ btn(g,'Heiltrank',()=>act('potion'),{delay:450,dis:P.potions<1||P.hp>=maxHp(),su
 if(e.type!=='boss'&&!P.tut)btn(g,'Fliehen',()=>act('flee'),{delay:450,sub:'55 % Chance'})},
 room(){scene(`<p>${S.room.text}</p>`);const g=group('');for(const o of S.room.opts())btn(g,o.l,o.fn,{sub:o.sub,dis:o.dis,delay:350})},
 perks(){scene(`<p class="sys">${S.ptitle}</p><p class="dim">Wähle eine Fähigkeit. Sie hält bis zum Ende des Runs.</p>`);const g=group('');
-for(const c of S.choices.map(c=>typeof c==='string'?{id:c,r:0}:c)){const p=PK(c.id),m=PR[c.r].m,n=pCount(p.id)+1;btn(g,`<span style="color:${RAR[c.r].c}">${pName(p,n)}</span>`+(c.r?` <span class="small" style="color:${RAR[c.r].c}">${PR[c.r].n}</span>`:'')+(n>1?' <span class="dim small">(verstärkt)</span>':''),()=>{p.f(m);P.perks.push(p.id);P.perkR=P.perkR||{};P.perkR[p.id]=Math.max(P.perkR[p.id]||0,c.r);sys(`Gelernt: ${pName(p,n)}${c.r?' ('+PR[c.r].n+')':''}.`);next()},{sub:`${p.d}<br><span class="sys">${p.pv(m)}</span>`,cls:'big'+(c.r?' rar'+c.r:''),delay:400})}},
+for(const c of S.choices.map(c=>typeof c==='string'?{id:c,r:0}:c)){const p=PK(c.id),m=PR[c.r].m,up=p.tier&&pCount(p.id)>0,n=p.tier?1:pCount(p.id)+1;btn(g,`<span style="color:${RAR[c.r].c}">${pName(p,n)}</span>`+(c.r?` <span class="small" style="color:${RAR[c.r].c}">${PR[c.r].n}</span>`:'')+(up?' <span class="dim small">(ersetzt deine bisherige)</span>':n>1?' <span class="dim small">(verstärkt)</span>':''),()=>{p.f(m);if(!up)P.perks.push(p.id);P.perkR=P.perkR||{};P.perkR[p.id]=Math.max(P.perkR[p.id]||0,c.r);sys(`Gelernt: ${pName(p,n)}${c.r?' ('+PR[c.r].n+')':''}.`);next()},{sub:`${p.d}<br><span class="sys">${p.pv(m)}</span>`,cls:'big'+(c.r?' rar'+c.r:''),delay:400})}},
 inv(){const sel=S.invSel,eq=(it,l)=>`<div class="item" style="border-color:${it?RAR[it.r].c:'#333'}"><span class="small dim">${l}</span><br>${it?iName(it)+`<br><span class="small dim">${fxc(iStats(it))}</span>`:'<span class="dim">nichts</span>'}</div>`;
 scene(`<p class="gt">Ausgerüstet</p>${['w','a','h','g','j'].map(k=>eq(P[SK[k]],SN[k])).join('')}<p class="gt" style="margin-top:14px">Rucksack ${P.bag.length}/${BAG}</p>${P.bag.length?'<p class="dim small">Tippe auf einen Gegenstand.</p>':'<p class="dim small">Leer.</p>'}`);
 let g=group('');P.bag.forEach((it,i)=>btn(g,(i===sel?'▸ ':'')+iName(it),()=>{S.invSel=sel===i?null:i},{sub:`${RAR[it.r].n} ${slotN(it)} · ${iStats(it)}${iDiff(it)}`,cls:'big',delay:120}));
