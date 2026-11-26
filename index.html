@@ -548,7 +548,7 @@ const PERKS=[
 {id:'thorns',n:'Dornenrüstung',tier:[25,35,50,75],d:'Ein Teil des erlittenen Schadens geht an den Angreifer zurück',f:m=>P.bonus.thorns=PK('thorns').tier[mR(m)],pv:m=>`Rückwurf ${P.bonus.thorns} % → ${PK('thorns').tier[mR(m)]} %`,cur:()=>`Rückwurf jetzt ${P.bonus.thorns} %`},
 {id:'gold',n:'Goldfinger',d:'Mehr Gold von Gegnern und Schätzen',f:m=>P.bonus.gold+=rnd(30*m),pv:m=>`Gold-Bonus +${gBonus()} % → +${gBonus()+rnd(30*m)} %`,cur:()=>`Gold-Bonus jetzt +${gBonus()} %`},
 {id:'luck',n:'Schatzsucher',d:'Gegner lassen öfter Ausrüstung fallen, und sie ist häufiger selten',f:m=>P.bonus.luck+=rnd(2*m),pv:m=>`Beute bei Gegnern ${dropPct(rnd(2*m))} % · Selten oder besser ${rarePct(rnd(2*m))} %`,cur:()=>`Beute bei Gegnern jetzt ${dropPct()} % · Selten oder besser ${rarePct()} %`},
-{id:'cdr',n:'Fokus',tier:[1,1,2,2],d:'Deine Fähigkeit lädt schneller',f:m=>P.bonus.cdr=PK('cdr').tier[mR(m)],pv:m=>`Abklingzeit ${cdNow()} → ${cdNow(PK('cdr').tier[mR(m)]-P.bonus.cdr)} Runden`,cur:()=>`Abklingzeit jetzt ${cdNow()} Runden`},
+{id:'cdr',n:'Fokus',tier:[1,1,2,2],ok:m=>cdNow(PK('cdr').tier[mR(m)]-P.bonus.cdr)<cdNow(),d:'Deine Fähigkeit lädt schneller',f:m=>P.bonus.cdr=PK('cdr').tier[mR(m)],pv:m=>`Abklingzeit ${cdNow()} → ${cdNow(PK('cdr').tier[mR(m)]-P.bonus.cdr)} Runden`,cur:()=>`Abklingzeit jetzt ${cdNow()} Runden`},
 {id:'potion',n:'Trankmeister',d:'Tränke heilen mehr, und du bekommst sofort welche dazu',f:m=>{P.bonus.potion+=rnd(50*m);gainPot(rnd(m))},pv:m=>`Trank heilt ${potHeal()} → ${potHeal(rnd(50*m))} LP · +${rnd(m)} Heiltrank`,cur:()=>`Ein Trank heilt jetzt ${potHeal()} LP`},
 {id:'rage',n:'Blutrausch',d:'Jeder Sieg gibt Angriff bis zum Ende des Runs',f:m=>P.bonus.rage=rnd(m),max:1,pv:m=>`+${rnd(m)} Angriff pro Sieg`,cur:()=>`Bisher +${P.rageStacks} Angriff`},
 {id:'revive',n:'Zweiter Atem',d:'Einmal pro Run stehst du nach dem Tod wieder auf',f:m=>{P.revive=true;P.revivePct=Math.min(100,rnd(40*m))},max:1,pv:m=>`Wiederbelebung mit ${Math.min(100,rnd(40*m))} % LP`,cur:()=>P.revive?`Noch verfügbar (${P.revivePct||40} % LP)`:'Schon verbraucht'},
@@ -879,7 +879,7 @@ const EVENTS=[
 ];
 
 function rollPR(){const L=luckV()*.25,x=R()*100;return x<1+L*.2?3:x<4.5+L*.6?2:x<18+L?1:0}
-function showPerks(title){const ch=[];for(let i=0;i<3+ul('wahl');i++){let r=rollPR();const pool=PERKS.filter(p=>(!p.cls||p.cls===P.cls)&&(!p.max||pCount(p.id)<p.max)&&(!p.minR||p.minR<=r)&&(!p.tier||tierCur(p.id)<0||p.tier[Math.max(r,p.minR||0)]>p.tier[tierCur(p.id)])&&!ch.some(c=>c.id===p.id));if(!pool.length)break;
+function showPerks(title){const ch=[];for(let i=0;i<3+ul('wahl');i++){let r=rollPR();const pool=PERKS.filter(p=>(!p.cls||p.cls===P.cls)&&(!p.max||pCount(p.id)<p.max)&&(!p.minR||p.minR<=r)&&(!p.tier||tierCur(p.id)<0||p.tier[Math.max(r,p.minR||0)]>p.tier[tierCur(p.id)])&&(!p.ok||p.ok(PR[Math.max(r,p.minR||0)].m))&&!ch.some(c=>c.id===p.id));if(!pool.length)break;
  const own=pool.filter(p=>p.cls),ex=pool.filter(p=>p.minR),p=own.length&&R()<.3?pick(own):ex.length&&R()<.5?pick(ex):pick(pool);ch.push({id:p.id,r:Math.max(r,p.minR||0)})}
 S.screen='perks';S.ptitle=title;S.choices=ch}
 function showLoot(it){S.screen='loot';S.item=it;if(!(!it.src&&smp('chest',.5)))sfx(it.src&&it.src!=='Hild'?'rustle':'creak');if(it.r===3&&!P.tut){meta.legend++;saveMeta()}}
