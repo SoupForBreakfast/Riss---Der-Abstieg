@@ -348,7 +348,7 @@ saebel:{n:'Säbel',m:.85,dbl:25,d:'25 % Chance auf einen zweiten Hieb'},
 stab:{n:'Runenstab',m:.8,skill:25,d:'Schwache Hiebe, aber die Fähigkeit macht 25 % mehr Schaden'}};
 const AT={
 leder:{n:'Lederrüstung',dm:.6,hm:1.05,dodge:8,crit:5,d:'Beweglich: +8 % Ausweichen, +5 % Krit · wenig Schutz'},
-kette:{n:'Kettenhemd',dm:1,hm:.9,thorn:20,d:'Dornen: wer dich trifft, erleidet 20 % des Schadens selbst'},
+kette:{n:'Kettenhemd',dm:1,hm:.9,thorn:12,d:'Dornen: wer dich trifft, erleidet 12 % seines Schlags (vor deiner Verteidigung) selbst'},
 platte:{n:'Plattenpanzer',dm:1.9,hm:1.35,crit:-5,dodge:-8,heavy:35,d:'Festung: schwere Schläge −35 % · −5 % Krit, −8 % Ausweichen'},
 robe:{n:'Runenrobe',dm:.45,hm:.75,skill:30,d:'Fähigkeit macht 30 % mehr Schaden · wenig Schutz'},
 mantel:{n:'Schattenmantel',dm:.4,hm:.55,dodge:12,frag:20,d:'Schatten: 12 % Ausweichen · Treffer gegen dich +20 % Schaden'}};
@@ -545,7 +545,7 @@ const PERKS=[
 {id:'def',n:'Panzerung',d:'Mehr Verteidigung',f:m=>P.bonus.def+=rnd(2*m),pv:m=>`Verteidigung ${def()} → ${def()+rnd(2*m)}`,cur:()=>`Verteidigung jetzt ${def()}`},
 {id:'crit',n:'Tödliche Präzision',d:'Höhere Chance auf Krits (doppelter Schaden)',f:m=>P.bonus.crit+=rnd(6*m),pv:m=>`Krit-Chance ${crit()} % → ${Math.min(75,crit()+rnd(6*m))} %`,cur:()=>`Krit-Chance jetzt ${crit()} %`},
 {id:'ls',n:'Vampirismus',tier:[5,8,11,16],d:'Ein Teil deines Schadens heilt dich',f:m=>P.bonus.vamp=PK('ls').tier[mR(m)],pv:m=>`Lebensraub ${lsP()} % → ${lsP()-(P.bonus.vamp||0)+PK('ls').tier[mR(m)]} %`,cur:()=>`Lebensraub jetzt ${lsP()} %`},
-{id:'thorns',n:'Dornenrüstung',tier:[25,35,50,75],d:'Ein Teil des erlittenen Schadens geht an den Angreifer zurück',f:m=>P.bonus.thorns=PK('thorns').tier[mR(m)],pv:m=>`Rückwurf ${P.bonus.thorns} % → ${PK('thorns').tier[mR(m)]} %`,cur:()=>`Rückwurf jetzt ${P.bonus.thorns} %`},
+{id:'thorns',n:'Dornenrüstung',tier:[15,20,30,45],d:'Ein Teil jedes gegnerischen Schlags geht an den Angreifer zurück, gerechnet vor Verteidigung und Abwehr',f:m=>P.bonus.thorns=PK('thorns').tier[mR(m)],pv:m=>`Rückwurf ${P.bonus.thorns} % → ${PK('thorns').tier[mR(m)]} %`,cur:()=>`Rückwurf jetzt ${P.bonus.thorns} %`},
 {id:'gold',n:'Goldfinger',d:'Mehr Gold von Gegnern und Schätzen',f:m=>P.bonus.gold+=rnd(30*m),pv:m=>`Gold-Bonus +${gBonus()} % → +${gBonus()+rnd(30*m)} %`,cur:()=>`Gold-Bonus jetzt +${gBonus()} %`},
 {id:'luck',n:'Schatzsucher',d:'Gegner lassen öfter Ausrüstung fallen, und sie ist häufiger selten',f:m=>P.bonus.luck+=rnd(2*m),pv:m=>`Beute bei Gegnern ${dropPct(rnd(2*m))} % · Selten oder besser ${rarePct(rnd(2*m))} %`,cur:()=>`Beute bei Gegnern jetzt ${dropPct()} % · Selten oder besser ${rarePct()} %`},
 {id:'cdr',n:'Fokus',tier:[1,1,2,2],ok:m=>cdNow(PK('cdr').tier[mR(m)]-P.bonus.cdr)<cdNow(),d:'Deine Fähigkeit lädt schneller',f:m=>P.bonus.cdr=PK('cdr').tier[mR(m)],pv:m=>`Abklingzeit ${cdNow()} → ${cdNow(PK('cdr').tier[mR(m)]-P.bonus.cdr)} Runden`,cur:()=>`Abklingzeit jetzt ${cdNow()} Runden`},
@@ -673,11 +673,11 @@ for(let i=0;i<hits;i++){
 if(P.comp&&R()<.3){const d=Math.max(1,Math.round(E.atk*(heavy?1.6:1)*(.85+R()*.3)-2));P.comp.hp-=d;log(`${E.name} trifft ${P.comp.n}. −${d} LP`,'dim');if(P.comp.hp<=0){const cn=P.comp.n;log(`${cn} geht zu Boden und rührt sich nicht mehr.`,'bad');P.comp=null;S.flash='bad';compDown(cn)}continue}
 if(P.uBlock){P.uBlock=false;log('Aldrics Wachpanzer fängt den ersten Schlag ab.','good');continue}
 if(dodge()&&R()*100<dodge()){log('Du weichst aus!','good');if(P.bonus.bstep&&P.cls==='klinge')P.rhy=Math.min(5,(P.rhy||0)+1);if(hasU('weissfell')&&E.hp>0){const d=Math.max(1,Math.round(atk()*.5-E.def));E.hp-=d;log(`Gegenangriff: ${d} Schaden.`,'good')}continue}
-let d=E.atk*(heavy?2.2:hits>1?.65:1)*(E.chill?.6:1)*(hasC('zorn')?1.15:1)*(P.wach?.5:1)*(.85+R()*.3)-def();if(P.wach){P.wach=false}
+const raw0=E.atk*(heavy?2.2:hits>1?.65:1)*(E.chill?.6:1)*(hasC('zorn')?1.15:1)*(P.wach?.5:1)*(.85+R()*.3);let d=raw0-def();if(P.wach){P.wach=false}
 if(P.defending)d*=P.cls==='krieger'?(heavy?.2:.3):(heavy?.25:.4);{const A=P.armor?at_(P.armor):null;if(A){if(heavy&&A.heavy)d*=1-A.heavy/100;if(A.frag)d*=1+A.frag/100}}
-d=Math.max(1,Math.round(d));if(P.rsh>0){const a=Math.min(P.rsh,d);P.rsh-=a;d-=a;log(a>=d+a?`Der Runenschild fängt den Schlag ab.`:`Der Runenschild fängt ${a} ab.`,'dim');if(P.rsh<=0)log('Der Runenschild zerbricht.','dim')}if(d>0&&P.rhy){P.rhy=0}if(P.bonus.rlast&&!P.rlastU&&P.hp-d<=0&&P.hp>1){P.rlastU=true;d=P.hp-1;log('Todesverachtung! Du bleibst stehen.','crit')}P.hp-=d;{const th=P.armor?at_(P.armor).thorn||0:0;if(th&&d>0&&E.hp>0){const r2=Math.max(1,Math.round(d*th/100));E.hp-=r2;log(`Dornen: ${E.name} verletzt sich selbst. ${r2} Schaden.`,'good')}}
+d=Math.max(1,Math.round(d));if(P.rsh>0){const a=Math.min(P.rsh,d);P.rsh-=a;d-=a;log(a>=d+a?`Der Runenschild fängt den Schlag ab.`:`Der Runenschild fängt ${a} ab.`,'dim');if(P.rsh<=0)log('Der Runenschild zerbricht.','dim')}if(d>0&&P.rhy){P.rhy=0}if(P.bonus.rlast&&!P.rlastU&&P.hp-d<=0&&P.hp>1){P.rlastU=true;d=P.hp-1;log('Todesverachtung! Du bleibst stehen.','crit')}P.hp-=d;{const th=P.armor?at_(P.armor).thorn||0:0;if(th&&raw0>0&&E.hp>0){const r2=Math.max(1,Math.round(raw0*th/100));E.hp-=r2;log(`Dornen: ${E.name} verletzt sich selbst. ${r2} Schaden.`,'good')}}
 log(heavy?`${E.name} entfesselt einen gewaltigen Schlag! −${d} LP`:`${E.name} trifft dich${hits>1?(i?' noch mal':' blitzschnell'):''}. −${d} LP`,'bad');if(P.defending&&P.bonus.kcounter&&E.hp>0&&d>0){const c2=Math.max(2,Math.round(atk()*.8*(.85+R()*.3)-E.def*.5));E.hp-=c2;log(`Gegenschlag! ${c2} Schaden.`,'good');try{weaponSfx(false)}catch(e){}if(E.hp<=0)return}
-if(P.bonus.thorns){const t=Math.max(1,Math.round(d*P.bonus.thorns/100));E.hp-=t;log(`Dornen: ${t} Schaden zurück.`)}
+if(P.bonus.thorns&&raw0>0&&E.hp>0){const t=Math.max(1,Math.round(raw0*P.bonus.thorns/100));E.hp-=t;log(`Dornen: ${t} Schaden zurück.`)}
 if(E.ls){E.hp=Math.min(E.maxHp,E.hp+Math.round(d*E.ls))}
 if(E.poison&&R()<.5){P.poison=3;log('Du bist vergiftet.','bad')}}E.chill=0}
 function doMech(m){const dm=P.defending?.4:1;
