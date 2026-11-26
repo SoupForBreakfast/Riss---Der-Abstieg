@@ -612,6 +612,11 @@ const slotN=it=>SN[it.slot]||'Ausrüstung';
 
 /* ---------- Gegner ---------- */
 const evOn=()=>!!(meta.frost||(meta.best||0)>40);
+const EVB={5:{n:'Vurm, der Stollenfresser',img:'w1',mechs:['heavy','drain'],vox:['gr',.7],g:{w:['axt','hammer'],a:['leder']},intro:'Der Boden bebt. Aus dem Knochenhaufen bricht etwas Langes, Bleiches, mit einem Maul voller Zahnringe. Von Brakk ist nur der Hammer übrig, halb verdaut.'},
+10:{n:'Grinna, die Kesselmutter',img:'w2',mechs:['mirror','drain','shield'],vox:['gob2',.75],g:{w:['dolch','sense'],a:['robe']},intro:'Krags Thron ist leer. Daneben brodelt ein Kessel, und eine uralte Goblinfrau rührt darin. Sie lächelt dich an. Zu viele Zähne.'},
+15:{n:'Sorvald, der Totengräber',img:'w3',mechs:['heavy','warcry'],vox:['tl',.85],g:{w:['hammer','axt'],a:['platte']},intro:'Vor dem Gruftor gräbt jemand. Ein Riese mit Schaufel und Laterne. Neben ihm liegt Morvanes Schild, halb verscharrt. Er sieht auf und misst dich mit den Augen ab.'},
+20:{n:'Der Gebeinchor',img:'w4',mechs:['drain','freeze','mirror','heavy'],traits:{regen:.015},vox:['ghost',.75],g:{w:['sense','schwert'],a:['robe','platte']},intro:'Die Särge sind nicht leer geblieben. Alle Toten der Halle sind aufgestanden und zu einem einzigen Leib aus Knochen verwachsen. Der Knochenkönig steckt mittendrin. Sie singen, alle zusammen.'}};
+for(const k in EVB)GEAR[EVB[k].n]=EVB[k].g;
 const evKey=e=>{const k=foeKey(e);return e&&e.ev&&IMG[k+'e']?k+'e':k};
 function makeEnemy(type,ov={}){const f=P.floor,a=areaOf(f);
 let hp=(22+f*5.5)*Math.pow(BAL.eh,f),at=(4+f*1.05)*Math.pow(BAL.ea,f),df=Math.floor(f*BAL.ed),name=pick(a.mobs);
@@ -623,14 +628,14 @@ if(type==='boss'){const big=f%10===0,ai=AREAS.indexOf(a);hp*=big?BAL.bb:BAL.bs;a
  if(P.trial&&RANG[P.trial]&&RANG[P.trial].f===f){hp*=1.25;at*=1.12;e.trial=P.trial}
  if(big){const B=BOSSM[ai];name=a.boss+(f>50?' (Echo '+Math.floor(f/10)+')':'');e.base=a.boss;e.mechs=B.mechs;Object.assign(e,B.traits||{})}
  else{const T=TW[ai];name=T.n;e.base=T.n;e.mechs=T.mechs}if(e.trial)name+=' · Prüfer';
- if(!e.trial&&!P.tut&&ai<=1&&f<=20&&evOn()&&R()<.25){e.ev=1;hp*=1.6;at*=1.3;df+=3;name+=' · Entfesselt'}}
+ if(!e.trial&&!P.tut&&f<=20&&EVB[f]&&evOn()&&R()<.25){const W=EVB[f],ok=FOE[e.base]||'g12';e.ev=1;e.orig=name;name=W.n;e.base=W.n;e.mechs=W.mechs;Object.assign(e,W.traits||{});e.imgK=IMG[W.img]?W.img:ok;e.vox=W.vox;e.intro=W.intro;hp*=1.6;at*=1.3;df+=3}}
 Object.assign(e,{name,hp:Math.round(hp),maxHp:Math.round(hp),atk:Math.round(at),def:df,
  xp:Math.round((6+f*2)*(type==='elite'?2.2:type==='boss'?5:1)*(e.ev?1.5:1)),gm:(type==='boss'?4:type==='elite'?2:1)*(e.ev?2.5:1),ess:(type==='boss'?8:type==='elite'?3:1)*(e.ev?2:1)},ov);
 if(ov.name)e.maxHp=e.hp;return e}
 
 /* ---------- Kampf ---------- */
 function startCombat(type,ov){E=makeEnemy(type,ov);try{voice(E,0)}catch(e){}S.screen='combat';P.cd=0;P.defending=false;P.uBlock=hasU('aldric');P.hits=0;P.wach=hasS('wach');P.rhy=0;P.bulw=false;P.rsh=P.cls==='magier'?Math.round(maxHp()*(.2+(P.bonus.mshield||0)/100)):0;P.rlastU=false;
-if(E.ev)log('Etwas stimmt nicht. Der Wächter wirkt größer als sonst, und in seinen Augen glüht etwas, das vorher nicht da war.','bad');
+if(E.ev&&E.intro)log(E.intro,'bad');
 log(type==='boss'?`${E.name} versperrt das Tor!`:`${E.name} stellt sich dir in den Weg.`,type==='kampf'?'':'bad')}
 function dealDmg(mult,o={}){
 if(E.evade&&!hasS('stumm')&&R()<E.evade){log(`${E.name} weicht aus!`,'dim');return 0}
@@ -736,7 +741,7 @@ const src=gearOf(e),nm=e.name;
 const used=S.queue.filter(q=>q.k==='loot').map(q=>q.it.slot);
 if(R()<lc){const it=e.bounty?genItem(4,2,src,used):genItem(e.type==='boss'?2:e.type==='elite'?1.5:0,0,src,used);it.src=nm;used.push(it.slot);S.queue.push({k:'loot',it})}
 if(e.bounty){const it=genItem(3,1,src,used);it.src=nm;S.queue.push({k:'loot',it})}
-if(e.ev&&!P.tut){const it=genItem(5,2,src,used);it.src=nm;used.push(it.slot);S.queue.push({k:'loot',it});if(R()<.35){const it2=genItem(6,3,src,used);it2.src=nm;S.queue.push({k:'loot',it:it2})}const mk2='m'+Math.min(4,AREAS.indexOf(areaOf(P.floor)));addMat(mk2,ri(3,4));addMat('kern',1);sys('Der entfesselte Wächter hinterlässt deutlich mehr als sonst.')}
+if(e.ev&&!P.tut){const it=genItem(5,2,src,used);it.src=nm;used.push(it.slot);S.queue.push({k:'loot',it});if(R()<.35){const it2=genItem(6,3,src,used);it2.src=nm;S.queue.push({k:'loot',it:it2})}const mk2='m'+Math.min(4,AREAS.indexOf(areaOf(P.floor)));addMat(mk2,ri(3,4));addMat('kern',1);sys(`${nm} hinterlässt deutlich mehr als ein gewöhnlicher Wächter.`)}
 if(e.type==='boss'&&!P.tut&&foeKey(e)==='b4'&&!meta.frost){meta.frost=1;saveMeta();sys('Die Frostgruft ist bezwungen. Oben erzählt man sich, dass die alten Wächter seitdem unruhig sind.')}
 if(e.type==='boss'&&P.tut){sys('Prüfung bestanden.');S.queue.push({k:'story',id:'tutEnd'})}
 else if(e.type==='boss'){P.bosses++;sys(`Torwächter bezwungen. Etage ${P.floor} gesichert.`);if(e.trial){meta.rankPend=e.trial;P.trial=0;saveMeta();sfx('win');sys(`Prüfung bestanden! Kehr ins Lager zurück. Varga wartet am Stein, um dich als ${RANG[e.trial].n} aufzunehmen.`)}
@@ -997,7 +1002,7 @@ const SMG={"wail":["wail"],"wail2":["wail_s"],"sa":["sa_1","sa_2","sa_3","sa_4",
 function smpLoad(){if(smpLoading||!AU.ctx)return;smpLoading=true;const all=[...new Set(Object.values(SMG).flat())];all.forEach((n,i)=>setTimeout(()=>{try{fetch('sfx/'+n+'.mp3').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).then(a=>new Promise((res,rej)=>AU.ctx.decodeAudioData(a,res,rej))).then(b=>{SB[n]=b}).catch(()=>{})}catch(e){}},i*40))}
 function smp(g,vol=.6,rate=1,when=0,bus){if(!AU.ctx||!AU.on||!AU.fx)return false;const ok=(SMG[g]||[]).filter(n=>SB[n]);if(!ok.length)return false;const c=AU.ctx,t=c.currentTime+when,s=c.createBufferSource(),gn=c.createGain();s.buffer=SB[pick(ok)];s.playbackRate.value=bus?1:rate*(.95+R()*.1);gn.gain.value=vol;s.connect(gn);gn.connect(bus||AU.fx);s.start(t);return true}
 const VOX={g15:['gob2',1],g16:['gob2',.96],g13:['mhi',1.15],g14:['sa',1.2],g18:['tl',.9],g22:['ghost',1.1],g23:['ghost',.85],g24:['ghost',.7],g25:['gr',1],g1:['gob',1],g2:['shade',.75],g3:['sb',.85],g4:['shade',1.1],g5:['beast',.85],g6:['tl',.75],g7:['ghost',1],g8:['mv',1.5],g9:['slime',1],g10:['gr',.8],g11:['sb',1],g12:['ogre',.8],b1:['ogre',1],b2:['shade',.65],b3:['tl',.7],b4:['mv',.6],b5:['shade',.55],t1:['tl',1],t2:['wail2',1.3],t3:['sa',.8],t5:['shade',.7],k1:['bite',.8],k2:['slime',.6],k3:['shade',.8],k4:['wail',1],k6:['giant',.7],k7:['wolf',.9],k9:['shade',.5]};
-function voxOf(e){if(!e)return null;if(e.base==='Riesenratte')return['mhi',1.15];if(/hund|wolf/i.test(e.base||''))return['wolf',(e.base==='Knochenhund'?1.1:.95)];if(e.base==='Feuerimp')return['mhi',.95];let k='';try{k=foeKey(e)}catch(x){}return VOX[k]||null}
+function voxOf(e){if(!e)return null;if(e.vox)return e.vox;if(e.base==='Riesenratte')return['mhi',1.15];if(/hund|wolf/i.test(e.base||''))return['wolf',(e.base==='Knochenhund'?1.1:.95)];if(e.base==='Feuerimp')return['mhi',.95];let k='';try{k=foeKey(e)}catch(x){}return VOX[k]||null}
 function voice(e,mode=0){const v=voxOf(e);if(!v)return;AU.lastVox=v;const big=e.type==='boss'||e.type==='elite'||e.bounty;smp(v[0],(big?(mode===0&&e.type==='boss'?.45:.75):.55)*(v[0]==='ogre'?.5:v[0]==='gob'?.7:1),v[1]*(mode===2?.85:1)*(big&&mode!==2?.92:1),mode===0?.25:0)}
 function weaponSfx(crit){if(!AU.ctx||!AU.on)return;const n=Date.now();if(AU.last.w&&n-AU.last.w<70)return;AU.last.w=n;
 {const ty=P&&P.weapon?(P.weapon.type||'schwert'):'none',rt=ty==='hammer'||ty==='axt'?.78:ty==='dolch'?1.25:ty==='saebel'?1.1:1;if(smp('swing',.5,rt)){try{if(ty==='hammer'||ty==='axt'||ty==='none')thud(62,.22,.22,.1);if(crit){smp('clash',.42,ty==='hammer'?.8:1,.1);thud(62,.32,.3,.14)}}catch(e){}return}}
@@ -1179,7 +1184,7 @@ const IMG={"e14":{"g":[[45.9,36.5,3,"y","fl"]],"p":"dust"},"e15":{"vn":.85,"p":"
 const FOE={Goblin:'g1',Kobold:'g15',Skelettkrieger:'g2',Grabwächter:'g2',Abgrundritter:'g2',Ghul:'g3','Erwachter Toter':'g3',Aschenkultist:'g4',Eishexe:'k8',Riesenratte:'g13',Knochenhund:'g19',Höllenhund:'g20',Eiswolf:'g21',Salamander:'g14',Lavagolem:'g6',Frostriese:'g18',Banshee:'k4',Reifgeist:'g22',Leerenwandler:'g7',Seelenfresser:'g25',Gesichtsloser:'g24',Schatten:'g23','Rachsüchtiger Geist':'g7','Höhlenfledermaus':'g8',Feuerimp:'g17',Schleim:'g9',Gletscherwyrm:'g10',Sternenfresser:'g10',Mimic:'g11',
 'Goblinhäuptling Krag':'b1','Der Knochenkönig':'b2','Ignaroth, Herr der Glut':'b3','Hrimfang der Ewige':'b4','Das Namenlose':'b5','Brakk, der Grubenoger':'t1','Morvane, die Grabhüterin':'t2','Die Aschenbrut':'t3','Skadi, die Eiswächterin':'t4','Der Leerenhüter':'t5'};
 const BKEY={grimmzahn:'k1',mutter:'k2',aldric:'k3',weinende:'k4',ossa:'k5',schlacke:'k6',weissfell:'k7',ylva:'k8',zaehlende:'k9',kaelen:'k10'};
-function foeKey(e){if(e.name==='Der schwarze Duellant'&&IMG.e12)return'e12';if(e.base==='Kobold'&&!e.bounty){if(!e.kv)e.kv=R()<.5?'g15':'g16';return e.kv}if(e.bounty&&BKEY[e.bounty])return BKEY[e.bounty];if(FOE[e.base])return FOE[e.base];if(e.type==='boss')return'g12';const n=String(e.name||'');for(const b in FOE)if(n.includes(b))return FOE[b];return'g7'}
+function foeKey(e){if(e&&e.imgK)return e.imgK;if(e.name==='Der schwarze Duellant'&&IMG.e12)return'e12';if(e.base==='Kobold'&&!e.bounty){if(!e.kv)e.kv=R()<.5?'g15':'g16';return e.kv}if(e.bounty&&BKEY[e.bounty])return BKEY[e.bounty];if(FOE[e.base])return FOE[e.base];if(e.type==='boss')return'g12';const n=String(e.name||'');for(const b in FOE)if(n.includes(b))return FOE[b];return'g7'}
 const AREAP=['dust','dust','embers','snow','dust'];
 function artImg(k,o={}){const d=IMG[k];if(!d)return'';const src=`img/${k}.webp`;let h=`<img class="base" src="${src}" alt="">`;
 const gl=(x,y,r,c,a)=>{const m=`radial-gradient(ellipse ${r}% ${(r*1.78).toFixed(1)}% at ${x}% ${y}%,#000 30%,transparent 100%)`;return `<img class="hl c-${c} a-${a}" src="${src}" alt="" style="-webkit-mask-image:${m};mask-image:${m}">`};
@@ -1206,7 +1211,7 @@ if(s==='hub'){const c=meta.camp||0;for(let i=Math.min(5,c);i>=1;i--)if(IMG['l'+i
 if(!P)return'';const ai=Math.min(4,Math.max(0,AREAS.indexOf(areaOf(P.floor||1))));
 if(s==='acard')return artImg('o'+(2+ai),{area:true});if(s==='doors'){if(S.fireOpen)return artImg(ai&&IMG['r'+(ai+1)]?'r'+(ai+1):'o8');const nf=P.floor+1,boss=P.tut?nf===3:nf%5===0;if(boss){const ai2=Math.min(4,Math.max(0,AREAS.indexOf(areaOf(nf)))),vk='v'+(ai2+1+(nf%10===0?5:0));return artImg(!P.tut&&nf<=50&&IMG[vk]?vk:'o7')}return artImg('o'+(2+Math.min(4,Math.max(0,AREAS.indexOf(areaOf(nf))))))}
 if(s==='gate'){const k=P.floor===30?'x10':P.floor>20?'x11':'x9';if(k&&IMG[k])return artImg(k)}
-if(s==='combat'&&E)return artImg(evKey(E),{elite:E.type==='elite'||(E.ev&&!IMG[foeKey(E)+'e']),boss:E.type==='boss',area:ai});
+if(s==='combat'&&E)return artImg(foeKey(E),{elite:E.type==='elite'||(E.ev&&!/^w\d/.test(foeKey(E))),boss:E.type==='boss',area:ai});
 if(s==='room'){if(S.roomKey==='haendler')return artImg(ai&&IMG['h'+(ai+1)]?'h'+(ai+1):'o9');if(S.roomKey==='rast')return artImg(ai&&IMG['r'+(ai+1)]?'r'+(ai+1):'o8');if(S.roomKey==='tresorTuer')return artImg('x3');if(S.roomKey==='schrein')return artImg(IMG.x6?'x6':'o3');if(S.roomKey==='tresorDone'&&IMG.x7)return artImg('x7');if(S.roomKey==='x'&&IMG.x8)return artImg('x8');if(S.roomKey==='schatz')return artImg(IMG.x5?'x5':'e7');if(S.roomKey==='vquest'){const q='q'+(meta.vq||1);return artImg(IMG[q]?q:'o'+(2+ai),{area:!IMG[q]})}if(S.roomKey==='bquest')return artImg(IMG.q3?'q3':'o'+(2+ai),{area:!IMG.q3});const EVI={ev0:'e1',ev1:'e7',ev2:'e3',ev3:'e2',ev4:'e8',ev5:'e6',ev6:'e4',ev11:'e5',ev7:'e9',ev8:'e10',ev9:'e11',ev10:'e12',ev12:'e13',ev13:'e13',ev14:'e14',ev15:'e15',ev16:'e16',ev17:'e17',ev18:'e18'}[S.roomKey];if(EVI&&IMG[EVI])return artImg(EVI)}
 return''}
 
