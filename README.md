@@ -12,13 +12,15 @@ Auf dem Handy über „Zum Startbildschirm hinzufügen“ als App installieren. 
 - Kampftrommeln: „Horde War Drums loop“ von William Hector – [OpenGameArt](https://opengameart.org/node/176112) – CC0
 - Lagermusik: „Medieval: The Bard’s Tale“ von RandomMind – [OpenGameArt](https://opengameart.org/content/medieval-the-bards-tale) – CC0
 - Höhlenmusik: „Cave Theme“ von Brandon75689 – OpenGameArt – CC0
-- Kryptamusik: „Crypt“ (Datei „Dark Loop“) von Machine, CC-BY 3.0 – https://opengameart.org/content/crypt
+- Kryptamusik: „Radakan – Old Crypt“ von ceninan, CC-BY-SA 3.0 (gekürzt) – https://opengameart.org/content/radakan-old-crypt
+- Glutschlund-Wechseltrack: „Shrine to the Smoldering Volcano“ von Mega Pixel Music Lab, CC-BY 3.0 – https://opengameart.org/content/shrine-to-the-smoldering-volcano
+- Abgrund-Musik: „Endless Void“ von Tsorthan Grove, CC0 – https://opengameart.org/content/endless-void
 - Glutschlund-Musik: „Welcome to Com-Mecha“ von Matthew Pablo – www.matthewpablo.com
 - Gebietsboss-Musik: „Set Fire to Reality“ von ColdOneK – OpenGameArt – CC-BY 4.0
 - Finale: „Final Confrontation“ von tcarisland, CC-BY 4.0 – https://opengameart.org/content/final-confrontation
 - Sieg-Chor: „Choir Positive Feedback 1“ von souljahdeshiva, CC-BY-SA 3.0 (auch GPL 2.0/3.0) – gekürzt und ausgeblendet; die bearbeitete Datei sfx/victory.mp3 steht ebenfalls unter CC-BY-SA 3.0
 - Story-Musik (Varga/Brenn): „Village In Despair“ von Tsorthan Grove, CC-BY 4.0 – https://opengameart.org/content/village-in-despair
-- Abgrund-Musik: „Upside Down Grin (freaky Ambient)“ von Brandon Morris – https://opengameart.org/content/upside-down-grin-freaky-ambient
+- Abgrund-Wechseltrack: „Upside Down Grin (freaky Ambient)“ von Brandon Morris – https://opengameart.org/content/upside-down-grin-freaky-ambient
 - Rangzeremonie: „Can’t Stop Winning“ – Composed by Jonathan Shaw (www.jshaw.co.uk), Ausschnitt
 - Frostgruft-Musik: „Cold Sanctuary“ – Composed by Jonathan Shaw (www.jshaw.co.uk)
 - Todesmusik: „The End (Death Screen mix)“ von Metaruka, Remix von Avgvst – https://opengameart.org/node/10665 – Original „Game-Game“-OST von Metaruka (https://opengameart.org/content/game-game), CC-BY-SA 3.0 (unverändert übernommen)
