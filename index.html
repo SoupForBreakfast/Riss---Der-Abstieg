@@ -38,7 +38,7 @@ h1{font-weight:normal;letter-spacing:.45em;font-size:1rem;margin:0;color:var(--d
 .enemy .nm{font-size:1.05rem;margin-bottom:5px}
 .intent{font-size:.85rem;color:var(--dim);margin-top:6px;font-style:italic}
 .intent.warn{color:var(--orange)}
-.grp{margin:0 0 16px}.grp .row.frg{grid-template-columns:1fr!important;display:grid;gap:8px}.gnum{color:#e3c46b;font-weight:600}
+.grp{margin:0 0 16px}.dmgup{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 2px}.dmgup span{font-size:.82rem;color:#ffd27a;background:rgba(229,160,60,.12);border:1px solid rgba(229,160,60,.45);border-radius:4px;padding:2px 8px;animation:dmgp 1.6s ease-in-out infinite alternate}@keyframes dmgp{from{box-shadow:0 0 0 rgba(255,190,80,0)}to{box-shadow:0 0 10px rgba(255,190,80,.35)}}.grp .row.frg{grid-template-columns:1fr!important;display:grid;gap:8px}.gnum{color:#e3c46b;font-weight:600}
 .gt{font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin-bottom:7px}
 .row{display:flex;flex-wrap:wrap;gap:8px}
 .btn{position:relative;overflow:hidden;background:transparent;color:var(--fg);border:1px solid #55534e;font:inherit;padding:9px 14px;cursor:pointer;text-align:left;flex:1 1 150px;min-height:44px;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;-webkit-appearance:none;appearance:none}.btn>span,.btn>small{text-align:left;width:100%}
@@ -636,7 +636,7 @@ const ed=o.pierce?0:E.def*(1-wp('pierce')/100);
 if(P.cls==='klinge')P.rhy=Math.min(5,(P.rhy||0)+1);
 let d=Math.max(1,Math.round(b-ed));if(E.shield){d=Math.max(1,Math.round(d*.25));log('Der Schild fängt den Großteil ab.','dim')}E.hp-=d;
 if(E.mirror){const r=Math.max(1,Math.round(d*.6));P.hp-=r;log(`Der Spiegel wirft ${r} Schaden zurück. −${r} LP`,'bad')}
-log(c?`Kritischer Treffer! ${d} Schaden.`:`Du triffst ${E.name}: ${d} Schaden.`,c?'crit':'');
+log(c?`Kritischer Treffer! ${d} Schaden.`:`Du triffst ${E.name}: ${d} Schaden.`,c?'crit':'');if(P.bonus.exec&&!E.execOn&&E.hp>0&&E.hp/E.maxHp<.3){E.execOn=1;log(`${E.name} ist angeschlagen. Henker: +${P.bonus.exec} % Schaden.`,'goldt')}
 if(E.hp>0&&wp('bleed')&&R()*100<wp('bleed')){E.bleed=3;log(`${E.name} blutet.`,'crit')}
 if(E.hp>0&&c&&(hasU('grimmzahn')||P.bonus.bcut)){E.bleed=3;log(`${E.name} blutet.`,'crit')}
 if(E.hp>0&&hasU('ossa')&&R()<.25){E.burn=3;log(`${E.name} brennt.`,'crit')}
@@ -1400,6 +1400,7 @@ combat(){const e=E,nm=e.mechs&&e.mechEvery&&(e.turn+1)%e.mechEvery===0?e.mechs[(
 const col=e.type==='boss'||e.bounty?'var(--orange)':e.type==='elite'?'var(--red)':'var(--fg)';
 scene(`<div class="enemy"><div class="nm" style="color:${col}">${e.bounty?'<span class="small">KOPFGELD · </span>':e.type==='elite'?'<span class="small">ELITE · </span>':''}${e.name}</div><div class="srow small"><span>LP ${Math.max(0,e.hp)}/${e.maxHp}</span>${bar(e.hp,e.maxHp,col)}</div>
 <div class="srow small dim">⚔ ${e.atk} · ⛨ ${e.def}${fxc(`${e.stun?' · betäubt':''}`)}${fxc(`${e.burn?' · brennt':''}${e.bleed?' · blutet':''}${e.poison?' · giftig':''}${e.ls?' · saugt Leben':''}${e.regen?(e.burn>0||e.pdot>0||e.bleed>0?' · Heilung gestoppt':' · regeneriert'):''}${e.double?' · schlägt doppelt':''}${e.evade?` · weicht aus (${Math.round(e.evade*100)} %)`:''}${e.enrage?(e.raged?' · <span class="bad">rasend</span>':' · wird rasend'):''}`)}</div>
+${(()=>{const L=[];if(P.bonus.exec&&e.hp/e.maxHp<.3)L.push(`Henker: +${P.bonus.exec} % Schaden`);if(P.cls==='blut'&&P.hp<maxHp()*.5)L.push(`Blutdurst: +${25+(P.bonus.rdurst||0)} % Schaden`);if(P.bonus.berserk&&P.hp<maxHp()*.5)L.push(`Berserkerblut: +${P.bonus.berserk} % Schaden`);if(hasU('kaelen')&&P.hp<maxHp())L.push(`Kaelens Klinge: +${Math.round((1-P.hp/maxHp())*60)} % Schaden`);return L.length?`<div class="dmgup">${L.map(x=>`<span>▲ ${x}</span>`).join('')}</div>`:''})()}
 <div class="intent ${warn?'warn':''}">${e.stun?'Ist betäubt.':e.shield?'Verschanzt sich hinter dem Schild.':e.mirror?'Spiegelt jeden Treffer.':nm?TELE[nm]:warn?TELE.heavy:'Lauert auf eine Lücke.'}</div></div>${P.poison?'<p class="small"><span class="fx-poison">Du bist vergiftet.</span></p>':''}${P.burn?'<p class="small"><span class="fx-burn">Du brennst.</span></p>':''}${P.frozen?'<p class="small"><span class="fx-stun">Deine Hände sind steif vor Kälte.</span></p>':''}${P.rsh>0?`<p class="small"><span class="fx-dodge">Runenschild: ${P.rsh}</span></p>`:''}${P.rhy?`<p class="small"><span class="fx-crit">Rhythmus ×${P.rhy} · +${P.rhy*(6+(P.bonus.brhy||0))} % Krit</span></p>`:''}${P.bulw?'<p class="small"><span class="fx-stun">Bollwerk: nächster Angriff +40 %</span></p>':''}${P.cls==='blut'&&P.hp<maxHp()*.5?`<p class="small"><span class="fx-rage">Blutdurst: +${25+(P.bonus.rdurst||0)} % Schaden</span></p>`:''}`);
 const sk=CLS[P.cls].skill;let g=group('');
 btn(g,'Angriff',()=>act('atk'),{delay:450,sub:`~${Math.max(1,Math.round(atk()-e.def*(1-wp('pierce')/100)))} Schaden`});
