@@ -1001,7 +1001,7 @@ function preTick(){const c=AU.ctx,n=c.currentTime,nf=P.floor+1,kind=nf===50?'fin
 /* Bossmusik leise vorab */
 if(kind==='gk'){bmLoad();if(!BMUS.nodes)bmStart();else if(BMUS.lv!==.17)bmPhase(0,.9,.17)}else{const L=trkLoad(kind,'mus/'+kind+'.mp3');if(L.buf&&!L.node){if(kind==='boss2')L.off=7.5;trkStart(L,kind==='final'?.15:.2,true,.9,kind==='boss2'?7.5:undefined,kind==='boss2'?L.buf.duration:undefined);L.pre=true}}
 /* Trommeln (nicht bei Brakk und beim Namenlosen) */
-if(nf===5||nf===50)return;if(!FMUS.buf){fmLoad();return}
+if(nf===50)return;if(!FMUS.buf){fmLoad();return}
 if(!AU.preN){const t=n+.05,s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();s.buffer=FMUS.buf;s.loop=true;s.loopEnd=Math.min(FMUS.buf.duration,FMUS.len);s.playbackRate.value=big?.91:.8;f.type='lowpass';f.frequency.setValueAtTime(700,t);f.frequency.exponentialRampToValueAtTime(big?4500:3200,t+1.2);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(big?.24:.2,t+.9);s.connect(f);f.connect(g);g.connect(AU.mus);s.start(t);AU.preN={s,g}}}
 function preStop(){if(!AU.preOn&&!AU.preN)return;const t=AU.ctx.currentTime,cf=S.screen==='combat';AU.preOn=false;
 if(!cf){bmStop();for(const k of ['boss2','final']){const L=AMB2[k];if(L&&L.pre){L.pre=false;trkStop(L,1)}}}
