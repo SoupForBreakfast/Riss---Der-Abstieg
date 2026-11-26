@@ -38,7 +38,7 @@ h1{font-weight:normal;letter-spacing:.45em;font-size:1rem;margin:0;color:var(--d
 .enemy .nm{font-size:1.05rem;margin-bottom:5px}
 .intent{font-size:.85rem;color:var(--dim);margin-top:6px;font-style:italic}
 .intent.warn{color:var(--orange)}
-.grp{margin:0 0 16px}
+.grp{margin:0 0 16px}.grp .row.frg{grid-template-columns:1fr!important;display:grid;gap:8px}.gnum{color:#e3c46b;font-weight:600}
 .gt{font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin-bottom:7px}
 .row{display:flex;flex-wrap:wrap;gap:8px}
 .btn{position:relative;overflow:hidden;background:transparent;color:var(--fg);border:1px solid #55534e;font:inherit;padding:9px 14px;cursor:pointer;text-align:left;flex:1 1 150px;min-height:44px;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;-webkit-appearance:none;appearance:none}.btn>span,.btn>small{text-align:left;width:100%}
@@ -1249,15 +1249,16 @@ scene(`<div class="story">${pages[st.i].split('\n').map(l=>l.startsWith('+')?`<p
 const g=group('');if(!last)btn(g,'Weiter',()=>st.i++,{cls:'big',delay:300});else for(const o of STORIES[st.id].end())btn(g,o.l,o.fn,{sub:o.sub,cls:'big',delay:500})},
 forge(){unlock('hild');const mm=meta.mats||{},ml=Object.keys(MATS).filter(k=>mm[k]).map(k=>`${mm[k]}× ${MATS[k].n}`).join(' · ')||'noch nichts',tl=Object.keys(meta.troph||{}).filter(k=>meta.troph[k]).map(k=>`${meta.troph[k]}× ${TROPH[k]}`).join(' · ');
 scene(`<p class="dim">Hilds Schmiede liegt am Rand des Lagers. Es riecht nach Kohle und nassem Eisen. ${(meta.rank||0)>=2?'„Na, Pfadgänger. Für dich hol ich die guten Hämmer raus.“':'„Bring mir was von unten, dann mach ich dir was draus.“'}</p><div class="srow small">Material: <span class="mat">${ml}</span></div>${tl?`<div class="srow small">Trophäen: <span class="mat">${tl}</span></div>`:''}<div class="srow small"><span class="c-gold">${meta.gold||0} Gold</span>&nbsp;in der Ordenskasse</div>`);
-const full=(meta.armory||[]).length>=6;let g=group('Schmieden'+(full?' – Waffenkammer voll':''));
+const full=(meta.armory||[]).length>=6;let g=group('Schmieden'+(full?' – Waffenkammer voll':'')+(S.fType?` · ${mm.kern||0}× Wächterkern`:''));
 if(!S.fSlot){for(const k of ['w','a','h','g','j'])btn(g,SN[k],()=>{S.fSlot=k;S.fType=null},{delay:150})}
 else if(!S.fType){const TT=S.fSlot==='w'?WT:S.fSlot==='a'?AT:XT[S.fSlot];for(const t in TT)btn(g,TT[t].n,()=>S.fType=t,{sub:TT[t].d,delay:150});btn(g,'Zurück',()=>S.fSlot=null,{delay:120})}
 else{const TT=S.fSlot==='w'?WT:S.fSlot==='a'?AT:XT[S.fSlot],T=TT[S.fType],maxT=Math.min(4,Math.floor(meta.best/10));
  for(let t=0;t<=maxT;t++){const mk='m'+t,have=mm[mk]||0,c=90*(t+1);
-  btn(g,`${T.n} aus ${MATS[mk].n}`,()=>forgeDo(t,1),{sub:`4× ${MATS[mk].n} (du hast ${have}) · ${c} Gold → Selten, stark wie Etage ${t*10+8}`,dis:full||have<4||(meta.gold||0)<c});
-  btn(g,'… mit Wächterkern',()=>forgeDo(t,2),{sub:`dazu 1× Wächterkern (du hast ${mm.kern||0}) · ${c*2} Gold → 30 % Episch, sonst Selten`,dis:full||have<4||(mm.kern||0)<1||(meta.gold||0)<c*2});
-  if((meta.rank||0)>=2)btn(g,'… als Meisterarbeit',()=>forgeDo(t,3),{sub:`8× ${MATS[mk].n} · 2× Wächterkern · ${c*4} Gold → 15 % Legendär, sonst Episch`,cls:'rar3',dis:full||have<8||(mm.kern||0)<2||(meta.gold||0)<c*4})}
- btn(g,'Zurück',()=>S.fType=null,{delay:120})}
+  const gt=group(`${MATS[mk].n} · wie Etage ${t*10+8} · du hast ${have}`);gt.classList.add('frg');
+  btn(gt,'Einfach',()=>forgeDo(t,1),{sub:`4× ${MATS[mk].n} · <span class="gnum">${c}&nbsp;Gold</span><br>Selten`,dis:full||have<4||(meta.gold||0)<c});
+  btn(gt,'Mit Wächterkern',()=>forgeDo(t,2),{sub:`4× ${MATS[mk].n} · 1× Kern · <span class="gnum">${c*2}&nbsp;Gold</span><br>30 % Episch, sonst Selten`,cls:'rar2',dis:full||have<4||(mm.kern||0)<1||(meta.gold||0)<c*2});
+  if((meta.rank||0)>=2)btn(gt,'Meisterarbeit',()=>forgeDo(t,3),{sub:`8× ${MATS[mk].n} · 2× Kern · <span class="gnum">${c*4}&nbsp;Gold</span><br>15 % Legendär, sonst Episch`,cls:'rar3',dis:full||have<8||(mm.kern||0)<2||(meta.gold||0)<c*4})}
+ g=group('');btn(g,'Zurück',()=>S.fType=null,{delay:120})}
 if((meta.uniq||[]).length){g=group('Unikate');for(const id of meta.uniq){const b=BOUNTIES.find(x=>x.id===id);if(!b)continue;const tr=(meta.troph||{})[id]||0,lv=(meta.uqLvl||{})[id]||0,mk='m'+b.area,km=mm.kern||0;
  btn(g,`${UNIQ[id].n} nachschmieden`,()=>{meta.troph[id]--;meta.mats.kern-=2;meta.gold-=200;const it=makeUnique(id,(b.area+1)*10);it.aid='a'+Date.now().toString(36)+ri(0,999);it.src='Hild';meta.armory.push(it);saveMeta();sys(`Hild hat ${it.name} nachgeschmiedet.`)},{sub:`1× ${TROPH[id]} (${tr}) · 2× Wächterkern (${km}) · 200 Gold`,dis:full||tr<1||km<2||(meta.gold||0)<200});
  if(lv<5)btn(g,`${UNIQ[id].n} verstärken · Stufe ${lv}/5`,()=>{meta.troph[id]--;meta.mats[mk]-=6;meta.gold-=100;meta.uqLvl[id]=lv+1;saveMeta();sys(`${UNIQ[id].n} ist jetzt Stufe ${lv+1}: stärker, und es fällt öfter.`)},{sub:`1× ${TROPH[id]} (${tr}) · 6× ${MATS[mk].n} (${mm[mk]||0}) · 100 Gold · +15 % Werte, häufiger`,dis:tr<1||(mm[mk]||0)<6||(meta.gold||0)<100})}}
