@@ -17,7 +17,7 @@ Auf dem Handy über „Zum Startbildschirm hinzufügen“ als App installieren. 
 - Abgrund-Musik: „Endless Void“ von Tsorthan Grove, CC0 – https://opengameart.org/content/endless-void
 - Glutschlund-Musik: „Welcome to Com-Mecha“ von Matthew Pablo – www.matthewpablo.com
 - Gebietsboss-Musik: „Set Fire to Reality“ von ColdOneK – OpenGameArt – CC-BY 4.0
-- Finale: „Final Confrontation“ von tcarisland, CC-BY 4.0 – https://opengameart.org/content/final-confrontation
+- Finale: „Boss Battle #2 [Symphonic Metal]“ von nene, CC0 – https://opengameart.org/content/boss-battle-2-symphonic-metal
 - Sieg-Chor: „Choir Positive Feedback 1“ von souljahdeshiva, CC-BY-SA 3.0 (auch GPL 2.0/3.0) – gekürzt und ausgeblendet; die bearbeitete Datei sfx/victory.mp3 steht ebenfalls unter CC-BY-SA 3.0
 - Story-Musik (Varga/Brenn): „Village In Despair“ von Tsorthan Grove, CC-BY 4.0 – https://opengameart.org/content/village-in-despair
 - Abgrund-Wechseltrack: „Upside Down Grin (freaky Ambient)“ von Brandon Morris – https://opengameart.org/content/upside-down-grin-freaky-ambient
