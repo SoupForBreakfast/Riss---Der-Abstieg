@@ -41,6 +41,7 @@ h1{font-weight:normal;letter-spacing:.45em;font-size:1rem;margin:0;color:var(--d
 .grp{margin:0 0 16px}.dmgup{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 2px}.dmgup span{font-size:.82rem;color:#ffd27a;background:rgba(229,160,60,.12);border:1px solid rgba(229,160,60,.45);border-radius:4px;padding:2px 8px;animation:dmgp 1.6s ease-in-out infinite alternate}@keyframes dmgp{from{box-shadow:0 0 0 rgba(255,190,80,0)}to{box-shadow:0 0 10px rgba(255,190,80,.35)}}.grp .row.frg{grid-template-columns:1fr!important;display:grid;gap:8px}.gnum{color:#e3c46b;font-weight:600}
 .gt{font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin-bottom:7px}
 .row{display:flex;flex-wrap:wrap;gap:8px}
+.row.tabrow{gap:4px;flex-wrap:nowrap;position:sticky;top:0;z-index:5;background:var(--bg,#111);padding:4px 0}.btn.tab{flex:1 1 0;min-width:0;min-height:40px;padding:8px 4px;align-items:center;text-align:center;font-size:.82em;letter-spacing:.02em;border-color:#3a3934;color:#a29e96}.btn.tab.on{border-color:#c9a86a;color:var(--fg);background:#24221d}.btn.tab span{width:100%;text-align:center}
 .btn{position:relative;overflow:hidden;background:transparent;color:var(--fg);border:1px solid #55534e;font:inherit;padding:9px 14px;cursor:pointer;text-align:left;flex:1 1 150px;min-height:44px;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;-webkit-appearance:none;appearance:none}.btn>span,.btn>small{text-align:left;width:100%}
 .btn:hover:not(:disabled){border-color:var(--fg)}
 .btn:disabled{color:#8f8b83;border-color:#34343a;background:#18181c !important;cursor:default}
@@ -1495,9 +1496,12 @@ if(!S.hubLine||!S.vlineSeen||S.vlineSeen!==S.vline){S.vlineSeen=S.vline;S.hubLin
 scene(`<p class="dim">${S.hubLine}</p><p class="small"><i>Varga: ${S.vline}</i></p>`);
 let g;const nb=!meta.tut,bossDone=(meta.bosses||0)>=1||(meta.rank||0)>0;
 if(nb){g=group('Zuerst');btn(g,'Mit Varga üben',startTutorial,{sub:'Kurze Einführung: Kampf, Beute und Aufstiege',cls:'big',delay:600})}
-g=group(nb?'Oder gleich los':'Den Riss betreten');
-if(meta.endWon)btn(g,meta.ngp?'✦ Neues Spiel+ ist an':'Neues Spiel+ einschalten',()=>{meta.ngp=!meta.ngp;saveMeta()},{sub:'Gegner +30 % LP und Angriff · Gold und Splitter +50 % · statt der alten Wächter kommen immer die Ersatz-Wächter',cls:meta.ngp?'rar4':''});
-for(const id in CLS)if(meta.classes.includes(id))btn(g,CLS[id].name,()=>startRun(id),{sub:clsSub(id,`Rekord: ${(meta.cbest||{})[id]?'Etage '+meta.cbest[id]:'noch keiner'}`),delay:700,cls:'big'+(nb?'':'')});
+const T=nb?'abstieg':(S.hubTab||'abstieg');
+if(!nb){const tg0=group('');tg0.classList.add('tabrow');for(const [k,l] of [['abstieg','Abstieg'],['vorb','Vorbereitung'],['lager','Lager'+(meta.zahnPend?' •':'')],['wissen','Wissen']])btn(tg0,l,()=>{S.hubTab=k;try{window.scrollTo(0,0)}catch(e){}},{cls:'tab'+(T===k?' on':''),delay:60})}
+if(T==='abstieg')g=group(nb?'Oder gleich los':'Den Riss betreten');
+if(meta.endWon&&T==='abstieg')btn(g,meta.ngp?'✦ Neues Spiel+ ist an':'Neues Spiel+ einschalten',()=>{meta.ngp=!meta.ngp;saveMeta()},{sub:'Gegner +30 % LP und Angriff · Gold und Splitter +50 % · statt der alten Wächter kommen immer die Ersatz-Wächter',cls:meta.ngp?'rar4':''});
+if(T==='abstieg'){for(const id in CLS)if(meta.classes.includes(id))btn(g,CLS[id].name,()=>startRun(id),{sub:S.clsInfo?clsSub(id,`Rekord: ${(meta.cbest||{})[id]?'Etage '+meta.cbest[id]:'noch keiner'}`):`<i>${CLS[id].desc}</i> · <span class="dim">Rekord: ${(meta.cbest||{})[id]?'Etage '+meta.cbest[id]:'noch keiner'}</span>`,delay:700,cls:'big'});
+btn(g,S.clsInfo?'ⓘ Details ausblenden':'ⓘ Fähigkeiten und Waffen anzeigen',()=>{S.clsInfo=!S.clsInfo},{cls:'info',delay:80})}
 if(nb)return;
 /* Ziele */
 const goals=[];
@@ -1507,8 +1511,8 @@ if(bossDone){const nx=RANG[(meta.rank||0)+1];
 if(meta.vq>=1&&meta.vq<=3){const V=VQ[meta.vq-1];goals.push(()=>btn(g,'◆ Vargas Liste: '+V.t,()=>{},{dis:true,cls:'info',sub:V.goal}))}
 if(meta.bq===1||meta.bq===2)goals.push(()=>btn(g,meta.bq===1?'◆ Brenns Buch: Die Wand der Striche':'◆ Brenns Buch: Der Zählende',()=>{},{dis:true,cls:'info',sub:meta.bq===1?'Finde die Wand voller Striche in der Vergessenen Krypta (Etage 13–19)':'Stell den Zählenden im Abgrund. Er steht auf der Kopfgeldliste.'}));
 if((meta.rank||0)>=1){if(!meta.nextCon||!CON[meta.nextCon.id]){const id=pick(Object.keys(CON)),n=CON[id].n();meta.nextCon={id,n,r:CON[id].r(n)};saveMeta()}const nc=meta.nextCon;goals.unshift(()=>btn(g,'◆ Ordensauftrag',()=>{},{dis:true,cls:'info',sub:`${CON[nc.id].t(nc.n)}<br><span class="c-ess">${nc.r}<b></b> ✧</span> · gilt für den nächsten Abstieg`}))}
-if(goals.length){g=group('Ziele');goals.forEach(f=>f())}
-if(meta.runs>=3){const W=weekly(),D=daily(),wd=meta.weekDone===W.k,dd=meta.dayDone===D.k,db=meta.dayBest&&meta.dayBest.k===D.k?meta.dayBest.f:0;
+if(T==='abstieg'&&goals.length){g=group('Ziele');goals.forEach(f=>f())}
+if(T==='abstieg'&&meta.runs>=3){const W=weekly(),D=daily(),wd=meta.weekDone===W.k,dd=meta.dayDone===D.k,db=meta.dayBest&&meta.dayBest.k===D.k?meta.dayBest.f:0;
 g=group('Herausforderungen');
 const tg=k=>()=>{S.chal=S.chal===k?null:k};
 const csub=(m,goal,rw,done,extra,on)=>`<b>${RMODS[m].n}</b><br>${RMODS[m].d}<br>${done?'Belohnung schon geholt':`Etage ${goal}: +${rw} ✧`}${extra?'<br>'+extra:''}${on?'<br><span class="good">Gilt für den nächsten Abstieg</span>':''}`;
@@ -1516,37 +1520,39 @@ btn(g,`${S.chal==='day'?'✓ ':''}Riss des Tages`,tg('day'),{sub:csub(D.mod,D.go
 btn(g,`${S.chal==='week'?'✓ ':''}Riss der Woche`,tg('week'),{sub:csub(W.mod,W.goal,W.reward,wd,'',S.chal==='week'),cls:'chal'+(S.chal==='week'?' on':'')});
 btn(g,'Was ist das?',()=>{S.chalHelp=!S.chalHelp},{cls:'info',sub:S.chalHelp?'Ohne Auswahl ist jeder Abstieg normal, ohne Besonderheiten. Eine Herausforderung wählst du vor dem Start, sie gilt nur für diesen einen Abstieg. Beide verändern den Riss mit einem Vor- und einem Nachteil und geben eine Belohnung, wenn du das Ziel erreichst. Beim Riss des Tages haben alle Spieler dieselben Etagen, im Ordensbuch steht, wer heute am tiefsten kam.':'Kurz erklärt'})}
 /* Vorbereitung */
-g=group(`Training · <span class="c-ess">${meta.essence} ✧</span>`);
+if(T==='vorb'){g=group(`Training · <span class="c-ess">${meta.essence} ✧</span>`);
 for(const u of UPG){const l=ul(u.id);if(l>=u.max){btn(g,`${u.name} ${l}/${u.max}`,()=>{},{dis:true,cls:'info',sub:`${(typeof u.desc==='function'?u.desc(l-1):u.desc).replace(/ · /g,'<br>')}<br>✓ Gemeistert`});continue}
 const c=u.cost(l);btn(g,`${u.name} ${l}/${u.max}`,()=>{meta.essence-=c;meta.up[u.id]=l+1;saveMeta();sys(`${u.name} gestärkt (${l+1}/${u.max}).`)},{sub:`${(typeof u.desc==='function'?u.desc(l):u.desc).replace(/ · /g,'<br>')}<br><span class="c-ess">${c}<b></b> ✧</span>`,dis:meta.essence<c})}
+}
 const lockd=Object.keys(CLS).filter(id=>!meta.classes.includes(id));
-if(lockd.length&&meta.runs>=2){g=group('Kampfstile lernen');for(const id of lockd){const c=CLS[id];btn(g,c.name,()=>{meta.essence-=c.cost;meta.classes.push(id);saveMeta();sys(`Neuer Kampfstil: ${c.name}.`)},{sub:clsSub(id,`<span class="c-ess">${c.cost}<b></b> ✧</span>`),dis:meta.essence<c.cost})}}
+if(T==='vorb'&&lockd.length&&meta.runs>=2){g=group('Kampfstile lernen');for(const id of lockd){const c=CLS[id];btn(g,c.name,()=>{meta.essence-=c.cost;meta.classes.push(id);saveMeta();sys(`Neuer Kampfstil: ${c.name}.`)},{sub:clsSub(id,`<span class="c-ess">${c.cost}<b></b> ✧</span>`),dis:meta.essence<c.cost})}}
 {const pk=meta.pack||{},pl=QM.filter(q=>pk[q.id]).map(q=>`${pk[q.id]}× ${q.n}`);
-if((meta.gold||0)>0||pl.length){
+if(T==='vorb'&&((meta.gold||0)>0||pl.length)){
 g=group(`Quartiermeister Brenn · <span class="c-gold">${meta.gold||0} Gold</span>`);
 for(const q of QM){const have=pk[q.id]||0,qc=Math.round(q.c*(meta.bq>=3?.8:1));const qmx=q.max+((meta.camp||0)>=1&&(q.id==='pot'||q.id==='key')?1:0);if(have>qmx){const ex=have-qmx;meta.gold=(meta.gold||0)+ex*qc;meta.pack=Object.assign({},meta.pack,{[q.id]:qmx});saveMeta();log(`Brenn legt ${ex}× ${q.n} zurück ins Regal und gibt dir ${ex*qc} Gold wieder.`,'goldt');setTimeout(render,0)}btn(g,`${q.n} ${have}/${q.id==='pot'?Math.min(qmx,Math.max(have,4-ul('trank'))):qmx}`,()=>{meta.gold-=qc;meta.pack=Object.assign({},pk,{[q.id]:have+1});unlock('brenn');saveMeta();log(`Brenn packt dir ein: ${q.n}.`,'goldt');brennSay()},{sub:`${q.d}<br><span class="c-gold">${qc}<b></b> Gold</span>`,dis:have>=qmx||(q.id==='pot'&&1+ul('trank')+have>=5)||(meta.gold||0)<qc})}
 if(pl.length)btn(g,'Gepackt: '+pl.join(', '),()=>{},{dis:true,cls:'info',sub:'Wird beim nächsten Abstieg mitgenommen'})}}
 /* Lagerausbau */
-{const CS=CAMP,c=meta.camp||0;if(meta.runs>=3||c){g=group(`Lagerausbau · Stufe ${c}/${CS.length}`);
+{const CS=CAMP,c=meta.camp||0;if(T==='lager'&&(meta.runs>=3||c)){g=group(`Lagerausbau · Stufe ${c}/${CS.length}`);
  if(c<CS.length){const n=CS[c],nm=n.m||{},mm0=meta.mats||{},mOk=Object.keys(nm).every(k=>(mm0[k]||0)>=nm[k]),mTxt=Object.keys(nm).map(k=>`${nm[k]}× ${MATS[k].n} (${mm0[k]||0})`).join(' · ');btn(g,`Spende an Varga: ${n.n}`,()=>{meta.gold-=n.c;for(const k in nm)meta.mats[k]-=nm[k];meta.camp=c+1;saveMeta();try{for(let i=0;i<3;i++)smp('hammer',.4,.95+R()*.1,i*.45)}catch(e){}sys(`Das Lager wächst: ${n.n}. ${n.e} Die Adern im Stein leuchten heller.`);sayQ(n.q,'Varga')},{sub:`${n.e}<br><span class="c-gold">${n.c}<b></b> Gold</span>${mTxt?' · <span class="mat">'+mTxt+'</span>':''}`,dis:(meta.gold||0)<n.c||!mOk})}
  else btn(g,'Erbauer des Lagers',()=>{},{dis:true,cls:'info',sub:'Das Lager ist fertig ausgebaut. Varga hat deinen Namen in den Stein gehauen.'})}
- if(c>=2){const pk=meta.pack||{};g=group('Kräuterzelt · Nell');for(const q of NELL){if(q.req&&!q.req())continue;const have=pk[q.id]||0;btn(g,q.n+(have?' ✓':''),()=>{meta.gold-=q.c;meta.pack=Object.assign({},meta.pack||{},{[q.id]:1});saveMeta();log(`Nell gibt dir ${q.n} mit.`,'goldt');if(R()<.5)sayQ(pick(NELLQ),'Nell')},{sub:`${q.d}<br><span class="c-gold">${q.c}<b></b> Gold</span>`,dis:!!have||(meta.gold||0)<q.c})}}}
+ if(T==='vorb'&&c>=2){const pk=meta.pack||{};g=group('Kräuterzelt · Nell');for(const q of NELL){if(q.req&&!q.req())continue;const have=pk[q.id]||0;btn(g,q.n+(have?' ✓':''),()=>{meta.gold-=q.c;meta.pack=Object.assign({},meta.pack||{},{[q.id]:1});saveMeta();log(`Nell gibt dir ${q.n} mit.`,'goldt');if(R()<.5)sayQ(pick(NELLQ),'Nell')},{sub:`${q.d}<br><span class="c-gold">${q.c}<b></b> Gold</span>`,dis:!!have||(meta.gold||0)<q.c})}}}
 /* Seilexpedition */
-{const rp=meta.rope||0,R0=ROPES[rp];if((meta.best||0)>=21||rp){g=group(`Seilexpedition · ${rp}/${ROPES.length} Seile`);
+{const rp=meta.rope||0,R0=ROPES[rp];if(T==='lager'&&((meta.best||0)>=21||rp)){g=group(`Seilexpedition · ${rp}/${ROPES.length} Seile`);
  const rq=R0&&R0.f!==45&&(meta.best||0)<R0.f;if(R0&&meta.ropeQ==null)btn(g,`Seil bis Etage ${R0.f} finanzieren`,()=>{meta.gold-=R0.c;meta.ropeQ=rp;saveMeta();sys(`Brenn bestellt Seil, Haken und Winden. Trag das Bündel bis Etage ${R0.f} und besiege den Torwächter dort.`);sayQ('Das Seil zahl ich. Runtertragen musst du es.','Brenn')},{sub:`Brenn schnürt dir ein Seilbündel. Bring es bis zum Torwächter auf Etage ${R0.f} (${R0.n}) und verankere es nach dem Sieg. Danach gibt es dort Seil und Korb nach oben${(meta.rank||0)>=4?` und einen Ankersprung auf Etage ${R0.f+1}`:''}.${rq?`<br><span class="bad">Erst möglich, wenn du Etage ${R0.f} einmal erreicht hast.</span>`:''}<br><span class="c-gold">${R0.c}<b></b> Gold</span>`,dis:rq||(meta.gold||0)<R0.c});
  else if(R0)btn(g,`Seilbündel für Etage ${R0.f}`,()=>{},{dis:true,cls:'info',sub:`Bezahlt. Du trägst das Bündel bei jedem Abstieg mit, bis du es auf Etage ${R0.f} nach dem Torwächter verankert hast.`});
  else btn(g,'Alle Seile hängen',()=>{},{dis:true,cls:'info',sub:'Von Etage 25, 35 und 45 führen jetzt Seile nach oben.'})}}
 /* Lager */
 const mats=Object.values(meta.mats||{}).some(v=>v>0);
-g=group('Lager');
+if(T==='lager'){g=group('Werkstätten');
 if(meta.runs>=2||mats||meta.armory.length)btn(g,'⚒ Schmiedin Hild',()=>{S.screen='forge';S.fSlot=S.fType=S.armSel=null},{sub:`Material zu Ausrüstung schmieden · ${armN()}/6 in der Waffenkammer`});
-if(meta.brutK||(meta.mats||{}).wurm||(meta.soulOwn||[]).length)btn(g,'🦷 Torvik, der Brutschnitzer',()=>{S.screen='brut'},{sub:`Schnitzt und stärkt Teile aus Wurmchitin · ${(meta.mats||{}).wurm||0}× Wurmchitin`});
+if(meta.brutK||(meta.mats||{}).wurm||(meta.soulOwn||[]).length)btn(g,'🦷 Torvik, der Brutschnitzer'+(meta.zahnPend?' •':''),()=>{S.screen='brut'},{sub:`Schnitzt und stärkt Teile aus Wurmchitin · ${(meta.mats||{}).wurm||0}× Wurmchitin`});}
+if(T==='wissen'){g=group('Wissen');
 if(meta.best>=3||meta.bounty.length)btn(g,`Kopfgeldliste ${meta.bounty.length}/${BOUNTIES.length}`,()=>S.screen='bounty',{sub:'Gesuchte Biester im Riss'});
 btn(g,`Aufträge ${meta.quests.length}/${QUESTS.length}`,()=>S.screen='quests',{sub:'Ziele mit Splitter-Belohnung'});
 if(meta.kills>0)btn(g,'Bestiarium',()=>S.screen='beast',{sub:'Gegner, die du kennst'});
 btn(g,`Chronik ${Object.keys(LORE).filter(k=>meta.lore.includes(k)).length}/${Object.keys(LORE).length}`,()=>S.screen='chronik',{sub:'Was du über den Riss weißt'});
 if(bossDone)btn(g,'Rangabzeichen',()=>S.screen='ranks',{sub:'Die Ränge des Ordens'});
-if(typeof claude!=='undefined'&&meta.runs>=1)btn(g,'Ordensbuch',()=>{S.screen='guild';loadGuild()},{sub:'Bestenliste mit Freunden'})},
+if(typeof claude!=='undefined'&&meta.runs>=1)btn(g,'Ordensbuch',()=>{S.screen='guild';loadGuild()},{sub:'Bestenliste mit Freunden'})}},
 doors(){if(resetArm)resetArm=false;
 const nf=P.floor+1,boss=P.tut?nf===3:nf%5===0;
 scene(`<p>${P.floor===0?'Der Gang liegt dunkel vor dir.':`Etage ${P.floor} liegt hinter dir.`}${boss?' '+gateText(nf):''}</p>${boss&&P.trial&&RANG[P.trial]&&RANG[P.trial].f===nf?'<p class="small" style="color:#c98f5c">Heute prüft dich der Orden. Der Wächter ist stärker als sonst.</p>':''}<p class="dim small">Als Nächstes: Etage ${nf} · ${areaOf(nf).name}</p>`);
