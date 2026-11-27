@@ -517,10 +517,15 @@ return h?`<div class="hint"><b>Varga:</b> ${h}</div>`:''}
 
 /* ---------- Zustand ---------- */
 let S={screen:'hub',queue:[]}, P=null, E=null, lock=false, logs=[], resetArm=false;
-function log(t,c=''){logs.unshift({t,c});try{if(S&&['room','doors','gate','loot'].includes(S.screen)){if(c==='bad')S.flash='bad';else if((c==='good'||c==='goldt')&&S.flash!=='bad')S.flash='good'}}catch(e){}if(logs.length>40)logs.pop();try{sfxLog(t,c)}catch(e){}}
+function log(t,c=''){logs.unshift({t,c});try{if(P&&P.rl&&!P.tut)rlAdd(String(t))}catch(e){}try{if(S&&['room','doors','gate','loot'].includes(S.screen)){if(c==='bad')S.flash='bad';else if((c==='good'||c==='goldt')&&S.flash!=='bad')S.flash='good'}}catch(e){}if(logs.length>40)logs.pop();try{sfxLog(t,c)}catch(e){}}
 const sys=t=>log(t,'sys');
 
 /* ---------- Spieler ---------- */
+const rlTxt=t=>t.replace(/<br\s*\/?>/g,' ').replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/\s+/g,' ').trim();
+function rlAdd(t){P.rl.push((P.inFight?'  ':'')+rlTxt(t));if(P.rl.length>4000)P.rl.splice(200,1)}
+function rlSnap(){const it=k=>P[k]?`${P[k].name} (${RAR[P[k].r].n}${P[k].set?', Set '+SETS[P[k].set].n:''})`:'–';return `--- Etage ${P.floor} · Stufe ${P.lvl} · LP ${P.hp}/${maxHp()} · Angriff ${atk()} · Vert. ${def()} · Krit ${crit()} % (roh ${critRaw()}) · Ausw. ${dodge()} % (roh ${dodgeRaw()}) · Schadensmind. ${drP()} % · Gold ${P.gold} · Splitter ${P.ess} · Tränke ${P.potions} · Zunder ${P.kindling} | Waffe ${it('weapon')} · Rüstung ${it('armor')} · Helm ${it('helm')} · Handsch. ${it('gloves')} · Schmuck ${it('jewel')} | Fähigkeiten: ${(P.perks||[]).map(id=>{const p=PK(id);return p?p.n+((P.perkR||{})[id]?' ('+PR[P.perkR[id]].n+')':''):id}).join(', ')||'–'}`}
+function rlReport(){const r=meta.lastRun;return r?r.join('\n'):''}
+function rlCopy(){const t=rlReport();if(!t){log('Noch kein Run-Bericht vorhanden.','dim');return}const ok=()=>log('Run-Bericht kopiert. Füge ihn im Chat ein.','good');const fb=()=>{const a=document.createElement('textarea');a.value=t;a.style.cssText='position:fixed;left:3%;top:8%;width:94%;height:80%;z-index:999;background:#111;color:#ddd;font-size:12px';document.body.appendChild(a);a.focus();a.select();let done=false;try{done=document.execCommand('copy')}catch(e){}if(done){a.remove();ok()}else{a.addEventListener('blur',()=>a.remove());log('Markiere den Text und kopiere ihn manuell.','sys')}};try{navigator.clipboard.writeText(t).then(ok,fb)}catch(e){fb()}}
 function newRun(cid){S.sagaDone=false;const c=CLS[cid];
 P={cls:cid,lvl:1,xp:0,xpNext:BAL.xpB,gold:0,potions:1+ul('trank'),floor:0,
 baseHp:Math.round((c.hp+ul('vit')*10)*(meta.vq>=4?1.1:1)*((meta.wk||{}).orden?1.05:1)),baseAtk:c.atk+ul('str')*2,baseDef:c.def+ul('def'),baseCrit:c.crit+ul('crit')*2,
@@ -668,7 +673,7 @@ Object.assign(e,{name,hp:Math.round(hp),maxHp:Math.round(hp),atk:Math.round(at),
 if(ov.name)e.maxHp=e.hp;if(e.mkF){e.mkF(e);delete e.mkF}return e}
 
 /* ---------- Kampf ---------- */
-function startCombat(type,ov){E=makeEnemy(type,ov);try{voice(E,0)}catch(e){}S.screen='combat';P.cd=0;P.defending=false;P.uBlock=hasU('aldric');P.hits=0;P.wach=hasS('wach');P.rhy=0;P.bulw=false;P.rsh=P.cls==='magier'?Math.round(maxHp()*(.2+(P.bonus.mshield||0)/100)):0;P.rlastU=false;P.molt=false;P.ovl=0;P.bres=0;P.shCrit=0;
+function startCombat(type,ov){E=makeEnemy(type,ov);try{if(P.rl&&!P.tut){P.rl.push(`>> Kampf (${type}) gegen ${E.name}: LP ${E.hp}, Angriff ${E.atk}, Vert. ${E.def}${E.mechs&&E.mechs.length?', Mechaniken '+E.mechs.join('/'):''} · deine LP ${P.hp}/${maxHp()}`);P.inFight=1;P.fR=0}}catch(e){}try{voice(E,0)}catch(e){}S.screen='combat';P.cd=0;P.defending=false;P.uBlock=hasU('aldric');P.hits=0;P.wach=hasS('wach');P.rhy=0;P.bulw=false;P.rsh=P.cls==='magier'?Math.round(maxHp()*(.2+(P.bonus.mshield||0)/100)):0;P.rlastU=false;P.molt=false;P.ovl=0;P.bres=0;P.shCrit=0;
 if(E.ev&&E.intro)log(E.intro,'bad');
 log(type==='boss'?`${E.name} versperrt das Tor!`:`${E.name} stellt sich dir in den Weg.`,type==='kampf'?'':'bad')}
 function dealDmg(mult,o={}){
@@ -740,7 +745,7 @@ function checkDeath(){if(P.hp>0)return false;
 if(P.tut){P.hp=maxHp();log('Varga packt dich am Kragen und zieht dich raus. „Nochmal. Langsamer diesmal.“','sys');return false}
 if(P.revive){P.revive=false;P.hp=Math.round(maxHp()*(P.revivePct||40)/100);sys('Du kommst noch mal hoch. Der zweite Atem hat dich gerettet.');return false}
 if((meta.camp||0)>=4&&!P.ordRev&&!P.tut){P.ordRev=true;P.hp=Math.round(maxHp()*.35);sys('Dir wird schwarz vor Augen. Dann reißt etwas an deiner Narbe, und du stehst wieder. Der Orden lässt dich nicht fallen. Einmal nicht.');try{sayQ('Haken, kein Strich.','Varga')}catch(e){}return false} log('Alles wird schwarz. Dann zieht etwas an deiner Hand, und der Stein holt dich zurück.','bad');endRun(false);return true}
-function act(kind){P.defending=false;
+function act(kind){P.defending=false;if(P.inFight)P.fR=(P.fR||0)+1;
 if(kind==='atk'){if(P.cls==='magier'&&P.cd>1)P.cd--;else if(P.cls==='magier'&&P.cd===0&&(P.ovl||0)<3){P.ovl=(P.ovl||0)+1;log(`Überladung ${P.ovl}/3: Das Runenfeuer staut sich.`,'sys')}dealDmg(1);if(E.hp>0&&P.bonus.twin){dealDmg(P.bonus.twin/100)}if(E.hp>0&&wp('dbl')&&R()*100<wp('dbl')){log('Zweiter Hieb!','crit');dealDmg(.7)}}
 else if(kind==='skill')useSkill();
 else if(kind==='def'){P.defending=true;if(P.cls==='krieger')P.bulw=true;if(P.bonus.kguard){const h=heal(Math.round(maxHp()*P.bonus.kguard/100));if(h)log(`Standhaft: +${h} LP`,'good')}log('Du gehst in Deckung.')}
@@ -756,7 +761,7 @@ if(P.poison>0){const d=Math.ceil(maxHp()*.04);P.hp-=d;P.poison--;log(`Gift: −$
 if(P.burn>0){const d=Math.ceil(maxHp()*.05);P.hp-=d;P.burn--;log(`Du brennst: −${d} LP`,'bad');if(checkDeath())return}
 if(hasC('blutzoll')){const d=Math.ceil(maxHp()*.02);P.hp-=d;log(`Blutzoll: −${d} LP`,'bad');if(checkDeath())return}
 if(P.cd>0)P.cd--}
-function win(){const e=E;E=null;log(`${e.name} ist besiegt.`,'good');P.kills++;P.poison=0;P.burn=0;P.frozen=0;
+function win(){const e=E;E=null;try{if(P.rl&&!P.tut){P.inFight=0;P.rl.push(`<< Sieg nach ${P.fR||0} Zügen · deine LP ${P.hp}/${maxHp()}`)}}catch(x){}log(`${e.name} ist besiegt.`,'good');P.kills++;P.poison=0;P.burn=0;P.frozen=0;
 if(!P.tut){meta.kills++;if(e.type==='elite'){meta.elites++;P.eliteK=(P.eliteK||0)+1}if(!e.bounty&&e.base){meta.beast[e.base]=(meta.beast[e.base]||0)+1;const k=meta.beast[e.base];if(k===10||k===30||k===75)sys(`Bestiarium: Du kennst ${e.base} jetzt besser. +${Math.round(bb(e.base)*100)} % Schaden gegen diese Art.`)}saveMeta();
  const mk='m'+Math.min(4,AREAS.indexOf(areaOf(P.floor)));
  if(e.type==='boss'){addMat(mk,ri(2,3));addMat('kern',1)}else if(e.bounty){addMat(mk,3);meta.troph[e.bounty]=(meta.troph[e.bounty]||0)+1;saveMeta();log(`Trophäe: ${TROPH[e.bounty]} – für Hild.`,'mat')}else if(e.type==='elite'){addMat(mk,ri(1,2));if(R()<.15)addMat('kern',1)}else if(R()<.3)addMat(mk,1);
@@ -845,7 +850,7 @@ if(t!=='kampf'&&t===P.lastT)t='kampf';P.lastT=t;return t}
 function floorCard(f,n,newArea){if(typeof document==='undefined'||!CFG.anim)return;let el=document.getElementById('fcard');if(!el){el=document.createElement('div');el.id='fcard';document.body.appendChild(el)}
 el.innerHTML=`<div><div class="fc1">Etage ${f}</div><div class="fc2">${n}</div></div>`;el.className='';void el.offsetWidth;el.className=newArea?'on big':'on'}
 function advance(){sfx('step');enterDoor({t:null})}
-function enterDoor(d){S.fireOpen=false;if(!P.tut&&!d.t&&!(P.bells>0)&&P.floor>=3&&(P.floor+1)%5!==0&&areaOf(P.floor+1)===areaOf(P.floor)&&R()<.025){P.floor++;if(P.floor>meta.best){meta.best=P.floor;saveMeta()}log('Im Gang knarren Räder. Ein Händler kommt dir entgegen, ganz ohne Glocke. „Glück gehabt, Ankerträger. Ich komm hier selten vorbei.“','goldt');return roomHaendler()}const prev=areaOf(P.floor);P.floor++;const a=areaOf(P.floor);
+function enterDoor(d){S.fireOpen=false;if(!P.tut&&!d.t&&!(P.bells>0)&&P.floor>=3&&(P.floor+1)%5!==0&&areaOf(P.floor+1)===areaOf(P.floor)&&R()<.025){P.floor++;if(P.floor>meta.best){meta.best=P.floor;saveMeta()}log('Im Gang knarren Räder. Ein Händler kommt dir entgegen, ganz ohne Glocke. „Glück gehabt, Ankerträger. Ich komm hier selten vorbei.“','goldt');return roomHaendler()}const prev=areaOf(P.floor);P.floor++;const a=areaOf(P.floor);try{if(P.rl&&!P.tut)P.rl.push(rlSnap())}catch(e){}
 if(!P.tut&&P.floor>1&&a!==prev){S.screen='acard';S.acard={t:d.t||null};try{if(!smp('stone',.55,.8))sfx('door')}catch(e){}return}
 roomGo(d)}
 function roomGo(d){const prev=areaOf(P.floor-1),a=areaOf(P.floor);if(P.daily)seedRng(P.daily+'#'+P.floor+'#'+(d.t||''));else _rng=Math.random;
@@ -970,7 +975,7 @@ S.screen='perks';S.ptitle=title;S.choices=ch}
 function showLoot(it){S.screen='loot';S.item=it;if(!(!it.src&&smp('chest',.5)))sfx(it.src&&it.src!=='Hild'?'rustle':'creak');if(it.r===3&&!P.tut){meta.legend++;saveMeta()}}
 function showGate(){S.screen='gate';try{if(!smp('stone',.75,.95,.4))sfx('door')}catch(e){}}
 
-function startRun(id){newRun(id);P.ngp=!!(meta.endWon&&meta.ngp&&!S.chal);if(P.ngp)log('Neues Spiel+: Der Riss wehrt sich. Gegner +30 %, Gold und Splitter +50 %, alle Ersatz-Wächter sind wach.','sys');if(!P.tut)statHit('runs');S.queue=[];logs=[];
+function startRun(id){newRun(id);P.rl=[`RISS Run-Bericht · ${CLS[id].name} · ${new Date().toLocaleString('de-DE')} · Lager-Stufe ${meta.camp||0} · Tiefste Etage bisher ${meta.best||0}${meta.ngp&&meta.endWon?' · Neues Spiel+':''}`];P.ngp=!!(meta.endWon&&meta.ngp&&!S.chal);if(P.ngp)log('Neues Spiel+: Der Riss wehrt sich. Gegner +30 %, Gold und Splitter +50 %, alle Ersatz-Wächter sind wach.','sys');if(!P.tut)statHit('runs');S.queue=[];logs=[];
 _rng=Math.random;P.mod='ruhig';if(S.chal==='week'){const W=weekly();P.mod=W.mod;P.weekly=W.k;log(`Herausforderung · Riss der Woche: ${RMODS[W.mod].n} (${RMODS[W.mod].d}). Ziel: Etage ${W.goal}.`,'sys')}else if(S.chal==='day'){const D=daily();P.mod=D.mod;P.daily=D.k;log(`Herausforderung · Riss des Tages: ${RMODS[D.mod].n} (${RMODS[D.mod].d}). Heute sind die Etagen für alle gleich.`,'sys')}S.chal=null;
 const pk=meta.pack||{},got=[];if(pk.pot){P.potions=Math.min(potMax(),P.potions+pk.pot);got.push(pk.pot+' Heiltrank')}if(pk.fire){P.kindling+=pk.fire;got.push(pk.fire+' Zunder')}if(pk.key){P.keys+=pk.key;got.push(pk.key+' Schlüssel')}if(pk.bell){P.bells+=pk.bell;got.push(pk.bell+' Händlerglocke')}if(meta.ropeQ!=null&&!P.tut){P.ropeB=meta.ropeQ;got.push('Seilbündel')}if(pk.nell1){P.bonus.potion+=25;got.push('Starker Trank')}if(pk.nell2){P.bonus.def+=5;got.push('Eisenkraut')}if(pk.nell3){P.bonus.ls+=3;got.push('Blutwurz')}if(pk.nell4){P.kessel=1;got.push('Grinnas Kesseltrank')}if(pk.stone){P.bonus.atk+=3;got.push('Schleifstein')}if(pk.h0){P.bonus.def+=3;got.push('Gehärtete Platten')}if(pk.h1){P.bonus.crit+=5;got.push('Silberschliff')}if(pk.h2){P.bonus.atk+=(meta.wk||{}).glut?8:4;got.push('Glutkern im Griff')}if(pk.h3){P.bonus.hp+=Math.round(maxHp()*.12);P.hp=maxHp();got.push('Eisfutter')}if(pk.h4){P.hEss=1;got.push('Leerenrune')}if(pk.segen){P.bonus.hp+=Math.round(maxHp()*.1);P.hp=maxHp();got.push('Segen des Ordens')}
 if(pk.weapon){P.floor=2;const w=genItem(0,1,{w:Object.keys(WT)},['a','h','g','j']);P.floor=0;P.weapon=w;got.push(w.name)}
@@ -982,7 +987,7 @@ if((meta.rank||0)>=1){const nc=meta.nextCon&&CON[meta.nextCon.id]?meta.nextCon:n
 if(S.jump){const jf=typeof S.jump==='number'?S.jump:11;S.jump=false;P.jumped=1;P.floor=jf-1;P.weapon=genItem(0,1,{w:Object.keys(WT)},['a','h','g','j']);P.armor=genItem(0,1,{a:Object.keys(AT)},['w','h','g','j']);while(P.lvl<jumpLvl(jf))gainXp(P.xpNext-P.xp);P.hp=maxHp();S.queue=S.queue.filter(q=>q.k!=='perks');const np=jumpPerks(jf);for(let i=0;i<np;i++)S.queue.push({k:'perks',t:'Ankersprung – Fähigkeit '+(i+1)+' von '+np});log(`Du springst. Die Seile fliegen an dir vorbei, dann schlägst du hart auf. Etage ${jf-1}. Du lebst.`,'sys')}
 {const L=pick([['Du kletterst das Seil hinab. Oben wird das Licht kleiner, dann ist es weg.'],['Varga klopft dir auf die Schulter. „Haken, kein Strich.“ Dann geht es abwärts.','Haken, kein Strich.','Varga'],['Der Riss riecht heute nach nassem Stein und Rauch. Du steigst hinab.'],['„Haken, kein Strich“, sagt Brenn, ohne von seinem Buch aufzusehen. „Haken“, sagst du und greifst nach dem Seil.','Haken, kein Strich.','Brenn'],['Varga hält das Seil fest, bis du unten bist. „Haken, kein Strich.“','Haken, kein Strich.','Varga']]);log(L[0]);if(L[1]&&!P.tut)sayQ(L[1],L[2],400)}if(S.queue.length)next();else goDoors()}
 function climbPick(){if(P.tut){endRun(true);return}S.screen='climbpick'}
-function endRun(retreat){let recap=null;
+function endRun(retreat){let recap=null;try{if(P.rl&&!P.tut){P.inFight=0;P.rl.push(rlSnap());P.rl.push(retreat?`=== Ende: hochgeklettert auf Etage ${P.floor}`:`=== Ende: gestorben auf Etage ${P.floor}${E?' gegen '+E.name+' (LP '+E.hp+'/'+E.maxHp+')':''}`);meta.lastRun=P.rl.slice(-3000);saveMeta()}}catch(e){}
 try{if(!retreat&&!P.tut){const lt=logs.slice(0,7).map(l=>l.t).join(' '),tips=[];
  if(/gewaltigen Schlag/.test(lt))tips.push('„Wenn einer zum großen Schlag ausholt, geh in Deckung. Abwehren schluckt das meiste davon.“');
  if(/Gift|brennst|Blutzoll/.test(lt))tips.push('„Gift und Feuer bringen dich langsam um. Trink deinen Trank früher, nicht erst, wenn es zu spät ist.“');
@@ -1417,6 +1422,7 @@ btn(group(''),'Zurück ins Lager',()=>S.screen='hub',{cls:'big'})},
 settings(){const sl=(k,l)=>`<div class="cfgrow"><span>${l}</span><input type="range" min="0" max="100" value="${CFG[k]}" oninput="CFG.${k}=+this.value;cfgApply();this.nextElementSibling.textContent=this.value+' %'" onchange="cfgSave()"><span class="dim small">${CFG[k]} %</span></div>`;
 scene(`<p class="gt">Einstellungen</p>${sl('mus','Musik')}${sl('fx','Effekte')}`);
 let g=group('Ton');btn(g,AU.on?'♪ Ton ist an':'♪ Ton ist aus',()=>sndToggle(),{sub:'Schaltet alles stumm oder wieder an',delay:120});
+if(meta.lastRun)btn(group('Analyse'),'📋 Letzten Run-Bericht kopieren',rlCopy,{sub:`${meta.lastRun.length} Zeilen · zum Einfügen im Chat mit Claude`,delay:120});
 g=group('Textgröße');['Klein','Normal','Groß'].forEach((n,i)=>btn(g,(CFG.size===i?'✓ ':'')+n,()=>{CFG.size=i;cfgSave()},{delay:100,cls:CFG.size===i?'rar2':''}));
 g=group('Darstellung');btn(g,CFG.anim?'Animationen: an':'Animationen: aus',()=>{CFG.anim=CFG.anim?0:1;cfgSave()},{sub:'Flackern, Zoom, Partikel und Wackeln',delay:100});btn(g,CFG.vib?'Vibration: an':'Vibration: aus',()=>{CFG.vib=CFG.vib?0:1;cfgSave();try{if(CFG.vib)navigator.vibrate(40)}catch(e){}},{sub:'Bei Treffern, nur auf Android',delay:100});
 g=group('Spielstand');btn(g,'Spielstand sichern & laden',()=>{S.screen='save';S.saveMsg='';S.loadArm=false},{sub:'Als Code oder Datei, z. B. für ein neues Handy'});
@@ -1569,7 +1575,7 @@ scene(`${rc?`<p class="gt" style="color:var(--red)">Unten geblieben · Etage ${x
 <p class="small" style="margin:10px 0 0"><i>Varga: ${rc.tip}</i></p></div>`:`<p class="${x.retreat?'good':'bad'}">${x.retreat?'Du bist lebend wieder oben.':'Du bist gestorben. Der Stein hat dich zurückgeholt.'}</p>`}
 <p class="small">${CLS[x.cls].name} · Etage ${x.floor} · Stufe ${x.lvl} · ${x.kills} Gegner</p>
 <p>${fxc(`+${x.tot} Seelensplitter`)}${x.retreat?' <span class="small dim">(inkl. Rückzugsbonus)</span>':' <span class="small dim">(40 % sind mit dir unten geblieben)</span>'}</p>${x.goldHome?`<p>${fxc(`+${x.goldHome} Gold`)} <span class="small dim">für die Ordenskasse</span></p>`:''}${x.goldLost?`<p class="small dim">${fxc(`${x.goldLost} Gold`)} ${x.retreat?'hast du unten zurückgelassen. Nur was im Korb liegt, kommt in die Ordenskasse.':'liegen jetzt irgendwo da unten.'}</p>`:''}${x.soulHome&&x.soulHome.length?`<p class="small mat">${x.retreat?'Mitgebracht':'Seelengebunden mitgebracht'}: ${x.soulHome.join(', ')}</p>`:''}${x.packed&&x.packed.length?`<p class="small">Brenn packt es für den nächsten Abstieg ein: ${x.packed.join(', ')}</p>`:''}${x.soulIn&&x.soulIn.length?`<p class="small" style="color:#ffd76a">Seelengebunden zurück in der Waffenkammer: ${x.soulIn.map(esc).join(', ')}</p>`:''}${x.armIn&&x.armIn.length?`<p class="small">In die Waffenkammer: ${x.armIn.map(esc).join(', ')}</p>`:''}${x.armLost?`<p class="small dim">${x.armLost} Stück${x.armLost>1?'e':''} passte${x.armLost>1?'n':''} nicht mehr in die Waffenkammer (6/6).</p>`:''}${x.matsLost&&x.matsLost.length?`<p class="small dim">Unten geblieben: ${x.matsLost.join(', ')}</p>`:''}${x.recap?'':`<p class="small dim"><i>${x.line}</i></p>`}${x.newBest&&x.floor>0?'<p class="goldt small">Neue tiefste Etage!</p>':''}${nextGoal()}`);
-const g=group('');btn(g,'Zurück ins Lager',()=>{P=null;S.screen='hub'},{cls:'big',delay:600})},
+const g=group('');btn(g,'Zurück ins Lager',()=>{P=null;S.screen='hub'},{cls:'big',delay:600});if(meta.lastRun)btn(g,'📋 Run-Bericht kopieren',rlCopy,{sub:'Zum Einfügen im Chat mit Claude'})},
 };
 
 function goldFab(){let el=document.getElementById('goldfab');if(!el){el=document.createElement('div');el.id='goldfab';document.body.appendChild(el)}const on=['hub','forge','guild','bounty','quests'].includes(S.screen)&&(meta.gold||0)>0;el.style.display=on?'':'none';if(on)el.textContent=(meta.gold||0).toLocaleString('de-DE')+' Gold'}
