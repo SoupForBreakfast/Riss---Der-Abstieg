@@ -287,7 +287,7 @@ zaehlende:{n:'Der fünfte Schnitt',slot:'w',type:'dolch',d:'Jeder fünfte Treffe
 kaelen:{n:'Kaelens Klinge',slot:'w',type:'schwert',d:'Je weniger LP du hast, desto härter schlägst du'},
 vurmzahn:{n:'Vurmzahn',slot:'w',type:'dolch',r4:1,d:'Jeder Treffer reißt eine Wunde auf, und Blutung heilt dich um die Hälfte ihres Schadens · seelengebunden'},
 chitin:{n:'Chitinpanzer der Brutmutter',slot:'a',type:'platte',r4:1,d:'−20 % erlittener Schaden · fällst du unter 30 % LP, häutest du dich einmal pro Kampf und heilst 30 % · seelengebunden'}};
-const hasU=id=>(P.weapon&&P.weapon.uq===id)||(P.armor&&P.armor.uq===id);
+const hasU=id=>(P.weapon&&P.weapon.uq===id)||(P.armor&&P.armor.uq===id);const brutN=()=>P?(hasU('vurmzahn')?1:0)+(hasU('chitin')?1:0):0;const brutSet=()=>brutN()>=2;const brutL=it=>it&&(it.uq==='vurmzahn'||it.uq==='chitin')?`<span class="setl"><b>Einzigartiges Set: Brut des Stollens</b> (${brutN()}/2 angelegt)<br>2: <b>+15 % Angriff, +15 % max. LP, Blutung macht doppelten Schaden und hält eine Runde länger</b></span>`:'';
 function makeUnique(id,ff){const U=UNIQ[id],f=ff||Math.max(5,P.floor),m=2.7*(U.r4?1.3:1)*(1+.15*((meta.uqLvl||{})[id]||0));
 if(U.slot==='w'){const T=WT[U.type];return{slot:'w',type:U.type,r:3,uq:id,name:U.n,atk:Math.round((2+f*BAL.ia)*m*T.m),crit:6,ls:4}}
 const T=AT[U.type];return{slot:'a',type:U.type,r:3,uq:id,name:U.n,def:Math.round((1+f*BAL.id)*m*T.dm),hp:Math.round((5+f*BAL.ih)*m*T.hm)+12,dodge:id==='weissfell'?10:0}}
@@ -534,9 +534,9 @@ baseHp:Math.round((c.hp+ul('vit')*10)*(meta.vq>=4?1.1:1)*((meta.wk||{}).orden?1.
 bonus:{hp:0,atk:0,def:0,crit:0,ls:0,thorns:0,gold:0,luck:0,cdr:0,potion:0,rage:0,regen:0,exec:0},
 perks:[],bag:[],keys:0,kindling:0,bells:0,burn:0,frozen:0,mod:'ruhig',startBest:meta.best,weapon:null,armor:null,cd:0,ess:0,kills:0,bosses:0,revive:false,rageStacks:0,poison:0,defending:false};
 P.hp=maxHp()}
-const maxHp=()=>{let v=Math.round((P.baseHp+P.bonus.hp+(P.armor?P.armor.hp:0)+gs('hp'))*(1+((P.bonus.hpP||0)+(hasS('spiegel')?8:0))/100));if(hasS('kalt'))v-=10;if(hasS('schwer'))v=Math.round(v*1.15);return Math.max(1,v)};
+const maxHp=()=>{let v=Math.round((P.baseHp+P.bonus.hp+(P.armor?P.armor.hp:0)+gs('hp'))*(1+((P.bonus.hpP||0)+(hasS('spiegel')?8:0)+(brutSet()?15:0))/100));if(hasS('kalt'))v-=10;if(hasS('schwer'))v=Math.round(v*1.15);return Math.max(1,v)};
 const favAtk=()=>P&&P.weapon&&(CLS[P.cls].fav||[]).includes(P.weapon.type)?Math.round((P.baseAtk+P.bonus.atk+P.weapon.atk+P.rageStacks+gs('atk'))*.1):0;
-const atkPct=()=>(P.bonus.atkP||0)+ul('str')*2+(hasS('spiegel')?8:0);
+const atkPct=()=>(P.bonus.atkP||0)+ul('str')*2+(hasS('spiegel')?8:0)+(brutSet()?15:0);
 const drP=()=>Math.min(60,drRaw());
 const atk=()=>{let v=(P.baseAtk+P.bonus.atk+(P.weapon?P.weapon.atk:0)+P.rageStacks+gs('atk')+favAtk())*(1+atkPct()/100);v=Math.round(v);if(!P.weapon&&!P.tut)v=Math.round(v*.6);return hasS('schatten')?Math.round(v*.9):v};
 const def=()=>Math.max(0,P.baseDef+P.bonus.def+(P.armor?P.armor.def:0)+gs('def')-(hasS('stumm')?2:0));
@@ -627,7 +627,7 @@ function forgeItem(slot,type,t,r){const it=buildItem(slot,type,r,t*10+8,RAR[r].m
 const iName=it=>`<span style="color:${RAR[it.r].c}">${it.name}</span>`;
 const XL={atk:'Angriff',def:'Verteidigung',hp:'LP',crit:'% Krit',dodge:'% Ausweichen',ls:'% Lebensraub',luck:'Glück',gold:'% Gold',skill:'% Fähigkeitsschaden',bleed:'% Blutung',stun:'% Betäubung'};
 const xStats=it=>Object.keys(XL).filter(k=>it[k]).map(k=>`+${it[k]} ${XL[k]}`).join(' · ')+' · '+XT[it.slot][it.type].d;
-const iStats=it=>(it.set&&SETS[it.set]?`<span class="setl"><b>Set ${SETS[it.set].n}</b> (${setN(it.set)}/5 angelegt)<br>2: ${SETS[it.set].d2}<br>3: ${SETS[it.set].d3}<br>4: ${SETS[it.set].d4}<br>5: <b>${SETS[it.set].d5}</b>${setSc()>1.04?`<br><span class="dim">Feste Werte wachsen mit der Tiefe: ×${setSc().toFixed(1).replace('.',',')}</span>`:''}</span>`:'')+(it.curse?`<span class="fx-curse">Fluch: ${CURSES[it.curse].n} – ${CURSES[it.curse].d}</span>`:'')+(XT[it.slot]?xStats(it):(it.uq?`<b>${UNIQ[it.uq].d}</b> · `:'')+(it.slot==='w'?`+${it.atk} Angriff · ${wt(it).d}${P&&CLS[P.cls]?((CLS[P.cls].fav||[]).includes(it.type)?` · <span class="good">Lieblingswaffe: +10 % Angriff</span>`:` · <span class="dim">Keine Lieblingswaffe (${CLS[P.cls].fav.map(t=>WT[t].n).join(', ')})</span>`):''}`+(it.crit?` · Bonus: +${it.crit} % Krit`:'')+(it.ls?` · Bonus: ${it.ls} % Lebensraub`:'')+(it.stun?` · Bonus: ${it.stun} % Betäubung`:''):`+${it.def} Verteidigung · +${it.hp} LP · ${at_(it).d}`));
+const iStats=it=>brutL(it)+(it.set&&SETS[it.set]?`<span class="setl"><b>Set ${SETS[it.set].n}</b> (${setN(it.set)}/5 angelegt)<br>2: ${SETS[it.set].d2}<br>3: ${SETS[it.set].d3}<br>4: ${SETS[it.set].d4}<br>5: <b>${SETS[it.set].d5}</b>${setSc()>1.04?`<br><span class="dim">Feste Werte wachsen mit der Tiefe: ×${setSc().toFixed(1).replace('.',',')}</span>`:''}</span>`:'')+(it.curse?`<span class="fx-curse">Fluch: ${CURSES[it.curse].n} – ${CURSES[it.curse].d}</span>`:'')+(XT[it.slot]?xStats(it):(it.uq?`<b>${UNIQ[it.uq].d}</b> · `:'')+(it.slot==='w'?`+${it.atk} Angriff · ${wt(it).d}${P&&CLS[P.cls]?((CLS[P.cls].fav||[]).includes(it.type)?` · <span class="good">Lieblingswaffe: +10 % Angriff</span>`:` · <span class="dim">Keine Lieblingswaffe (${CLS[P.cls].fav.map(t=>WT[t].n).join(', ')})</span>`):''}`+(it.crit?` · Bonus: +${it.crit} % Krit`:'')+(it.ls?` · Bonus: ${it.ls} % Lebensraub`:'')+(it.stun?` · Bonus: ${it.stun} % Betäubung`:''):`+${it.def} Verteidigung · +${it.hp} LP · ${at_(it).d}`));
 const iValue=it=>Math.round((8+P.floor*2)*(it.r+1));
 const BAG0=6;let BAG=6;
 function equip(it){try{const sl=it.slot,ty=it.type;smp(sl==='w'?(SB.jc_equip?'wequip':'ring'):sl==='a'?(ty==='platte'||ty==='kette'?'chain':'cloth'):sl==='h'?'metal':sl==='j'?'beads':'cloth',.45)}catch(e){}const k0=SK[it.slot];if(P[k0]&&P[k0].curse&&P[k0]!==it){log(`Der Fluch lässt dich nicht los. ${P[k0].name} bleibt, wo es ist.`,'bad');return false}
@@ -694,9 +694,9 @@ if(P.cls==='klinge')P.rhy=Math.min(5,(P.rhy||0)+1);
 let d=Math.max(1,Math.round(b-ed));if(P.cls==='blut'&&P.bres>0){d+=P.bres;log(`Die Blutreserve entlädt sich: +${P.bres} Schaden.`,'crit');P.bres=0}if(E.shield){d=Math.max(1,Math.round(d*.25));log('Der Schild fängt den Großteil ab.','dim')}E.hp-=d;
 if(E.mirror){const r=Math.max(1,Math.round(d*.6));P.hp-=r;log(`Der Spiegel wirft ${r} Schaden zurück. −${r} LP`,'bad')}
 log(c?`Kritischer Treffer! ${d} Schaden.`:`Du triffst ${E.name}: ${d} Schaden.`,c?'crit':'');if(P.bonus.exec&&!E.execOn&&E.hp>0&&E.hp/E.maxHp<.3){E.execOn=1;log(`${E.name} ist angeschlagen. Henker: +${P.bonus.exec} % Schaden.`,'goldt')}
-if(E.hp>0&&wp('bleed')&&R()*100<wp('bleed')){E.bleed=3;log(`${E.name} blutet.`,'crit')}
-if(E.hp>0&&c&&(hasU('grimmzahn')||P.bonus.bcut)){E.bleed=3;log(`${E.name} blutet.`,'crit')}
-if(E.hp>0&&hasU('vurmzahn')&&!E.bleed){E.bleed=3;log(`Der Vurmzahn reißt ${E.name} eine Wunde.`,'crit')}
+if(E.hp>0&&wp('bleed')&&R()*100<wp('bleed')){E.bleed=brutSet()?4:3;log(`${E.name} blutet.`,'crit')}
+if(E.hp>0&&c&&(hasU('grimmzahn')||P.bonus.bcut)){E.bleed=brutSet()?4:3;log(`${E.name} blutet.`,'crit')}
+if(E.hp>0&&hasU('vurmzahn')&&!E.bleed){E.bleed=brutSet()?4:3;log(`Der Vurmzahn reißt ${E.name} eine Wunde.`,'crit')}
 if(E.hp>0&&hasU('ossa')&&R()<.25){E.burn=3;log(`${E.name} brennt.`,'crit')}
 if(E.hp>0&&hasU('ylva')&&R()<.25){E.chill=1;log(`${E.name} ist unterkühlt.`,'dim')}
 if(E.hp>0&&(wp('stun')+(hasU('schlacke')?20:0))&&R()*100<wp('stun')+(hasU('schlacke')?20:0)&&!E.stun){if(stunOk())E.stun=1,log(`Der Hieb haut ${E.name} aus den Latschen.`)}
@@ -716,7 +716,7 @@ function drink(){P.potions--;try{if(smp('drink',.5))smp('bubble',.4,1,.3)}catch(
 function enemyTurn(){const dot=E.burn>0||E.pdot>0||E.bleed>0;
 if(E.burn>0){const d=Math.max(1,Math.round(atk()*.4*(1+(P.bonus.mburn||0)/100)));E.hp-=d;E.burn--;log(`${E.name} brennt: ${d} Schaden.`,'crit');if(E.hp<=0)return}
 if(E.pdot>0){const d=Math.max(1,Math.round(E.maxHp*.05));E.hp-=d;E.pdot--;log(`${E.name} leidet unter Gift: ${d} Schaden.`,'dim');if(E.hp<=0)return}
-if(E.bleed>0){const d=Math.max(1,Math.round(atk()*.3));E.hp-=d;E.bleed--;log(`${E.name} blutet: ${d} Schaden.`,'crit');if(hasU('vurmzahn')){const h=heal(Math.round(d/2));if(h)log(`+${h} LP (Vurmzahn)`,'good')}if(E.hp<=0)return}
+if(E.bleed>0){const d=Math.max(1,Math.round(atk()*(brutSet()?.6:.3)));E.hp-=d;E.bleed--;log(`${E.name} blutet: ${d} Schaden.`,'crit');if(hasU('vurmzahn')){const h=heal(Math.round(d/2));if(h)log(`+${h} LP (Vurmzahn)`,'good')}if(E.hp<=0)return}
 if(E.regen&&E.hp<E.maxHp&&dot){log(E.bleed>0?`${E.name} blutet, die Wunden schließen sich nicht.`:`${E.name}s Wunden schließen sich nicht.`,'good')}else if(E.regen&&E.hp<E.maxHp){const h=Math.round(E.maxHp*E.regen);E.hp=Math.min(E.maxHp,E.hp+h);log(`${E.name} regeneriert ${h} LP.`,'dim')}
 if(E.enrage&&!E.raged&&E.hp<E.maxHp*.5){E.raged=true;E.atk=Math.round(E.atk*1.5);log(`${E.name} gerät in Raserei!`,'bad')}
 E.shield=false;E.mirror=false;
@@ -847,7 +847,7 @@ room(`Der Gang endet in einer warmen, feuchten Höhle. Überall liegen ledrige E
 {l:'Vorbeischleichen und plündern',sub:`${sneak} % Chance · gelingt es, gibt es Gold, Material und ein episches Teil`,fn:()=>{if(R()*100<sneak){const g=goldAmt(8);P.gold+=g;addMat('m0',ri(2,4));log(`Du schleichst an ihr vorbei und greifst in den Haufen. +${g} Gold`,'goldt');const it=genItem(5,2);it.src='Wurmnest';S.queue.push({k:'loot',it});next()}else{log('Ein Ei knackt unter deinem Stiefel. Die Brutmutter öffnet die Augen.','bad');brutFight(true)}}},
 {l:'Die Brutmutter wecken und kämpfen',sub:'Extrem stark · sie trägt etwas Einzigartiges in sich',fn:()=>brutFight(false)},
 {l:'Leise zurückziehen',sub:'Nichts riskieren',fn:()=>{log('Du ziehst dich zurück. Hinter dir atmet es weiter.','dim');next()}}],'wurmnest')}
-function brutFight(caught){startCombat('elite');Object.assign(E,{name:'Die Brutmutter',base:'Die Brutmutter',brut:1,mechs:['drain','heavy','shield','heavy'],mechEvery:3,mi:0,heavyEvery:0,imgK:IMG.w6?'w6':'w1',vox:['brut',1]});E.maxHp=E.hp=Math.round(E.maxHp*3.2);E.atk=Math.round(E.atk*1.7);E.def+=4;E.gm*=4;E.ess*=4;E.xp*=3;if(caught){E.stun=0;log('Sie ist schneller wach, als dir lieb ist.','bad')}try{if(P.rl){for(let j=P.rl.length-1;j>=0;j--)if(P.rl[j].startsWith('>> Kampf')){P.rl[j]=`>> Kampf (elite) gegen Die Brutmutter: LP ${E.maxHp}, Angriff ${E.atk}, Vert. ${E.def}, Mechaniken ${E.mechs.join('/')} · deine LP ${P.hp}/${maxHp()}`;break}}}catch(x){}log('Die Brutmutter richtet sich auf. Der Boden zittert.','bad')}
+function brutFight(caught){startCombat('elite');Object.assign(E,{name:'Die Brutmutter',base:'Die Brutmutter',brut:1,mechs:['drain','heavy','shield','heavy'],mechEvery:3,mi:0,heavyEvery:0,imgK:IMG.w6?'w6':'w1',vox:['brut',1]});E.maxHp=E.hp=Math.round(E.maxHp*5.5);E.atk=Math.round(E.atk*2.4);E.def+=6;E.traits=Object.assign({},E.traits,{regen:.02});E.regen=.02;try{const mh=Math.round(bossFloorHp()*6/3.5);if(mh>E.maxHp)E.maxHp=E.hp=mh}catch(x){}E.maxHp=E.hp=Math.max(E.maxHp,150*P.floor);E.atk=Math.max(E.atk,4*P.floor+10,Math.round(maxHp()*.11));E.gm*=4;E.ess*=4;E.xp*=3;if(caught){E.stun=0;log('Sie ist schneller wach, als dir lieb ist.','bad')}try{if(P.rl){for(let j=P.rl.length-1;j>=0;j--)if(P.rl[j].startsWith('>> Kampf')){P.rl[j]=`>> Kampf (elite) gegen Die Brutmutter: LP ${E.maxHp}, Angriff ${E.atk}, Vert. ${E.def}, Mechaniken ${E.mechs.join('/')} · deine LP ${P.hp}/${maxHp()}`;break}}}catch(x){}log('Die Brutmutter richtet sich auf. Der Boden zittert.','bad')}
 function rollRoom(){const f=P.floor;if(P.broAt&&f>=P.broAt&&!P.comp&&!P.tut){const hp=Math.round(maxHp()*.6);P.comp={n:'Bruder '+(P.broN||'Orrik'),hp,max:hp,atk:Math.max(2,Math.round(atk()*.5)),left:ri(4,6)};P.broAt=0;log(`Schritte hinter dir. Der Ordensbruder holt dich ein, die Wunde verbunden. „Ich sagte doch, ich zahl’s zurück.“`,'good')}if(P.tut)return f===1?'kampf':f===2?'tresorTuer':'boss';if(f%5===0)return'boss';
 if(f<=4&&(P.kills||0)<(f>=4?2:f>=2?1:0)){P.lastT='kampf';return'kampf'}
 const sh=pickShade(f);if(sh){P.shadeNow=sh;return'shade'}
