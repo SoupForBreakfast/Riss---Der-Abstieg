@@ -1627,7 +1627,7 @@ scene(`<p class="dim">${S.hubLine}</p><p class="small"><i>Varga: ${S.vline}</i><
 let g;const nb=!meta.tut,bossDone=(meta.bosses||0)>=1||(meta.rank||0)>0;
 if(nb){g=group('Zuerst');btn(g,'Mit Varga üben',startTutorial,{sub:'Kurze Einführung: Kampf, Beute und Aufstiege',cls:'big',delay:600})}
 const T=nb?'abstieg':(S.hubTab||'abstieg');
-if(!nb){const tg0=group('');tg0.classList.add('tabrow');for(const [k,l] of [['abstieg','Abstieg'],['vorb','Rüsten'],['lager','Lager'+(meta.zahnPend?' •':'')],['wissen','Wissen']])btn(tg0,l,()=>{S.hubTab=k;try{window.scrollTo(0,0)}catch(e){}},{cls:'tab'+(T===k?' on':''),delay:60})}
+if(!nb){const tg0=group('');tg0.classList.add('tabrow');for(const [k,l] of [['abstieg','Abstieg'],['vorb','Rüsten'],['lager','Lager'+(meta.zahnPend?' •':'')],['wissen','Wissen']])btn(tg0,l,()=>{S.hubTab=k;S.tabFix=1},{cls:'tab'+(T===k?' on':''),delay:60})}
 if(T==='abstieg'&&!nb&&(meta.runs||0)>=5&&(meta.runs||0)-(meta.lastSave||0)>=10){const gr=group('');btn(gr,'💾 Spielstand sichern',()=>{S.screen='save';S.saveMsg='';S.loadArm=false},{cls:'info',sub:`Seit ${(meta.runs||0)-(meta.lastSave||0)} Abstiegen nicht gesichert. Dein Fortschritt liegt nur auf diesem Gerät.`,delay:100})}
 if(T==='abstieg')g=group(nb?'Oder gleich los':'Den Riss betreten');
 if(meta.endWon&&T==='abstieg')btn(g,meta.ngp?'✦ Neues Spiel+ ist an':'Neues Spiel+ einschalten',()=>{meta.ngp=!meta.ngp;saveMeta()},{sub:'Gegner +30 % LP und Angriff · Gold und Splitter +50 % · an jedem Tor warten die Erben der alten Wächter',cls:meta.ngp?'rar4':''});
@@ -1716,7 +1716,7 @@ btn(g,'Heiltrank',()=>act('potion'),{delay:450,dis:P.potions<1||P.hp>=maxHp(),su
 if(e.type!=='boss'&&!P.tut)btn(g,'Fliehen',()=>act('flee'),{delay:450,sub:'55 % Chance'})},
 room(){const R0=S.room;scene(`<p>${R0.text}</p>${R0.gold?`<p class="small">Dein Gold: <span class="c-gold">${P.gold}</span></p>`:''}`);const all=R0.opts().filter(Boolean);
 if(!R0.tabs){if(!all.some(o=>o.head!=null||o.card)){const g=group('');for(const o of all)btn(g,o.l,o.fn,{sub:o.sub,dis:o.dis,delay:350});return}let g=null;for(const o of all){if(o.head!=null||!g)g=group(o.head||'');if(o.card)g.insertAdjacentHTML('beforeend',o.card);if(o.l)btn(g,o.l,o.fn,{sub:o.sub,dis:o.dis,delay:250,cls:o.cls})}return}
-const T=R0.tab,tg=group('');tg.classList.add('tabrow');for(const [k,l] of R0.tabs())btn(tg,l,()=>{R0.tab=k;try{window.scrollTo(0,0)}catch(e){}},{cls:'tab'+(T===k?' on':''),delay:60});
+const T=R0.tab,tg=group('');tg.classList.add('tabrow');for(const [k,l] of R0.tabs())btn(tg,l,()=>{R0.tab=k;S.tabFix=1},{cls:'tab'+(T===k?' on':''),delay:60});
 let g=null;for(const o of all){if(!o.tab||o.tab!==T)continue;if(o.head!=null||!g)g=group(o.head&&o.head.trim()?o.head:'');if(o.card)g.insertAdjacentHTML('beforeend',o.card);if(o.l)btn(g,o.l,o.fn,{sub:o.sub,dis:o.dis,delay:250,cls:o.cls})}
 const gE=group('');for(const o of all)if(!o.tab)btn(gE,o.l,o.fn,{sub:o.sub,dis:o.dis,delay:350,cls:'big'})},
 perks(){scene(`<p class="sys">${S.ptitle}</p><p class="dim">Wähle eine Fähigkeit. Sie hält bis zum Ende des Runs.</p>`);const g=group('');
@@ -1774,6 +1774,7 @@ if(P&&!['hub','end','chronik','settings','save'].includes(S.screen)){try{localSt
 try{rankInit();contractTick()}catch(e){}
 $('#stats').innerHTML=statsHTML();$('#actions').innerHTML='';SCR[S.screen]();
 if(S.flash){const st=$('#stage'),f=S.flash;S.flash=null;if(st){st.classList.remove('fl-good','fl-bad');void st.offsetWidth;st.classList.add('fl-'+f);setTimeout(()=>st.classList.remove('fl-'+f),1700)}}
+if(S.tabFix){S.tabFix=0;try{const t=document.querySelector('#actions .tabrow'),gp=t&&t.parentElement;if(gp){const y=gp.getBoundingClientRect().top+window.scrollY-6;if(window.scrollY>y)window.scrollTo({top:y,behavior:'auto'})}}catch(e){}}
 if(S.screen!==S._lastScr){const top=['forge','beast','guild','bounty','quests','chronik','settings','save','ranks','hub','inv','scar','rite'];if(top.includes(S.screen)&&S._lastScr!==undefined)try{window.scrollTo({top:0,behavior:'auto'})}catch(e){}S._lastScr=S.screen}
 if(P&&P.contract&&!P.tut&&S.screen==='doors'){const c=P.contract;$('#scene').insertAdjacentHTML('beforeend',`<div class="srow small contract">${c.done?'✓':'◆'} Auftrag: ${CON[c.id].t(c.n)} <span class="c-ess">${c.r} ✧</span></div>`)}
 const th=tutHint();if(th)$('#scene').innerHTML=th+$('#scene').innerHTML;
