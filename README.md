@@ -21,7 +21,6 @@ Auf dem Handy über „Zum Startbildschirm hinzufügen“ als App installieren. 
 - Sieg-Chor: „Choir Positive Feedback 1“ von souljahdeshiva, CC-BY-SA 3.0 (auch GPL 2.0/3.0) – gekürzt und ausgeblendet; die bearbeitete Datei sfx/victory.mp3 steht ebenfalls unter CC-BY-SA 3.0
 - Story-Musik (Varga/Brenn): „Village In Despair“ von Tsorthan Grove, CC-BY 4.0 – https://opengameart.org/content/village-in-despair
 - Abgrund-Wechseltrack: „Upside Down Grin (freaky Ambient)“ von Brandon Morris – https://opengameart.org/content/upside-down-grin-freaky-ambient
-- Rangzeremonie: „Can’t Stop Winning“ – Composed by Jonathan Shaw (www.jshaw.co.uk), Ausschnitt
 - Frostgruft-Musik: „Cold Sanctuary“ – Composed by Jonathan Shaw (www.jshaw.co.uk)
 - Todesmusik: „The End (Death Screen mix)“ von Metaruka, Remix von Avgvst – https://opengameart.org/node/10665 – Original „Game-Game“-OST von Metaruka (https://opengameart.org/content/game-game), CC-BY-SA 3.0 (unverändert übernommen)
 - Stufenaufstieg: „Picked Coin Echo“ von NenadSimic, CC-BY 3.0 (OpenGameArt)
