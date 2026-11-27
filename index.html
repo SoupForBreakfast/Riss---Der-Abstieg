@@ -605,7 +605,7 @@ const PERKS=[
 {id:'k_counter',cls:'krieger',n:'Gegenschlag',minR:2,max:1,d:'Wirst du beim Abwehren getroffen, schlägst du sofort zurück',f:m=>P.bonus.kcounter=1,pv:()=>'Gegenschlag mit 80 % Schaden, halbe Rüstung',cur:()=>'Gegenschlag beim Abwehren'},
 {id:'b_flow',cls:'klinge',n:'Fließende Klinge',tier:[1,2,3,4],d:'Rhythmus gibt mehr Krit pro Stufe',f:m=>P.bonus.brhy=PK('b_flow').tier[mR(m)],pv:m=>`Rhythmus ${6+(P.bonus.brhy||0)} % → ${6+PK('b_flow').tier[mR(m)]} % pro Stufe`,cur:()=>`Rhythmus ${6+(P.bonus.brhy||0)} % pro Stufe`},
 {id:'b_step',cls:'klinge',n:'Schattenschritt',d:'Mehr Ausweichen, und Ausweichen hält deinen Rhythmus',f:m=>{P.bonus.dodge=(P.bonus.dodge||0)+rnd(4*m);P.bonus.bstep=1},pv:m=>{const n=dodgeRaw()+rnd(4*m);return `Ausweichen ${dodge()} % → ${Math.min(60,n)} %${n>60?` · Konter ${Math.min(100,(n-60)*3)} %`:''} · Ausweichen gibt +1 Rhythmus`},cur:()=>`Ausweichen ${dodge()} %`},
-{id:'b_cut',cls:'klinge',n:'Feine Schnitte',minR:2,max:1,d:'Kritische Treffer lassen den Gegner bluten',f:m=>P.bonus.bcut=1,pv:()=>'Jeder Krit verursacht Blutung',cur:()=>'Krits verursachen Blutung'},
+{id:'b_cut',cls:'klinge',n:'Feine Schnitte',minR:2,max:1,d:'Kritische Treffer lassen den Gegner bluten',f:m=>P.bonus.bcut=1,pv:()=>'Jeder Krit verursacht Blutung · blutet er schon, reißt der Krit die Wunde sofort auf (Blutungsschaden extra)',cur:()=>'Krits verursachen Blutung oder reißen sie weiter auf'},
 {id:'m_wall',cls:'magier',n:'Runenwall',d:'Dein Runenschild wird stärker',f:m=>P.bonus.mshield=(P.bonus.mshield||0)+rnd(10*m),pv:m=>`Runenschild ${25+(P.bonus.mshield||0)} % → ${25+(P.bonus.mshield||0)+rnd(10*m)} % der LP`,cur:()=>`Runenschild ${25+(P.bonus.mshield||0)} % der LP`},
 {id:'m_glut',cls:'magier',n:'Glutrunen',tier:[30,45,60,90],d:'Brennende Gegner nehmen mehr Schaden',f:m=>P.bonus.mburn=PK('m_glut').tier[mR(m)],pv:m=>`Brandschaden +${P.bonus.mburn||0} % → +${PK('m_glut').tier[mR(m)]} %`,cur:()=>`Brandschaden +${P.bonus.mburn||0} %`},
 {id:'m_echo',cls:'magier',n:'Runenecho',minR:2,max:1,d:'Runenfeuer hallt nach und trifft ein zweites Mal',f:m=>P.bonus.mecho=1,pv:()=>'Zweiter Treffer mit 85 % Schaden',cur:()=>'Runenfeuer trifft zweimal (85 %)'},
@@ -710,7 +710,7 @@ let d=Math.max(1,Math.round(b-ed));if(P.cls==='blut'&&P.bres>0){d+=P.bres;log(`D
 if(E.mirror){const r=Math.max(1,Math.round(d*.6));P.hp-=r;log(`Der Spiegel wirft ${r} Schaden zurück. −${r} LP`,'bad')}
 log(c?`Kritischer Treffer! ${d} Schaden.`:`Du triffst ${E.name}: ${d} Schaden.`,c?'crit':'');if(P.bonus.exec&&!E.execOn&&E.hp>0&&E.hp/E.maxHp<.3){E.execOn=1;log(`${E.name} ist angeschlagen. Henker: +${P.bonus.exec} % Schaden.`,'goldt')}
 if(E.hp>0&&wp('bleed')&&R()*100<wp('bleed')){E.bleed=bleedT();log(`${E.name} blutet.`,'crit')}
-if(E.hp>0&&c&&(hasU('grimmzahn')||P.bonus.bcut)){E.bleed=bleedT();log(`${E.name} blutet.`,'crit')}
+if(E.hp>0&&c&&(hasU('grimmzahn')||P.bonus.bcut)){if(P.bonus.bcut&&E.bleed>0){const bd=Math.max(1,Math.round(atk()*(brutSet()?.6:.3)));E.hp-=bd;log(`Feine Schnitte: Die Wunde reißt weiter auf. ${bd} Schaden.`,'crit')}E.bleed=bleedT();log(`${E.name} blutet.`,'crit')}
 {const bw=['vurmzahn','wurmkiefer','schlundsense'].find(hasU)||(o.skill&&hasU('brutstab')?'brutstab':null);if(E.hp>0&&bw&&!E.bleed){E.bleed=bleedT();log(`${UNIQ[bw].n} reißt ${E.name} eine Wunde.`,'crit')}}
 if(E.hp>0&&hasU('ossa')&&R()<.25){E.burn=3;log(`${E.name} brennt.`,'crit')}
 if(E.hp>0&&hasU('ylva')&&R()<.25){E.chill=1;log(`${E.name} ist unterkühlt.`,'dim')}
