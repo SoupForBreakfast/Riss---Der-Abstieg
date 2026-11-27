@@ -117,7 +117,7 @@ h1{font-weight:normal;letter-spacing:.45em;font-size:1rem;margin:0;color:var(--d
 .art.img .a-fl2{animation:kb 30s ease-in-out infinite alternate,fl2 3.2s ease-in-out infinite alternate}
 .art.img .a-pulse{animation:kb 30s ease-in-out infinite alternate,pl 4.5s ease-in-out infinite alternate}
 .art.img .a-slow{animation:kb 30s ease-in-out infinite alternate,pl 9s ease-in-out infinite alternate}
-.art.img .a-eye{animation:kb 30s ease-in-out infinite alternate,eye 5.5s ease-in-out infinite}
+.art.img .a-eye{animation:kb 30s ease-in-out infinite alternate,eye 5.5s ease-in-out infinite}.art.img .a-eyem{transform-origin:50% 45%;animation:kb 30s ease-in-out infinite alternate,eyem 7s ease-in-out infinite alternate}@keyframes eyem{0%{opacity:.6}100%{opacity:.95}}
 @keyframes fl{0%{opacity:.8}11%{opacity:.92}23%{opacity:.7}37%{opacity:.97}52%{opacity:.78}64%{opacity:.88}79%{opacity:.66}90%{opacity:.95}100%{opacity:.8}}
 @keyframes fl2b{0%{opacity:.75}30%{opacity:1}45%{opacity:.6}70%{opacity:.95}100%{opacity:.75}}
 @keyframes fl2{from{opacity:.45}to{opacity:.95}}
@@ -1378,10 +1378,10 @@ for(const g of d.g||[]){h+=gl(...g);if(g[4]==='fl'){const r=g[2]*2.6;h+=`<div cl
 if(d.m){const [x,y,r]=d.m;h+=`<div class="moon" style="background:radial-gradient(ellipse ${r*1.05}% ${(r*1.87).toFixed(1)}% at ${x}% ${y}%,rgba(255,252,240,.55) 0%,rgba(240,240,250,.35) 70%,transparent 100%),radial-gradient(ellipse ${r*3.2}% ${(r*5.7).toFixed(1)}% at ${x}% ${y}%,rgba(215,225,255,.32) 0%,rgba(190,205,255,.12) 45%,transparent 100%),radial-gradient(ellipse ${r*9}% ${(r*16).toFixed(1)}% at ${x}% ${y}%,rgba(170,185,230,.12) 0%,transparent 100%)"></div>`}
 if(d.s){const bg=d.s.map(e=>`radial-gradient(ellipse ${e[2]}% ${(e[2]*1.78).toFixed(1)}% at ${e[0]}% ${e[1]}%,rgba(190,140,255,.9) 0%,rgba(150,90,255,.35) 45%,transparent 100%)`).join(',');h+=`<div class="eg a-pulse" style="background-image:${bg}"></div>`}
 if(d.e&&d.e.length){const ec=o.elite?'r':d.c,many=d.e.length>4,mk=d.e.map(e=>{const r=Math.max(e[2]*1.3,many?1.4:2);return `radial-gradient(ellipse ${r}% ${(r*1.78).toFixed(1)}% at ${e[0]}% ${e[1]}%,#000 25%,transparent 100%)`}).join(',');
- if(!d.eo)h+=`<img class="hl c-${ec} a-eye" src="${src}" alt="" style="-webkit-mask-image:${mk};mask-image:${mk}">`;
+ if(!d.eo)h+=`<img class="hl c-${ec} ${many?'a-eyem':'a-eye'}" src="${src}" alt="" style="-webkit-mask-image:${mk};mask-image:${mk}">`;
  const EC={y:'255,214,120',b:'150,200,255',r:'255,60,40',o:'255,140,40',v:'190,140,255',g:'150,255,120',p:'235,230,215'}[ec]||'255,220,150';
  const bg=d.e.map(e=>{const r=d.eo?Math.max(e[2]*.8,.4):Math.max(e[2]*(many?.55:.75),.7);return `radial-gradient(ellipse ${r}% ${(r*1.78).toFixed(1)}% at ${e[0]}% ${e[1]}%,rgba(${EC},.95) 0%,rgba(${EC},.35) 45%,transparent 100%)`}).join(',');
- h+=`<div class="eg a-eye" style="background-image:${bg}"></div>`}
+ h+=`<div class="eg ${many?'a-eyem':'a-eye'}" style="background-image:${bg}"></div>`}
 let pt=d.p;if(!pt&&o.area!=null)pt=AREAP[o.area];
 if(pt){const px=d.px,n=pt==='snow'?16:pt==='embers'?12:10;for(let i=0;i<n;i++){const x=px!=null?px-3+((i*37)%60)/10:((i*61)%97)+1.5,dl=((i*0.83)%5).toFixed(2),du=(pt==='snow'?6:pt==='embers'?2.6:9)+((i*0.71)%3);
  const top=pt==='snow'?'-4':pt==='embers'?(d.py!=null?d.py:96):(i*29)%90;
