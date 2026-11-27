@@ -705,7 +705,7 @@ function enemyTurn(){const dot=E.burn>0||E.pdot>0||E.bleed>0;
 if(E.burn>0){const d=Math.max(1,Math.round(atk()*.4*(1+(P.bonus.mburn||0)/100)));E.hp-=d;E.burn--;log(`${E.name} brennt: ${d} Schaden.`,'crit');if(E.hp<=0)return}
 if(E.pdot>0){const d=Math.max(1,Math.round(E.maxHp*.05));E.hp-=d;E.pdot--;log(`${E.name} leidet unter Gift: ${d} Schaden.`,'dim');if(E.hp<=0)return}
 if(E.bleed>0){const d=Math.max(1,Math.round(atk()*.3));E.hp-=d;E.bleed--;log(`${E.name} blutet: ${d} Schaden.`,'crit');if(hasU('vurmzahn')){const h=heal(Math.round(d/2));if(h)log(`+${h} LP (Vurmzahn)`,'good')}if(E.hp<=0)return}
-if(E.regen&&E.hp<E.maxHp&&dot){log(`${E.name}s Wunden schließen sich nicht.`,'good')}else if(E.regen&&E.hp<E.maxHp){const h=Math.round(E.maxHp*E.regen);E.hp=Math.min(E.maxHp,E.hp+h);log(`${E.name} regeneriert ${h} LP.`,'dim')}
+if(E.regen&&E.hp<E.maxHp&&dot){log(E.bleed>0?`${E.name} blutet, die Wunden schließen sich nicht.`:`${E.name}s Wunden schließen sich nicht.`,'good')}else if(E.regen&&E.hp<E.maxHp){const h=Math.round(E.maxHp*E.regen);E.hp=Math.min(E.maxHp,E.hp+h);log(`${E.name} regeneriert ${h} LP.`,'dim')}
 if(E.enrage&&!E.raged&&E.hp<E.maxHp*.5){E.raged=true;E.atk=Math.round(E.atk*1.5);log(`${E.name} gerät in Raserei!`,'bad')}
 E.shield=false;E.mirror=false;
 if(E.stun>0){E.stun--;log(`${E.name} taumelt benommen.`);return}
@@ -720,7 +720,7 @@ if(P.defending)d*=P.cls==='krieger'?(heavy?.2:.3):(heavy?.25:.4);d*=1-drP()/100;
 d=Math.max(1,Math.round(d));if(P.rsh>0){const a=Math.min(P.rsh,d);P.rsh-=a;d-=a;log(a>=d+a?`Der Runenschild fängt den Schlag ab.`:`Der Runenschild fängt ${a} ab.`,'dim');if(P.rsh<=0)log('Der Runenschild zerbricht.','dim')}if(d>0&&P.rhy){P.rhy=0}if(P.bonus.rlast&&!P.rlastU&&P.hp-d<=0&&P.hp>1){P.rlastU=true;d=P.hp-1;log('Todesverachtung! Du bleibst stehen.','crit')}P.hp-=d;kesselCheck();if(hasU('chitin')&&!P.molt&&P.hp>0&&P.hp<maxHp()*.3){P.molt=true;const h=heal(Math.round(maxHp()*.3));log(`Du häutest dich. Darunter ist neues Chitin. +${h} LP`,'good')}{const th=P.armor?at_(P.armor).thorn||0:0;if(th&&raw0>0&&E.hp>0){const r2=Math.max(1,Math.round(raw0*th/100));E.hp-=r2;log(`Dornen: ${E.name} verletzt sich selbst. ${r2} Schaden.`,'good')}}
 log(heavy?`${E.name} entfesselt einen gewaltigen Schlag! −${d} LP`:`${E.name} trifft dich${hits>1?(i?' noch mal':' blitzschnell'):''}. −${d} LP`,'bad');if(P.defending&&P.bonus.kcounter&&E.hp>0&&raw0>0){const c2=Math.max(2,Math.round(atk()*.8*(.85+R()*.3)-E.def*.5));E.hp-=c2;log(`Gegenschlag! ${c2} Schaden.`,'good');try{weaponSfx(false)}catch(e){}if(E.hp<=0)return}
 if((P.bonus.thorns||thOver())&&raw0>0&&E.hp>0){const t=Math.max(1,Math.round(raw0*((P.bonus.thorns||0)+thOver())/100));E.hp-=t;log(`Dornen: ${t} Schaden zurück.`)}
-if(E.ls){E.hp=Math.min(E.maxHp,E.hp+Math.round(d*E.ls))}
+if(E.ls){E.hp=Math.min(E.maxHp,E.hp+Math.round(d*E.ls*(E.bleed>0?.5:1)))}
 if(E.poison&&R()<.5){P.poison=3;log('Du bist vergiftet.','bad')}}E.chill=0}
 function kesselCheck(){if(P.kessel&&P.hp>0&&P.hp<maxHp()*.25){P.kessel=0;P.hp=maxHp();if(E&&E.hp>0)E.pdot=3;log('Grinnas Kesseltrank schäumt in deinem Magen. Du stehst wieder voll im Saft, und dein Gegner würgt am Dampf.','good')}}
 function mechHit(d){d=Math.max(1,Math.round(d));if(P.rsh>0){const a=Math.min(P.rsh,d);P.rsh-=a;d-=a;log(d<=0?'Der Runenschild fängt es ab.':`Der Runenschild fängt ${a} ab.`,'dim');if(P.rsh<=0)log('Der Runenschild zerbricht.','dim')}if(P.bonus.rlast&&!P.rlastU&&P.hp-d<=0&&P.hp>1){P.rlastU=true;d=P.hp-1;log('Todesverachtung! Du bleibst stehen.','crit')}P.hp-=d;kesselCheck();return d}
@@ -729,7 +729,7 @@ if(m==='shield'){E.shield=true;log(`${E.name} verschanzt sich hinter einem Schil
 if(m==='mirror'){E.mirror=true;log(`${E.name}s Haut wird glatt wie ein Spiegel. Wer jetzt zuschlägt, trifft sich selbst.`,'bad');return true}
 if(m==='warcry'){if((E.wc||0)>=3){log(`${E.name} brüllt wieder, aber härter kann er nicht mehr zuschlagen.`,'dim');return false}E.wc=(E.wc||0)+1;E.atk=Math.round(E.atk*1.2);log(`${E.name} brüllt einen Kriegsschrei. Seine Schläge werden härter (${E.wc}/3).`,'bad');return true}
 if(m==='breath'){const d=mechHit((E.atk*1.3-def()*.5)*dm);P.burn=3;log(`Feueratem! −${d} LP – du brennst.`,'bad');return true}
-if(m==='drain'){const d=mechHit(maxHp()*.15*dm);E.hp=Math.min(E.maxHp,E.hp+d*2);log(`${E.name} zieht dir das Leben aus dem Leib. −${d} LP`,'bad');return true}
+if(m==='drain'){const d=mechHit(maxHp()*.15*dm);E.hp=Math.min(E.maxHp,E.hp+(E.bleed>0?d:d*2));if(E.bleed>0)log(`Die Blutung hemmt ${E.name}: Es heilt sich nur halb so stark.`,'good');log(`${E.name} zieht dir das Leben aus dem Leib. −${d} LP`,'bad');return true}
 if(m==='freeze'){P.frozen=1;log('Eisiger Hauch! Deine Hände werden steif, dein nächster Angriff ist schwächer.','bad');return false}
 return false}
 function checkDeath(){if(P.hp>0)return false;
