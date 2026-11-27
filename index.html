@@ -675,9 +675,10 @@ Object.assign(e,{name,hp:Math.round(hp),maxHp:Math.round(hp),atk:Math.round(at),
 if(ov.name)e.maxHp=e.hp;if(e.mkF){e.mkF(e);delete e.mkF}return e}
 
 /* ---------- Kampf ---------- */
-function startCombat(type,ov){E=makeEnemy(type,ov);try{if(P.rl&&!P.tut){P.rl.push(`>> Kampf (${type}) gegen ${E.name}: LP ${E.hp}, Angriff ${E.atk}, Vert. ${E.def}${E.mechs&&E.mechs.length?', Mechaniken '+E.mechs.join('/'):''} · deine LP ${P.hp}/${maxHp()}`);P.inFight=1;P.fR=0}}catch(e){}try{voice(E,0)}catch(e){}S.screen='combat';P.cd=0;P.defending=false;P.uBlock=hasU('aldric');P.hits=0;P.wach=hasS('wach');P.rhy=0;P.bulw=false;P.rsh=P.cls==='magier'?Math.round(maxHp()*(.25+(P.bonus.mshield||0)/100)):0;P.rlastU=false;P.molt=false;P.ovl=0;P.bres=0;P.shCrit=0;
+function bossFloorHp(){const sk={krieger:1.25,klinge:2.4,magier:2.1+(P.bonus.mecho?.85:0),blut:2}[P.cls]||1.5;const sb=1+((P.armor?at_(P.armor).skill||0:0)+(P.weapon?wt(P.weapon).skill||0:0)+gs('skill'))/100;const cm=1+Math.min(75,crit())/100*(1+Math.max(0,critRaw()-75)*2/100);return Math.round(3.5*atk()*sk*sb*cm)}
+function startCombat(type,ov){E=makeEnemy(type,ov);if(type==='boss'&&!P.tut){try{const mh=bossFloorHp();if(mh>E.maxHp){E.maxHp=E.hp=mh;E.adapt=1}}catch(x){}}try{if(P.rl&&!P.tut){P.rl.push(`>> Kampf (${type}) gegen ${E.name}: LP ${E.hp}, Angriff ${E.atk}, Vert. ${E.def}${E.mechs&&E.mechs.length?', Mechaniken '+E.mechs.join('/'):''} · deine LP ${P.hp}/${maxHp()}`);P.inFight=1;P.fR=0}}catch(e){}try{voice(E,0)}catch(e){}S.screen='combat';P.cd=0;P.defending=false;P.uBlock=hasU('aldric');P.hits=0;P.wach=hasS('wach');P.rhy=0;P.bulw=false;P.rsh=P.cls==='magier'?Math.round(maxHp()*(.25+(P.bonus.mshield||0)/100)):0;P.rlastU=false;P.molt=false;P.ovl=0;P.bres=0;P.shCrit=0;
 if(E.ev&&E.intro)log(E.intro,'bad');
-log(type==='boss'?`${E.name} versperrt das Tor!`:`${E.name} stellt sich dir in den Weg.`,type==='kampf'?'':'bad')}
+if(E.adapt)log(`${E.name} spürt, wie stark du bist, und hält mehr aus als sonst.`,'dim');log(type==='boss'?`${E.name} versperrt das Tor!`:`${E.name} stellt sich dir in den Weg.`,type==='kampf'?'':'bad')}
 function dealDmg(mult,o={}){
 if(E.evade&&!hasS('stumm')&&R()<E.evade){log(`${E.name} weicht aus!`,'dim');return 0}
 if(P.bonus.exec&&E.hp/E.maxHp<.3)mult*=1+P.bonus.exec/100;
