@@ -33,3 +33,4 @@ Auf dem Handy über „Zum Startbildschirm hinzufügen“ als App installieren. 
 - Ferne Monster: „Monster snarls“ von Darsycho – https://opengameart.org/content/monster-snarls (zerschnitten, mit Hall/Echo und Tiefpass bearbeitet)
 - Geräusche: „RPG Sound Pack“ von artisticdude – [OpenGameArt](https://opengameart.org/content/rpg-sound-pack) – CC0. Ins MP3-Format umgewandelt und am Anfang gekürzt.
 - Monsterlaute (CC0): „Monster Snarls“ und „Big Scary Troll Sounds“ von darsycho, „Monster Sound Pack Volume 2“ von ogrebane, „Silent Beast Growls“ von pauliuw – opengameart.org
+- Rangaufstieg: „Fanfare“ von Wolfgang_, CC-BY 3.0 – https://opengameart.org/content/fanfare-0
